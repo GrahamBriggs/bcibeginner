@@ -21,7 +21,7 @@ namespace BrainHatSharp
         }
 
 
-        public async Task StartFlashAsync(int intervalBetween, int durationFlash, int numberFlashes)
+        public async Task StartFlashAsync(int durationFlash, int intervalBetween, int numberFlashes)
         {
             await Stop();
             
@@ -39,7 +39,7 @@ namespace BrainHatSharp
         }
 
 
-        public async Task StartSequenceAsync(int intervalBetween, int durationFlash, bool biDirection)
+        public async Task StartSequenceAsync(int durationFlash, int intervalBetween,  bool biDirection)
         {
             await Stop();
             

@@ -84,6 +84,10 @@
       <Project>{f6656830-3ef4-4ea2-a420-ff342a3a3ea8}</Project>
       <Name>OpenBCIInterfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PlatformHelper\PlatformHelper.csproj">
+      <Project>{6ebdeeaa-e09e-44de-b9e1-93c90e78da13}</Project>
+      <Name>PlatformHelper</Name>
+    </ProjectReference>
     <ProjectReference Include="..\WiringPiWrapper\WiringPiWrapper.csproj">
       <Project>{44164c3f-b228-4488-b027-ea9717e7e6e1}</Project>
       <Name>WiringPiWrapper</Name>

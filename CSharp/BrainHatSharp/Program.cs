@@ -174,6 +174,8 @@ namespace BrainHatSharp
                BrainflowBoard.Log += OnProgramComponentLog;
                 BrainflowBoard.BoardReadData += OnBrainflowBoardReadData;
                 BrainflowBoard.ConnectToBoard += OnConnectToBoard;
+                GpioPinManager.BrainBoardPower(true);
+                await Task.Delay(1000);
                 await BrainflowBoard.StartBoardDataReaderAsync(board_id, input_params);
             }
             else
@@ -411,11 +413,9 @@ namespace BrainHatSharp
             if (args.Count() < 2)
             {
                 board_id = -99;
-#if MONO
-                demoFileName = "/home/pi/Source/BCI/DataLogs/demoFile.txt";
-#else
+
                 demoFileName = "./DataLogs/demoFile.txt";
-#endif
+
                 return true;
             }
             else
@@ -431,11 +431,10 @@ namespace BrainHatSharp
                 //  default serial port per platform
                 if (input_params.serial_port == "")
                 {
-#if MONO
-                    input_params.serial_port = "/dev/ttyUSB0";
-#else
-                    input_params.serial_port = "COM3";
-#endif
+                    if ( PlatformHelper.PlatformHelper.Windows )
+                        input_params.serial_port = "COM3";
+                    else
+                        input_params.serial_port = "/dev/ttyUSB0";
                 }
 
                 return true;

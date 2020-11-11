@@ -11,7 +11,9 @@ namespace BrainHatSharp
     public static class GpioPinManager
     {
         //  Define pins used
-        static int PinRightRising = 40;
+
+        //  Hard Hat
+        static int PinRightRising = 37;
         static int PinRightFalling = 38;
         static int PinRightBlink = 36;
 
@@ -19,22 +21,57 @@ namespace BrainHatSharp
         static int PinLeftFalling = 11;
         static int PinLeftBlink = 13;
 
-        static int PinCommandMode = 12;
-        static int PinCommandTriggered = 37;
 
-        static int PinLightStringA5 = 29;
-        static int PinLightStringA4 = 31;
-        static int PinLightStringA3 = 32;
-        static int PinLightStringA2 = 33;
-        static int PinLightStringA1 = 35;
+        static int PinLightStringA5 = 35;
+        static int PinLightStringA4 = 32;
+        static int PinLightStringA3 = 31;
+        static int PinLightStringA2 = 29;
+        static int PinLightStringA1 = 33;
 
-        static int PinLightStringB5 = 26;
-        static int PinLightStringB4 = 23;
+        static int PinLightStringB5 = 23;
+        static int PinLightStringB4 = 21;
         static int PinLightStringB3 = 24;
-        static int PinLightStringB2 = 21;
-        static int PinLightStringB1 = 19;
+        static int PinLightStringB2 = 22;
+        static int PinLightStringB1 = 26;
 
-        static int PinHapticMotor = 16;
+        static int PinHapticMotor = 12;
+
+        static int PinPowerSwitch = 40;
+
+
+
+        //  Proto board
+        //static int PinRightRising = 40;
+        //static int PinRightFalling = 38;
+        //static int PinRightBlink = 36;
+
+        //static int PinLeftRising = 7;
+        //static int PinLeftFalling = 11;
+        //static int PinLeftBlink = 13;
+
+
+
+        //static int PinLightStringA5 = 29;
+        //static int PinLightStringA4 = 31;
+        //static int PinLightStringA3 = 32;
+        //static int PinLightStringA2 = 33;
+        //static int PinLightStringA1 = 35;
+
+        //static int PinLightStringB5 = 26;
+        //static int PinLightStringB4 = 23;
+        //static int PinLightStringB3 = 24;
+        //static int PinLightStringB2 = 21;
+        //static int PinLightStringB1 = 19;
+
+        //static int PinHapticMotor = 16;
+
+        //  List of all pins in use (used for all off)
+        static List<int> PinsInUse;
+
+        //  Light strings
+        public static LightString LightStringMaster;
+        static LightString LightStringLeft;
+        static LightString LightStringRight;
 
 
         /// <summary>
@@ -54,16 +91,12 @@ namespace BrainHatSharp
             PinsInUse.Add(PinRightFalling);
             PinsInUse.Add(PinRightBlink);
 
-            PinsInUse.Add(PinCommandTriggered);
-            PinsInUse.Add(PinCommandMode);
-
             PinsInUse.Add(PinLightStringA1);
             PinsInUse.Add(PinLightStringA2);
             PinsInUse.Add(PinLightStringA3);
             PinsInUse.Add(PinLightStringA4);
             PinsInUse.Add(PinLightStringA5);
             
-
             PinsInUse.Add(PinLightStringB1);
             PinsInUse.Add(PinLightStringB2);
             PinsInUse.Add(PinLightStringB3);
@@ -79,6 +112,9 @@ namespace BrainHatSharp
 
             foreach (var nextPin in PinsInUse)
             {
+                if (nextPin == PinPowerSwitch)
+                    continue;
+
                 DigitalWrite(nextPin, WiringPiPinValue.High);
                 await Task.Delay(333);
                 DigitalWrite(nextPin, WiringPiPinValue.Low);
@@ -89,27 +125,26 @@ namespace BrainHatSharp
             LightStringMaster = LightStringLeft;
 
             //  test lights
-            //await LightStringMaster.StartFlashAsync(333, 111, 3);
-            //await Task.Delay(5000);
-            //await LightStringMaster.StartSequenceAsync(333, 111, false);
-            //await Task.Delay(5000);
-            //await LightStringMaster.Stop();
-            //await Task.Delay(1000);
-            //await LightStringMaster.StartSequenceAsync(333, 111, true);
-            //await Task.Delay(10000);
-            //await LightStringMaster.Stop();
-            //await Task.Delay(1000);
+            await LightStringMaster.StartFlashAsync(111, 333, 3);
+            await Task.Delay(3000);
+            await LightStringMaster.StartSequenceAsync(111, 333, false);
+            await Task.Delay(5000);
+            await LightStringMaster.Stop();
+            await Task.Delay(1000);
+            await LightStringMaster.StartSequenceAsync(111, 333, true);
+            await Task.Delay(5000);
+            await LightStringMaster.Stop();
+            await Task.Delay(1000);
 
-            //LightStringLeft.SetPins(new int[] { 1, 0, 1, 0, 1 });
-            //LightStringRight.SetPins(new int[] { 0, 1, 0, 1, 0 });
-            //await Task.Delay(2000);
+            LightStringLeft.SetPins(new int[] { 1, 0, 1, 0, 1 });
+            LightStringRight.SetPins(new int[] { 0, 1, 0, 1, 0 });
+            await Task.Delay(2000);
 
-            //EnableHapticMotor(true);
-            //await Task.Delay(3000);
-            //EnableHapticMotor(false);
+            BuzzMotor(0, 2000, 1);
+            await Task.Delay(1000);
+            BuzzMotor(111, 222, 3);
 
-            //  kick off default sequence for scanning state
-        //    await LightStringMaster.StartSequenceAsync(333, 111, true);
+            await LightStringMaster.StartSequenceAsync(111, 333, true);
         }
 
 
@@ -121,25 +156,37 @@ namespace BrainHatSharp
         }
 
 
-        public static void CommandMode(bool on)
+        public static async void CommandMode(bool on)
         {
-            DigitalWrite(PinCommandMode, on ? WiringPiPinValue.High : WiringPiPinValue.Low);
+            if (on)
+            {
+                BuzzMotor(333, 111, 3);
+                await LightStringMaster.StartFlashAsync(111, 333, 3);
+            }
+            else
+            {
+                BuzzMotor(333, 0, 1);
+                await LightStringMaster.StartSequenceAsync(111, 333, true);
+            }
         }
 
 
-        public static async void CommandTrigger2()
+        public static async void BuzzMotor(int intervalBetween, int duration, int times)
         {
-            for (int i = 0; i < 3; i++)
+            for(int i = 0; i < times; i++)
             {
                 if (i > 0)
-                    await Task.Delay(333);
-
-                DigitalWrite(PinCommandTriggered, WiringPiPinValue.High);
-                
-                await Task.Delay(333);
-                
-                DigitalWrite(PinCommandTriggered, WiringPiPinValue.Low);
+                    await Task.Delay(intervalBetween);
+                DigitalWrite(PinHapticMotor, WiringPiPinValue.High);
+                await Task.Delay(duration);
+                DigitalWrite(PinHapticMotor, WiringPiPinValue.Low);
             }
+        }
+
+        public static void CommandTrigger2()
+        {
+
+            BuzzMotor(333, 111, 2);
         }
 
         public static async void LightLeftRising()
@@ -152,7 +199,7 @@ namespace BrainHatSharp
         public static async void LightLeftFalling()
         {
             DigitalWrite(PinLeftFalling, WiringPiPinValue.High);
-            await Task.Delay(333);
+            await Task.Delay(222);
             DigitalWrite(PinLeftFalling, WiringPiPinValue.Low);
         }
 
@@ -175,7 +222,7 @@ namespace BrainHatSharp
         public static async void LightRightFalling()
         {
             DigitalWrite(PinRightFalling, WiringPiPinValue.High);
-            await Task.Delay(333);
+            await Task.Delay(222);
             DigitalWrite(PinRightFalling, WiringPiPinValue.Low);
         }
 
@@ -197,10 +244,13 @@ namespace BrainHatSharp
 
         }
 
+        public static void BrainBoardPower(bool on)
+        {
+            DigitalWrite(PinPowerSwitch, on ? WiringPiPinValue.High : WiringPiPinValue.Low);
+        }
 
-        static List<int> PinsInUse;
-        public static LightString LightStringMaster;
-        static LightString LightStringLeft;
-        static LightString LightStringRight;
+
+
+
     }
 }

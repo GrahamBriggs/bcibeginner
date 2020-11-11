@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleBoardRead", "SimpleBo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "brainflow", "..\brainflow\csharp-package\brainflow\brainflow\brainflow.csproj", "{19D4357F-B416-40D3-99CD-2FCAF56529F6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlatformHelper", "PlatformHelper\PlatformHelper.csproj", "{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -117,6 +119,18 @@ Global
 		{19D4357F-B416-40D3-99CD-2FCAF56529F6}.Release|x64.Build.0 = Release|x64
 		{19D4357F-B416-40D3-99CD-2FCAF56529F6}.Release|x86.ActiveCfg = Release|x86
 		{19D4357F-B416-40D3-99CD-2FCAF56529F6}.Release|x86.Build.0 = Release|x86
+		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Debug|x64.Build.0 = Debug|Any CPU
+		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Debug|x86.Build.0 = Debug|Any CPU
+		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Release|x64.ActiveCfg = Release|Any CPU
+		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Release|x64.Build.0 = Release|Any CPU
+		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Release|x86.ActiveCfg = Release|Any CPU
+		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

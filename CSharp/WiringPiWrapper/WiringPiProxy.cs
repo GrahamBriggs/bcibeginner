@@ -1,4 +1,5 @@
 ﻿
+using static PlatformHelper.PlatformHelper;
 
 namespace WiringPiWrapper
 {
@@ -10,27 +11,36 @@ namespace WiringPiWrapper
     /// </summary>
     public static class WiringPiProxy
     {
-
-#if MONO
         public static int WiringPiSetup()
         {
-            return Setup.wiringPiSetup();
-
+            if (Windows)
+                return Setup.wiringPiSetup();
+            else
+                return 1;
         }
 
         public static int WiringPiSetupPhys()
         {
-            return Setup.wiringPiSetupPhys();
+            if (Windows)
+                return Setup.wiringPiSetupPhys();
+            else
+                return 1;
         }
 
         public static int WiringPiSetupGpio()
         {
-            return Setup.wiringPiSetupGpio();
+            if (Windows)
+                return Setup.wiringPiSetupGpio();
+            else
+                return 1;
         }
 
         public static int WiringPiSetupSys()
         {
-            return Setup.wiringPiSetupSys();
+            if (Windows)
+                return Setup.wiringPiSetupSys();
+            else
+                return 1;
         }
 
 		public static void PinMode(int pin, WiringPiPinMode mode)
@@ -40,7 +50,8 @@ namespace WiringPiWrapper
 
 		public static void PinModeAlt(int pin, WiringPiPinMode mode)
         {
-            GPIO.pinModeAlt(pin, mode);
+            if (Windows)
+                GPIO.pinModeAlt(pin, mode);
         }
 
 		public static void DigitalWrite(int pin, WiringPiPinValue value)
@@ -50,37 +61,50 @@ namespace WiringPiWrapper
 
         public static void DigitalWriteByte(int value)
         {
-            GPIO.digitalWriteByte(value);
+            if (Windows)
+                GPIO.digitalWriteByte(value);
         }
 
         public static int DigitalRead(int pin)
         {
-            return GPIO.digitalRead(pin);
+            if (Windows)
+                return GPIO.digitalRead(pin);
+            else
+                return 1;
         }
 
         public static int AnalogRead(int pin)
         {
-            return GPIO.analogRead(pin);
+            if (Windows)
+                return GPIO.analogRead(pin);
+            else
+                return 1;
         }
 
         public static int AnalogWrite(int pin, int value)
         {
-            return GPIO.analogWrite(pin, value);
+            if (Windows)
+                return GPIO.analogWrite(pin, value);
+            else
+                return 1;
         }
 
 		public static void PullUpDnControl(int pin, WiringPiPullUpDownValue pud)
         {
-            GPIO.pullUpDnControl(pin, pud);
+            if (Windows)
+                GPIO.pullUpDnControl(pin, pud);
         }
 
         public static void PwmWrite(int pin, int value)
         {
-            GPIO.pwmWrite(pin, value);
+            if (Windows)
+                GPIO.pwmWrite(pin, value);
         }
 
 		public static void PwmSetMode(WiringPiPinMode mode)
         {
-            GPIO.pwmSetMode(mode);
+            if (Windows)
+                GPIO.pwmSetMode(mode);
         }
 
         public static void PwmSetRange(uint range)
@@ -90,136 +114,38 @@ namespace WiringPiWrapper
 
         public static void PwmSetClock(int divisor)
         {
-            GPIO.pwmSetClock(divisor);
+            if (Windows)
+                GPIO.pwmSetClock(divisor);
         }
 
         public static void GpioClockSet(int pin, int freq)
         {
-            GPIO.gpioClockSet(pin, freq);
+            if (Windows)
+                GPIO.gpioClockSet(pin, freq);
         }
 
         //  Software PWM
         //
         public static int SoftPwmCreate(int pin, int value, int range)
         {
-            return GPIO.softPwmCreate(pin, value, range);
+            if (Windows)
+                return GPIO.softPwmCreate(pin, value, range);
+            else
+                return 1;
         }
 
         public static void SoftPwmWrite(int pin, int value)
         {
-            GPIO.softPwmWrite(pin, value);
+            if (Windows)
+                GPIO.softPwmWrite(pin, value);
         }
 
         public static void SoftPwmStop(int pin)
         {
-            GPIO.softPwmStop(pin);
-        }
-#else
-
-        public static int WiringPiSetup()
-        {
-            return 0;
-
+            if (Windows)
+                GPIO.softPwmStop(pin);
         }
 
-        public static int WiringPiSetupPhys()
-        {
-            return 0;
-        }
-
-        public static int WiringPiSetupGpio()
-        {
-            return 0;
-        }
-
-        public static int WiringPiSetupSys()
-        {
-            return 0;
-        }
-
-        public static void PinMode(int pin, WiringPiPinMode mode)
-        {
-            
-        }
-
-        public static void PinModeAlt(int pin, WiringPiPinMode mode)
-        {
-           
-        }
-
-        public static void DigitalWrite(int pin, WiringPiPinValue value)
-        {
-           
-        }
-
-        public static void DigitalWriteByte(int value)
-        {
-           
-        }
-
-        public static int DigitalRead(int pin)
-        {
-            return 0;
-        }
-
-        public static int AnalogRead(int pin)
-        {
-            return 0;
-        }
-
-        public static int AnalogWrite(int pin, int value)
-        {
-            return 0;
-        }
-
-        public static void PullUpDnControl(int pin, WiringPiPullUpDownValue pud)
-        {
-            
-        }
-
-        public static void PwmWrite(int pin, int value)
-        {
-           
-        }
-
-        public static void PwmSetMode(WiringPiPinMode mode)
-        {
-           
-        }
-
-        public static void PwmSetRange(uint range)
-        {
-           
-        }
-
-        public static void PwmSetClock(int divisor)
-        {
-         
-        }
-
-        public static void GpioClockSet(int pin, int freq)
-        {
-           
-        }
-
-        //  Software PWM
-        //
-        public static int SoftPwmCreate(int pin, int value, int range)
-        {
-            return 0;
-        }
-
-        public static void SoftPwmWrite(int pin, int value)
-        {
-
-        }
-
-        public static void SoftPwmStop(int pin)
-        {
-
-        }
-
-#endif
 
 
     }
