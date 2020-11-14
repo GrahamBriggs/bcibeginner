@@ -284,7 +284,7 @@ namespace BrainHatClient
             {
                 var args = HttpUtility.ParseQueryString(argString);
 
-                var hostName = args.Get("hostname");
+                var hostName = args.Get("hostName");
                 var eth0 = args.Get("eth0");
                 var wlan0 = args.Get("wlan0");
                 var wlanMode = args.Get("wlanmode");
@@ -358,7 +358,7 @@ namespace BrainHatClient
             try
             {
                 var args = HttpUtility.ParseQueryString(argString);
-                var sender = args.Get("sender");
+                var sender = args.Get("hostName");
                 if (sender == ConnectedServer.HostName)
                 {
                     var data = JsonConvert.DeserializeObject<OpenBciCyton8Reading>(args.Get("data"));

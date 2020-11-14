@@ -52,6 +52,17 @@ namespace PlatformHelper
             }
         }
 
+        public static bool Linux
+        {
+            get
+            {
+                if (_Platform == Platform.Unknown)
+                    GetPlatform();
+
+                return _Platform == Platform.Linux;
+            }
+        }
+
         private static Platform _Platform = Platform.Unknown;
     }
 }

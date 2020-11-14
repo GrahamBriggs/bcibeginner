@@ -288,12 +288,10 @@ namespace BrainHatSharp
             {
                 case BsCommand.On:
                     GpioPinManager.CommandMode(true);
-                    await GpioPinManager.LightStringMaster.StartSequenceAsync(333, 111, false);
                     break;
 
                 case BsCommand.Off:
                 case BsCommand.None:
-                    await GpioPinManager.LightStringMaster.StartSequenceAsync(333, 111, true);
                     GpioPinManager.CommandMode(false);
                     break;
 
@@ -354,7 +352,7 @@ namespace BrainHatSharp
                     DataProcessor.AddDataToProcessor(nextData);
 
                     if ( BroadcastData != null )
-                        BroadcastData.QueueStringToBroadcast($"rawData?sender={NetworkAddress.GetHostName()}&data={JsonConvert.SerializeObject(nextData)}\n");
+                        BroadcastData.QueueStringToBroadcast($"rawData?hostName={NetworkAddress.GetHostName()}&data={JsonConvert.SerializeObject(nextData)}\n");
                 }
                 catch (Exception ex)
                 {
@@ -370,13 +368,15 @@ namespace BrainHatSharp
         private static void OnStatusUpdate(object sender, StatusEventArgs e)
         {
             try
-            {                
+            {
                 if (BroadcastData != null)
+                {
                     BroadcastData.QueueStringToBroadcast($"networkstatus?hostname={e.HostName}&eth0={e.Eth0Address}&wlan0={e.WlanAddress}&wlanmode=Managed&time={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}\n");
+                }
             }
             catch (Exception ex)
             {
-                Logger.AddLog(new LogEventArgs(main, "OnBrainflowBoardReadData", ex, LogLevel.ERROR));
+                Logger.AddLog(new LogEventArgs(main, "OnStatusUpdate", ex, LogLevel.ERROR));
             }
         }
 

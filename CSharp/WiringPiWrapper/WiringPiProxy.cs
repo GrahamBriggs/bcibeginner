@@ -13,7 +13,7 @@ namespace WiringPiWrapper
     {
         public static int WiringPiSetup()
         {
-            if (Windows)
+            if (Linux)
                 return Setup.wiringPiSetup();
             else
                 return 1;
@@ -21,7 +21,7 @@ namespace WiringPiWrapper
 
         public static int WiringPiSetupPhys()
         {
-            if (Windows)
+            if (Linux)
                 return Setup.wiringPiSetupPhys();
             else
                 return 1;
@@ -29,7 +29,7 @@ namespace WiringPiWrapper
 
         public static int WiringPiSetupGpio()
         {
-            if (Windows)
+            if (Linux)
                 return Setup.wiringPiSetupGpio();
             else
                 return 1;
@@ -37,7 +37,7 @@ namespace WiringPiWrapper
 
         public static int WiringPiSetupSys()
         {
-            if (Windows)
+            if (Linux)
                 return Setup.wiringPiSetupSys();
             else
                 return 1;
@@ -45,29 +45,31 @@ namespace WiringPiWrapper
 
 		public static void PinMode(int pin, WiringPiPinMode mode)
         {
-            GPIO.pinMode(pin, mode);
+            if (Linux)
+                GPIO.pinMode(pin, mode);
         }
 
 		public static void PinModeAlt(int pin, WiringPiPinMode mode)
         {
-            if (Windows)
+            if (Linux)
                 GPIO.pinModeAlt(pin, mode);
         }
 
 		public static void DigitalWrite(int pin, WiringPiPinValue value)
         {
-            GPIO.digitalWrite(pin, value);
+            if (Linux)
+                GPIO.digitalWrite(pin, value);
         }
 
         public static void DigitalWriteByte(int value)
         {
-            if (Windows)
+            if (Linux)
                 GPIO.digitalWriteByte(value);
         }
 
         public static int DigitalRead(int pin)
         {
-            if (Windows)
+            if (Linux)
                 return GPIO.digitalRead(pin);
             else
                 return 1;
@@ -75,7 +77,7 @@ namespace WiringPiWrapper
 
         public static int AnalogRead(int pin)
         {
-            if (Windows)
+            if (Linux)
                 return GPIO.analogRead(pin);
             else
                 return 1;
@@ -83,7 +85,7 @@ namespace WiringPiWrapper
 
         public static int AnalogWrite(int pin, int value)
         {
-            if (Windows)
+            if (Linux)
                 return GPIO.analogWrite(pin, value);
             else
                 return 1;
@@ -91,36 +93,37 @@ namespace WiringPiWrapper
 
 		public static void PullUpDnControl(int pin, WiringPiPullUpDownValue pud)
         {
-            if (Windows)
+            if (Linux)
                 GPIO.pullUpDnControl(pin, pud);
         }
 
         public static void PwmWrite(int pin, int value)
         {
-            if (Windows)
+            if (Linux)
                 GPIO.pwmWrite(pin, value);
         }
 
 		public static void PwmSetMode(WiringPiPinMode mode)
         {
-            if (Windows)
+            if (Linux)
                 GPIO.pwmSetMode(mode);
         }
 
         public static void PwmSetRange(uint range)
         {
-            GPIO.pwmSetRange(range);
+            if (Linux)
+                GPIO.pwmSetRange(range);
         }
 
         public static void PwmSetClock(int divisor)
         {
-            if (Windows)
+            if (Linux)
                 GPIO.pwmSetClock(divisor);
         }
 
         public static void GpioClockSet(int pin, int freq)
         {
-            if (Windows)
+            if (Linux)
                 GPIO.gpioClockSet(pin, freq);
         }
 
@@ -128,7 +131,7 @@ namespace WiringPiWrapper
         //
         public static int SoftPwmCreate(int pin, int value, int range)
         {
-            if (Windows)
+            if (Linux)
                 return GPIO.softPwmCreate(pin, value, range);
             else
                 return 1;
@@ -136,13 +139,13 @@ namespace WiringPiWrapper
 
         public static void SoftPwmWrite(int pin, int value)
         {
-            if (Windows)
+            if (Linux)
                 GPIO.softPwmWrite(pin, value);
         }
 
         public static void SoftPwmStop(int pin)
         {
-            if (Windows)
+            if (Linux)
                 GPIO.softPwmStop(pin);
         }
 

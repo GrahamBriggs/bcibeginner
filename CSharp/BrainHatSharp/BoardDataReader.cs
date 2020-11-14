@@ -198,7 +198,7 @@ namespace BrainHatSharp
 
                     ReadCounter += data.Count;
                     var since = (DateTimeOffset.UtcNow - LastReportTime);
-                    if (since.TotalMilliseconds > 1000)
+                    if (since.TotalMilliseconds > 5000)
                     {
                         Log?.Invoke(this, new LogEventArgs(this, "ReadDataFromBoard", $"Read {ReadCounter - ReadCounterLastReport} in {since.TotalSeconds.ToString("F3")} s. Read time {timeReadData.ToString("F4")} Parse Time {timeParseData.ToString("F4")}.", LogLevel.TRACE));
                         LastReportTime = DateTimeOffset.UtcNow;

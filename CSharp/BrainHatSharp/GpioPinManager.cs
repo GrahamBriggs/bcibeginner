@@ -104,6 +104,7 @@ namespace BrainHatSharp
             PinsInUse.Add(PinLightStringB5);
 
             PinsInUse.Add(PinHapticMotor);
+            PinsInUse.Add(PinPowerSwitch);
 
             foreach (var nextPin in PinsInUse)
                 PinMode(nextPin, WiringPiPinMode.Output);
