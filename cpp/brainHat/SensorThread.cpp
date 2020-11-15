@@ -14,7 +14,7 @@
 
 #define USLEEP_MILI (1000)
 #define USLEEP_SEC (1000000)
-#define SENSOR_SLEEP (50 * USLEEP_MILI)
+#define SENSOR_SLEEP (20 * USLEEP_MILI)
 
 using namespace std;
 using namespace chrono;

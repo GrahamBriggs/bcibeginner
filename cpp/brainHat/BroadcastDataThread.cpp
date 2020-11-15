@@ -162,7 +162,6 @@ void BroadcastDataThread::BroadcastData()
 	{
 		bciObservations.push_back((*nextItem)->AsJson());
 		WriteMulticastString(format("rawData?hostname=%s&data=%s\n", hostName.c_str(), (*nextItem)->AsJson().dump().c_str()));
-		
 		delete(*nextItem);
 	}
 }

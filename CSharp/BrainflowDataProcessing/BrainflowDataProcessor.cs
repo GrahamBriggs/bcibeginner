@@ -439,6 +439,8 @@ namespace BrainflowDataProcessing
             lock (Data)
                 Data.Insert(0, reading);
 
+            InspectSampleIndex(reading);
+
             NewReading?.Invoke(this, new OpenBciCyton8ReadingEventArgs(reading));
         }
 
