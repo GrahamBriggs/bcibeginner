@@ -48,7 +48,11 @@ int main(int argc, char *argv[])
 		
 		//  default demo file
 		if(Board_Id < 0 && DemoFileName == "")
-			DemoFileName = "../../../CSharp/BrainHatSharp/DataLogs/demoFile.txt";
+		{
+			cout << "Invalid startup parameters. Exiting program." << endl;
+			getchar();
+			return -1;
+		}	
 	}
 	else
 	{
@@ -160,7 +164,7 @@ bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int
 				return false;
 			}
 		}
-		if (std::string(argv[i]) == std::string("--file-name"))
+		if (std::string(argv[i]) == std::string("--demo-file"))
 		{
 			if (i + 1 < argc)
 			{

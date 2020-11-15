@@ -135,7 +135,7 @@
     <LaunchGDBSettings xsi:type="GDBLaunchParametersNewInstance">
       <DebuggedProgram>$(TargetPath)</DebuggedProgram>
       <GDBServerPort>2000</GDBServerPort>
-      <ProgramArguments />
+      <ProgramArguments>--demo-file /home/pi/Source/testbci/bcibeginner/CSharp/BrainHatSharp/DataLogs/demoFile.txt</ProgramArguments>
     </LaunchGDBSettings>
     <GenerateCtrlBreakInsteadOfCtrlC>false</GenerateCtrlBreakInsteadOfCtrlC>
     <X11WindowMode>Local</X11WindowMode>

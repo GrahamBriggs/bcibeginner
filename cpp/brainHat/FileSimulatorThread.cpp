@@ -73,7 +73,7 @@ void FileSimulatorThread::RunFunction()
 	double previousTimeStamp = fileStartTime;
 	
 	//  we will keep looping until we run out of double
-	double loopCounter = 1.0;
+	double loopCounter = 0.0;
 	
 	while (ThreadRunning)
 	{
@@ -86,15 +86,17 @@ void FileSimulatorThread::RunFunction()
 			OpenBciData* newData = new OpenBciData(*it);
 			
 			//  set the demo time = start time of simulator + delta time in test + number of times looped * duration
-			newData->TimeStamp = realStartTime + (((*it)->TimeStamp - fileStartTime)*(loopCounter*fileDuration));
+			newData->TimeStamp = realStartTime + (loopCounter*fileDuration) + ((*it)->TimeStamp - fileStartTime);
 			
-			Logging.AddLog("FileSimulatorThread", "RunFunction", format("Timestamp %3lf.", newData->TimeStamp), LogLevelInfo);
+			
 			//  broadcast the data
 			BroadcastData.AddData(newData);
 			
 			//  calculate the delay to wait for next epoch
 			usleep(((*it)->TimeStamp - previousTimeStamp) * 1000000.0);
 			previousTimeStamp = (*it)->TimeStamp;
+			
+			//  TODO - occasional trace of running stats
 		}
 		
 		loopCounter += 1.0;

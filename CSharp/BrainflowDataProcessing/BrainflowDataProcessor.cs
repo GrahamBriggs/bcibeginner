@@ -325,7 +325,7 @@ namespace BrainflowDataProcessing
         {
             ProcessorCurrentStateReportEventArgs report = new ProcessorCurrentStateReportEventArgs();
 
-            if (Data.Count > 0 && DateTimeOffset.UtcNow.ToUnixTimeInDoubleSeconds() - Data.First().TimeStamp < 1.0)
+            if (Data.Count > 0 && DateTimeOffset.UtcNow.ToUnixTimeInDoubleSeconds() - Data.First().TimeStamp < 5)
             {
 
                 report.CurrentReading = Data.First();
