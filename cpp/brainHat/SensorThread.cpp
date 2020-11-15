@@ -236,7 +236,7 @@ void SensorThread::SendDataToBroadcast(double **data_buf, int num_channels, int 
 	for (int i = 0; i < num_points; i++)
 	{
 		OpenBciData* data = new OpenBciData(data_buf, i);
-		data->TimeStamp = oldestReadingTime + (i+1*period);
+		data->TimeStamp = oldestReadingTime + ((i+1)*period);
 		BroadcastData.AddData(data);
 		
 		InspectDataStream(data);
@@ -286,7 +286,7 @@ void SensorThread::InspectDataStream(OpenBciData* data)
 	InspectSampleIndex(data);
 	
 	//  update the display once a second
-	if(duration_cast<milliseconds>(steady_clock::now() - LastLoggedTime).count() > 1000)
+	if(duration_cast<milliseconds>(steady_clock::now() - LastLoggedTime).count() > 5000)
 	{
 		double averageTimeBetweenSamples = 0.0;	
 		double sampleTimeHigh = 0.0;
@@ -310,7 +310,7 @@ void SensorThread::InspectDataStream(OpenBciData* data)
 		}
 		
 		averageTimeBetweenSamples /= DataInspecting.size();
-		Logging.AddLog("SensorThread", "InspectDataStream", format("Inspecting %d to records. Average time %.6lf s. Max time %.6lf s. Min time %.6lf s.", DataInspecting.size(), averageTimeBetweenSamples, sampleTimeHigh, sampleTimeLow), LogLevelDebug);
+		Logging.AddLog("SensorThread", "InspectDataStream", format("Inspecting %d readings. %d readings per second.  Average time %.6lf s. Max time %.6lf s. Min time %.6lf s.", DataInspecting.size(), DataInspecting.size()/5,  averageTimeBetweenSamples, sampleTimeHigh, sampleTimeLow), LogLevelTrace);
 
 		for (auto it = DataInspecting.begin(); it != DataInspecting.end(); ++it)
 		{

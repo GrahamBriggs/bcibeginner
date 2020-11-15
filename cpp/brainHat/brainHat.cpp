@@ -48,12 +48,13 @@ int main(int argc, char *argv[])
 		
 		//  default demo file
 		if(Board_Id < 0 && DemoFileName == "")
-			DemoFileName = "/home/pi/Source/BCI/DataLogs/demoFile.txt";
+			DemoFileName = "../../../CSharp/BrainHatSharp/DataLogs/demoFile.txt";
 	}
 	else
 	{
-		// no args default is to run the built in demo file
-		DemoFileName = "/home/pi/Source/BCI/DataLogs/demoFile.txt";
+		//  default to Cyton board on the default port
+		Board_Id = 0;
+		BrainflowBoardParams.serial_port = "/dev/ttyUSB0";
 	}
 	
 	//  start program threads

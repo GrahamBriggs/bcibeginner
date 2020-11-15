@@ -23,7 +23,7 @@ namespace BrainHatClient
         public Form1()
         {
 
-            HatConnection.MonoVersion = true;
+            HatConnection.MonoVersion = false;
 
             //  create the program logging object
             Logger = new Logging();

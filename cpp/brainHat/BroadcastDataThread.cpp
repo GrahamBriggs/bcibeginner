@@ -1,4 +1,5 @@
 #include <list>
+#include <unistd.h>
 
 #include "brainHat.h"
 #include "BroadcastDataThread.h"
@@ -66,6 +67,7 @@ int BroadcastTimeoutData = (100);
 string eth0Address;
 string wlanAddress;
 string wlanStatus;
+string hostName;
 
 
 void BroadcastDataThread::SetIpConfig()
@@ -82,6 +84,11 @@ void BroadcastDataThread::SetIpConfig()
 				
 		eth0Address = ifconfig.Eth0Info().Inet4Address;
 		wlanAddress = ifconfig.WlanInfo().Inet4Address;
+		
+		char host[1024];
+		gethostname(host, 1024);
+		hostName = host;
+		
 	}
 	else
 	{
@@ -120,7 +127,7 @@ void BroadcastDataThread::RunFunction()
 //
 void BroadcastDataThread::BroadcastStatus()
 {
-	string networkString = format("networkstatus?eth0=%s&wlan0=%s&%s&time=%lld\n", eth0Address.c_str(), wlanAddress.c_str(), wlanStatus.c_str(), GetUnixTimeMilliseconds());
+	string networkString = format("networkstatus?hostname=%s&eth0=%s&wlan0=%s&%s&time=%lld\n", hostName.c_str(), eth0Address.c_str(), wlanAddress.c_str(), wlanStatus.c_str(), GetUnixTimeMilliseconds());
 				
 	WriteMulticastString(networkString);	
 }
@@ -154,7 +161,7 @@ void BroadcastDataThread::BroadcastData()
 	for (nextItem = data.begin(); nextItem != data.end(); ++nextItem)
 	{
 		bciObservations.push_back((*nextItem)->AsJson());
-		WriteMulticastString(format("rawData?data=%s\n", (*nextItem)->AsJson().dump().c_str()));
+		WriteMulticastString(format("rawData?hostname=%s&data=%s\n", hostName.c_str(), (*nextItem)->AsJson().dump().c_str()));
 		
 		delete(*nextItem);
 	}

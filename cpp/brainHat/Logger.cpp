@@ -81,7 +81,7 @@ Logger::Logger()
 	DisplayOutputEnabled = true;
 	
 	LogLastLevelDisplayed = LogLevelAll;
-	LogDisplayLevel = LogLevelInfo;
+	LogDisplayLevel = LogLevelTrace;
 	RemoteLoggingEnabled = true;
 	
 	Notified = false;

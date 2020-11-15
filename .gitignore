@@ -11,3 +11,4 @@ cpp/BCITests/Debug
 cpp/brainHat/Debug
 cpp/CodeDB
 cpp/homeMadeBiosensor/Debug
+*.user
