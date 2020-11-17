@@ -184,7 +184,7 @@ namespace BrainHatSharp
 					{
 						var test = new RemoteLogEventArgs(nextLog);
 						var test2 = test.Sender.ToString();
-						var sendBytes = Encoding.UTF8.GetBytes($"log?sender={NetworkAddress.GetHostName()}&log={JsonConvert.SerializeObject(new RemoteLogEventArgs(nextLog))}\n");
+						var sendBytes = Encoding.UTF8.GetBytes($"log?hostName={NetworkAddress.GetHostName()}&log={JsonConvert.SerializeObject(new RemoteLogEventArgs(nextLog))}\n");
 						await udpClient.SendAsync(sendBytes, sendBytes.Length, NetworkAddress.MulticastGroupAddress, NetworkAddress.MulticastLogPort);
 					}
                 }

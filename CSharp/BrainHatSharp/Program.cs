@@ -352,7 +352,7 @@ namespace BrainHatSharp
                     DataProcessor.AddDataToProcessor(nextData);
 
                     if ( BroadcastData != null )
-                        BroadcastData.QueueStringToBroadcast($"rawData?hostName={NetworkAddress.GetHostName()}&data={JsonConvert.SerializeObject(nextData)}\n");
+                        BroadcastData.QueueStringToBroadcast($"rawData?hostname={NetworkAddress.GetHostName()}&data={JsonConvert.SerializeObject(nextData)}\n");
                 }
                 catch (Exception ex)
                 {

@@ -89,6 +89,7 @@ namespace BrainHatSharp
             if (leftBlinks.Count() > 1 || rightBlinks.Count() > 1)
             {
                 await Task.Delay(1333);
+
                 timeNow = DateTimeOffset.UtcNow.ToUnixTimeInDoubleSeconds();
                 leftBlinks = BlinksDetectedLeft.Where(x => timeNow - x < 3.0);
                 rightBlinks = BlinksDetectedRight.Where(x => timeNow - x < 3.0);
