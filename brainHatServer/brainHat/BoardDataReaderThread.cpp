@@ -43,11 +43,14 @@ void BoardDataReader::Init()
 	ConnectionChangedCallback  = NULL;
 	ConnectionChangedDelegate = NULL;
 	InvalidSampleCounter = 0;
-	BoardDataSource::Init();
 	
-
+	BoardDataSource::Init();
 }
 
+string BoardDataReader::ReportSource()
+{
+	return format("Reading data from board id %d at %d Hz.", BoardId, SampleRate);
+}
 
 //  Destructor
 //

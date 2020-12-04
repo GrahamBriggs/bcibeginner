@@ -32,6 +32,12 @@ FileSimulatorThread::~FileSimulatorThread()
 }
 
 
+
+string FileSimulatorThread::ReportSource()
+{
+	return format("Reading data from file %s id %d at %d Hz.", FileName.c_str(), BoardId, SampleRate);
+}
+
 //  Thread Start
 //
 int FileSimulatorThread::Start(string fileName)
@@ -85,6 +91,7 @@ void FileSimulatorThread::RunFunction()
 			
 			//  set the demo time = start time of simulator + delta time in test + number of times looped * duration
 			nextSample->TimeStamp = realStartTime + ((*it)->TimeStamp - fileStartTime);
+			LastTimeStampSync = nextSample->TimeStamp;
 			
 			//  broadcast the data
 			BroadcastData.AddData(nextSample);

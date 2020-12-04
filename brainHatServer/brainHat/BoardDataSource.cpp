@@ -29,10 +29,18 @@ BoardDataSource::BoardDataSource()
 void BoardDataSource::Init()
 {
 	
-	BoardId = 0;
-	Board = NULL;
-
-	RecordsLogged = 0;
+	BoardId = -99;
+	SampleRate = -1;
+	DataRows = 0;
+	TimeStampIndex = 0;
+	
+	
+	
+	LastSampleIndex = -1;
+	LastTimeStampSync = 0;
+	CountMissingIndex = 0;
+	
+	InspectDataStreamLogTimer.Start();
 	
 }
 
@@ -86,6 +94,8 @@ void BoardDataSource::InspectDataStream(BFSample* data)
 		InspectDataStreamLogTimer.Reset();
 		
 		auto timeNow = chrono::duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count() / 1000.0;	
+		
+		Logging.AddLog("BoardDataSource", "InspectDataStream", ReportSource(), LogLevelTrace);
 		Logging.AddLog("BoardDataSource", "InspectDataStream", format("System time - samle index time: %.6lf", (timeNow - LastTimeStampSync)), LogLevelTrace);
 
 		if (CountMissingIndex > 5)

@@ -15,6 +15,7 @@ using Newtonsoft.Json;
 using BrainHatNetwork;
 using LSL;
 using static LSL.liblsl;
+using System.Xml.Linq;
 
 namespace BrainHatServersMonitor
 {
@@ -143,6 +144,10 @@ namespace BrainHatServersMonitor
 
             StreamInfo = streamInfo;
 
+            var doc = XDocument.Parse(streamInfo.as_xml());
+            int.TryParse(doc.Element("info")?.Element("channel_count").Value, out SampleSize);
+
+
             CountRecordsTimer = new System.Diagnostics.Stopwatch();
             RawDataProcessedLast = new System.Diagnostics.Stopwatch();
 
@@ -150,6 +155,7 @@ namespace BrainHatServersMonitor
         }
 
         StreamInfo StreamInfo;
+        int SampleSize;
 
         //  Cancel Token for background tasks
         CancellationTokenSource MonitorCancelTokenSource { get; set; }
@@ -166,7 +172,7 @@ namespace BrainHatServersMonitor
         protected async Task RunReadDataPortAsync(CancellationToken cancelToken)
         {
             var inlet = new StreamInlet(StreamInfo);
-            double[] maxSample = new double[31];
+            double[] rawSample = new double[SampleSize];
 
             await Task.Delay(1000);
 
@@ -177,8 +183,8 @@ namespace BrainHatServersMonitor
                 {
                     try
                     {
-                        inlet.pull_sample(maxSample);
-                        var newSample = ParseSample(maxSample);
+                        inlet.pull_sample(rawSample);
+                        var newSample = ParseSample(rawSample);
                         RawDataReceived?.Invoke(this, new BFSampleEventArgs(newSample));
                         LogRawDataProcessingPerformance(newSample);
 

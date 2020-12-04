@@ -30,6 +30,8 @@ protected:
 	
 	virtual void Init();
 	
+	virtual std::string ReportSource() = 0;
+	
 	int BoardId;
 	int SampleRate;
 	int DataRows;

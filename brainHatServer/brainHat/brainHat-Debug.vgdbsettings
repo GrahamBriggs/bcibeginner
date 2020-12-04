@@ -7,7 +7,7 @@
       <PathStyle>RemoteUnix</PathStyle>
     </CustomSourceDirectories>
     <BuildHost>
-      <HostName>brainHat1</HostName>
+      <HostName>brainHat</HostName>
       <Transport>SSH</Transport>
       <UserName>pi</UserName>
     </BuildHost>

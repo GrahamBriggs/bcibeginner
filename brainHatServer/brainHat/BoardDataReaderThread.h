@@ -39,6 +39,8 @@ protected:
 	
 	virtual void Init();
 	
+	virtual std::string ReportSource();
+	
 	BoardShim* Board;
 	struct BrainFlowInputParams BoardParamaters;
 

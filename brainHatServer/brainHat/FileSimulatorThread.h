@@ -32,6 +32,8 @@ public:
 	
 protected :
 	
+	virtual std::string ReportSource();
+		
 	void ReadHeaderLine(std::string readLine);
 	void AddSample(std::string readLine);
 	BFSample* CopySample(BFSample* sample);
