@@ -1,0 +1,5 @@
+#!/bin/bash  
+
+cp ./inc/*.h /usr/include
+cp ./lib/*.so /usr/lib
+cp ./lib/*.a /usr/lib

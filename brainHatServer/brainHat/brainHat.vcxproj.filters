@@ -1,0 +1,177 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source files">
+      <UniqueIdentifier>{34da6794-b652-4c62-ae40-53a548f33820}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header files">
+      <UniqueIdentifier>{32ddfffe-87d2-425c-8433-4b90e9890272}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource files">
+      <UniqueIdentifier>{f45c611b-eaf8-467c-82ca-33574a0ee3de}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="Make files">
+      <UniqueIdentifier>{3d94ee15-3968-45cb-8027-973fe273ab40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VisualGDB settings">
+      <UniqueIdentifier>{ae8a93ed-4335-42ce-942c-6124c12c0b4d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="brainHat.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <None Include="debug.mak">
+      <Filter>Make files</Filter>
+    </None>
+    <None Include="release.mak">
+      <Filter>Make files</Filter>
+    </None>
+    <None Include="brainHat-Debug.vgdbsettings">
+      <Filter>VisualGDB settings</Filter>
+    </None>
+    <None Include="brainHat-Release.vgdbsettings">
+      <Filter>VisualGDB settings</Filter>
+    </None>
+    <ClCompile Include="TCPServerThread.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="TerminalDisplay.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="Thread.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="UdpMulticastServerThread.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="Logger.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="CMD.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="CMDifconfig.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="CMDiwconfig.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="BroadcastDataThread.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandServerThread.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileSimulatorThread.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="LightsThread.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="BoardDataReaderThread.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="BroadcastStatusThread.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkExtensions.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="TimeExtensions.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="BoardDataSource.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Makefile" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="StringExtensions.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="TCPServerThread.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="TerminalDisplay.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="Thread.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="TimeExtensions.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="UdpMulticastServerThread.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="CMD.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="CMDifconfig.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="CMDiwconfig.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="Parser.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="json.hpp">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="BroadcastDataThread.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkAddresses.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandServerThread.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSimulatorThread.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="brainHat.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="LightsThread.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="BoardDataReaderThread.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="BrainHatServerStatus.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="BroadcastStatusThread.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkExtensions.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="BFCyton8.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="BFSample.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="BFCyton16.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="BoardDataSource.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

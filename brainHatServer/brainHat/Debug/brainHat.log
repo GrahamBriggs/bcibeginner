@@ -1,0 +1,3 @@
+﻿  VisualGDB: C:\Users\grahambriggs\source\bciBeginner\brainHatServer\brainHat => /home/pi/Source/brainHat: 51 files are up-to-date.
+  VisualGDB: Run "make  CONFIG=Debug" in directory "/home/pi/Source/brainHat" on pi@brainHat1 (SSH)
+  make: Nothing to be done for 'all'.

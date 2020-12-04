@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{13041B66-47AC-4959-87FC-E9FDA8CA656E}</ProjectGuid>
+    <ProjectName>brainHat</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="VisualGDBPackageDefinitions">
+    <ToolchainID>com.sysprogs.toolchain.default-gcc</ToolchainID>
+  </PropertyGroup>
+  <ImportGroup Label="VisualGDBFindComponents">
+    <Import Project="$(LOCALAPPDATA)\VisualGDB\FindComponents.props" />
+  </ImportGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <NMakeIncludeSearchPath>$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat1\0000\include\c++\8;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat1\0000\include\arm-linux-gnueabihf\c++\8;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat1\0000\include\c++\8\backward;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat1\0001\include;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat1\0003\include;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat1\0002\include-fixed;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat1\0000\include\arm-linux-gnueabihf;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat1\0000\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeForcedIncludes>$(ProjectDir)\gcc_Debug.h;$(VISUALGDB_DIR)\gcc_compat.h;$(NMakeForcedIncludes)</NMakeForcedIncludes>
+    <NMakeForcedIncludes>$(ProjectDir)\gcc_Debug.h;$(VISUALGDB_DIR)\gcc_compat.h;$(NMakeForcedIncludes)</NMakeForcedIncludes>
+    <NMakeBuildCommandLine>"$(VISUALGDB_DIR)\VisualGDB.exe" /build "$(ProjectPath)" "/solution:$(SolutionPath)"  "/config:$(Configuration)" "/platform:$(Platform)"</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>"$(VISUALGDB_DIR)\VisualGDB.exe" /clean "$(ProjectPath)" "/solution:$(SolutionPath)"  "/config:$(Configuration)" "/platform:$(Platform)"</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>"$(VISUALGDB_DIR)\VisualGDB.exe" /rebuild "$(ProjectPath)" "/solution:$(SolutionPath)"  "/config:$(Configuration)" "/platform:$(Platform)"</NMakeReBuildCommandLine>
+    <NMakeOutput>$(ProjectDir)brainHat-Debug.vgdbsettings</NMakeOutput>
+    <IncludePath />
+    <ReferencePath />
+    <LibraryPath />
+    <NMakePreprocessorDefinitions>__VisualGDB_CFG_Debug;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <NMakeIncludeSearchPath>$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat\0000\include\c++\8;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat\0000\include\arm-linux-gnueabihf\c++\8;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat\0000\include\c++\8\backward;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat\0001\include;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat\0003\include;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat\0002\include-fixed;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat\0000\include\arm-linux-gnueabihf;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat\0000\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeForcedIncludes>$(ProjectDir)\gcc_Release.h;$(VISUALGDB_DIR)\gcc_compat.h;$(NMakeForcedIncludes)</NMakeForcedIncludes>
+    <NMakeBuildCommandLine>"$(VISUALGDB_DIR)\VisualGDB.exe" /build "$(ProjectPath)" "/solution:$(SolutionPath)"  "/config:$(Configuration)" "/platform:$(Platform)"</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>"$(VISUALGDB_DIR)\VisualGDB.exe" /clean "$(ProjectPath)" "/solution:$(SolutionPath)"  "/config:$(Configuration)" "/platform:$(Platform)"</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>"$(VISUALGDB_DIR)\VisualGDB.exe" /rebuild "$(ProjectPath)" "/solution:$(SolutionPath)"  "/config:$(Configuration)" "/platform:$(Platform)"</NMakeReBuildCommandLine>
+    <NMakeOutput>$(ProjectDir)brainHat-Release.vgdbsettings</NMakeOutput>
+    <IncludePath />
+    <ReferencePath />
+    <LibraryPath />
+    <NMakePreprocessorDefinitions>__VisualGDB_CFG_Release;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="BFCyton16.h" />
+    <ClInclude Include="BoardDataSource.h" />
+    <ClInclude Include="BrainHatServerStatus.h" />
+    <ClInclude Include="BroadcastStatusThread.h" />
+    <ClInclude Include="CMD.h" />
+    <ClInclude Include="CMDifconfig.h" />
+    <ClInclude Include="CMDiwconfig.h" />
+    <ClInclude Include="CommandServerThread.h" />
+    <ClInclude Include="FileSimulatorThread.h" />
+    <ClInclude Include="brainHat.h" />
+    <ClInclude Include="json.hpp" />
+    <ClInclude Include="LightsThread.h" />
+    <ClInclude Include="Logger.h" />
+    <ClInclude Include="NetworkAddresses.h" />
+    <ClInclude Include="NetworkExtensions.h" />
+    <ClInclude Include="BFCyton8.h" />
+    <ClInclude Include="BFSample.h" />
+    <ClInclude Include="Parser.h" />
+    <ClInclude Include="BroadcastDataThread.h" />
+    <ClInclude Include="BoardDataReaderThread.h" />
+    <ClInclude Include="StringExtensions.h" />
+    <ClInclude Include="TCPServerThread.h" />
+    <ClInclude Include="TerminalDisplay.h" />
+    <ClInclude Include="Thread.h" />
+    <ClInclude Include="TimeExtensions.h" />
+    <ClInclude Include="UdpMulticastServerThread.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ItemGroup>
+    <ClCompile Include="BoardDataSource.cpp" />
+    <ClCompile Include="BroadcastStatusThread.cpp" />
+    <ClCompile Include="CMD.cpp" />
+    <ClCompile Include="CMDifconfig.cpp" />
+    <ClCompile Include="CMDiwconfig.cpp" />
+    <ClCompile Include="CommandServerThread.cpp" />
+    <ClCompile Include="FileSimulatorThread.cpp" />
+    <ClCompile Include="brainHat.cpp" />
+    <ClCompile Include="LightsThread.cpp" />
+    <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="NetworkExtensions.cpp" />
+    <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="BroadcastDataThread.cpp" />
+    <ClCompile Include="BoardDataReaderThread.cpp" />
+    <ClCompile Include="TCPServerThread.cpp" />
+    <ClCompile Include="TerminalDisplay.cpp" />
+    <ClCompile Include="Thread.cpp" />
+    <ClCompile Include="TimeExtensions.cpp" />
+    <ClCompile Include="UdpMulticastServerThread.cpp" />
+    <None Include="Makefile" />
+    <None Include="debug.mak" />
+    <None Include="release.mak" />
+    <None Include="brainHat-Debug.vgdbsettings" />
+    <None Include="brainHat-Release.vgdbsettings" />
+  </ItemGroup>
+</Project>

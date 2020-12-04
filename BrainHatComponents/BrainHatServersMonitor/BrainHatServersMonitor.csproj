@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BrainHatNetwork\BrainHatNetwork.csproj" />
+    <ProjectReference Include="..\liblsl\liblsl.csproj" />
+    <ProjectReference Include="..\LoggingInterfaces\LoggingInterfaces.csproj" />
+    <ProjectReference Include="..\BrainflowInterfaces\BrainflowInterfaces.csproj" />
+  </ItemGroup>
+
+</Project>
