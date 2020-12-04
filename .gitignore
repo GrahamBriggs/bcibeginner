@@ -6,3 +6,5 @@ packages
 VisualGDBCache
 CodeDB
 *.user
+!lib/lsl/x64/bin
+!lib/lsl/x86/bin
