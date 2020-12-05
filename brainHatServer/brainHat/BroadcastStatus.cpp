@@ -2,7 +2,7 @@
 #include <unistd.h>
 
 #include "brainHat.h"
-#include "BroadcastStatusThread.h"
+#include "BroadcastStatus.h"
 #include "BrainHatServerStatus.h"
 #include "StringExtensions.h"
 #include "TimeExtensions.h"
@@ -17,7 +17,7 @@ using json = nlohmann::json;
 
 //  Constructor
 //
-BroadcastStatusThread::BroadcastStatusThread(GetBoardParamsCallbackFn getBoardParams)
+BroadcastStatus::BroadcastStatus(GetBoardParamsCallbackFn getBoardParams)
 {
 	SocketFileDescriptor = -1;	
 	GetBoardParams = getBoardParams;
@@ -30,7 +30,7 @@ BroadcastStatusThread::BroadcastStatusThread(GetBoardParamsCallbackFn getBoardPa
 
 //  Destructor
 //
-BroadcastStatusThread::~BroadcastStatusThread()
+BroadcastStatus::~BroadcastStatus()
 {
 }
 
@@ -38,7 +38,7 @@ BroadcastStatusThread::~BroadcastStatusThread()
 
 //  Start the thread
 //  make sure we can open the server socket for multicast before starting thread
-void BroadcastStatusThread::Start()
+void BroadcastStatus::Start()
 {
 	HostName = GetHostName();
 	SetIpConfig();
@@ -50,7 +50,7 @@ void BroadcastStatusThread::Start()
 	
 	if (port < 0)
 	{
-		Logging.AddLog("BroadcastDataThread", "Start", "Unable to open server socket port.", LogLevelFatal);
+		Logging.AddLog("BroadcastData", "Start", "Unable to open server socket port.", LogLevelFatal);
 		return;
 	}
 
@@ -65,7 +65,7 @@ int BroadcastTimeoutStatus = (10 * 1000);
 int CheckIpConfigTimeout = (60 * 1000);
 
 
-void BroadcastStatusThread::SetIpConfig()
+void BroadcastStatus::SetIpConfig()
 {	
 	auto addresses = GetNetworkIp4Addresses();
 	for (auto it = addresses.begin(); it != addresses.end(); ++it)
@@ -82,7 +82,7 @@ void BroadcastStatusThread::SetIpConfig()
 
 //  Run function
 //
-void BroadcastStatusThread::RunFunction()
+void BroadcastStatus::RunFunction()
 {
 	while (ThreadRunning)
 	{
@@ -94,7 +94,7 @@ void BroadcastStatusThread::RunFunction()
 		
 		if (BroadcastStatusTimer.ElapsedMilliseconds() >= BroadcastTimeoutStatus)
 		{
-			BroadcastStatus();
+			BroadcastStatusOverMulticast();
 			BroadcastStatusTimer.Reset();
 		}
 
@@ -105,7 +105,7 @@ void BroadcastStatusThread::RunFunction()
 
 //  Broadcast the hat status
 //
-void BroadcastStatusThread::BroadcastStatus()
+void BroadcastStatus::BroadcastStatusOverMulticast()
 {
 	BrainHatServerStatus status;
 	status.HostName = HostName;

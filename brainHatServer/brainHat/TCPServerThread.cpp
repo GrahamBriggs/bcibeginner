@@ -241,20 +241,20 @@ int TCPServerThread::ReadStringFromSocket(struct sockaddr_in *clientAddress, str
 
 	//  read the sent buffer into the string
 	//  note, we allocate one extra byte in our buffer so we are guaranteed to have a null at the end when we cast to string
-	char buffer[TCPSERVER_READBUFFERSIZE+1];
-	memset(buffer, 0, TCPSERVER_READBUFFERSIZE+1);
+	char buffer[TCPServerThread_READBUFFERSIZE+1];
+	memset(buffer, 0, TCPServerThread_READBUFFERSIZE+1);
 
-	int bytesRead = read(acceptFileDescriptor,buffer,TCPSERVER_READBUFFERSIZE);
+	int bytesRead = read(acceptFileDescriptor,buffer,TCPServerThread_READBUFFERSIZE);
 	readString += string(buffer);		//  note:  this simple implementation will lose any bytes after first null, is designed for strings and not byte data
 
 	//  did we get all the bytes, check for more bytes if we read 1024
-	if ( bytesRead == TCPSERVER_READBUFFERSIZE )
+	if ( bytesRead == TCPServerThread_READBUFFERSIZE )
 	{
 		//  read( ) will return -1 when it reaches End Of File (EOF)
 		while ( bytesRead > 0 )
 		{
-			memset(buffer, 0, TCPSERVER_READBUFFERSIZE);
-			bytesRead = read(acceptFileDescriptor,buffer,TCPSERVER_READBUFFERSIZE);
+			memset(buffer, 0, TCPServerThread_READBUFFERSIZE);
+			bytesRead = read(acceptFileDescriptor,buffer,TCPServerThread_READBUFFERSIZE);
 			readString += string(buffer);
 		}
 	}

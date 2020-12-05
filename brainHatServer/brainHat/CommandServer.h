@@ -6,11 +6,11 @@
 
 //  TCP Server thread waits for query or command from remote client applicaiton
 //
-class CommandServerThread : public TCPServerThread
+class CommandServer : public TCPServerThread
 {
 public:
-	CommandServerThread();
-	virtual ~CommandServerThread();
+	CommandServer();
+	virtual ~CommandServer();
 	
 	virtual void Start();
 	

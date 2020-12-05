@@ -1,8 +1,12 @@
-#include "LightsThread.h"
+#include "GpioPinManager.h"
 #include "wiringPi.h"
 
 using namespace std;
 
+//  Set all pin numbers to zero
+//  by default this will do nothing to the GPIO
+//  this is overridden by host name mapping for certain devices below
+//
 int PinRightRising = 0;
 int PinRightFalling = 0;
 int PinRightBlink = 0;
@@ -34,8 +38,6 @@ void DigitalWrite(int pin, int value)
 		digitalWrite(pin, value);
 }
 
-
-
 void AllPinsOff(vector<int> pins)
 {
 	for (auto it = pins.begin(); it != pins.end(); ++it)
@@ -55,7 +57,7 @@ void AllPinsOn(vector<int> pins)
 }
 
 
-void LightsThread::SetupGpio(string hostName)
+void GpioManager::SetupGpio(string hostName)
 {
 	if (hostName.compare("brainHelmet") == 0)
 	{
@@ -161,7 +163,8 @@ void LightsThread::SetupGpio(string hostName)
 	
 	for (auto it = PinsInUse.begin(); it != PinsInUse.end(); ++it)
 	{
-		pinMode(*it, OUTPUT);
+		if (*it != 0 )
+			pinMode(*it, OUTPUT);
 	}
 	
 	for (auto it = PinsInUse.begin(); it != PinsInUse.end(); ++it)
@@ -174,20 +177,20 @@ void LightsThread::SetupGpio(string hostName)
 	DigitalWrite(PinHapticMotor, LOW);
 }
 
-LightsThread::LightsThread()
+GpioManager::GpioManager()
 {
 	
 }
 
-LightsThread::~LightsThread()
+GpioManager::~GpioManager()
 {
 	
 }
 
 
-void LightsThread::StartThreadForHost(string hostName)
+void GpioManager::StartThreadForHost(string hostName)
 {
-	
+	//  only do something if this is a device with pins hooked up
 	if (hostName.compare("brainHat") == 0 || hostName.compare("brainHelmet") == 0)
 	{
 		SetupGpio(hostName);
@@ -196,33 +199,29 @@ void LightsThread::StartThreadForHost(string hostName)
 	}
 }
 
-void LightsThread::Cancel()
+void GpioManager::Cancel()
 {
 	Thread::Cancel();
 	AllOff();
 }
 
-void LightsThread::AllOn()
+void GpioManager::AllOn()
 {
 	AllPinsOn(PinsInUse);
 }
 
-void LightsThread::AllOff()
+void GpioManager::AllOff()
 {
 	AllPinsOff(PinsInUse);
 }
 
-void LightsThread::PowerToBoard(bool enable)
+void GpioManager::PowerToBoard(bool enable)
 {
-	if (PinPowerSwitch != 0)
-	{
-		digitalWrite(PinPowerSwitch, enable ? HIGH : LOW);
-	}
-		
+	DigitalWrite(PinPowerSwitch, enable ? HIGH : LOW);
 }
 
 
-void LightsThread::RunFunction()
+void GpioManager::RunFunction()
 {
 	while (ThreadRunning)
 	{
@@ -257,7 +256,7 @@ void LightsThread::RunFunction()
 
 
 
-void LightsThread::RunLightsFlash()
+void GpioManager::RunLightsFlash()
 {
 	
 	while (RunningLightsFlash())
@@ -279,7 +278,7 @@ void LightsThread::RunLightsFlash()
 
 
 
-void LightsThread::RunLightsSequence()
+void GpioManager::RunLightsSequence()
 {
 	while (RunningLightsSequence())
 	{
@@ -317,6 +316,5 @@ void LightsThread::RunLightsSequence()
 			DigitalWrite(BlinkLightsLeft[i], LOW);
 			DigitalWrite(BlinkLightsRight[i], LOW);
 		}
-		
 	}
 }

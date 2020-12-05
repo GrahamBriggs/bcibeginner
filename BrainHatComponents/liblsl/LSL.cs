@@ -883,7 +883,7 @@ public class liblsl
             const string libname = "lslAndroid";
 #else
             // Name of the binary to include -- replace this if the native library has a differentname
-            const string libname = "lsl";
+            const string libname = "liblsl.so";
 #endif
             
         [DllImport(libname, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, ExactSpelling = true)]

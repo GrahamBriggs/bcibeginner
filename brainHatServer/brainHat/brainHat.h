@@ -1,11 +1,11 @@
 #pragma once
-#include "BroadcastDataThread.h"
-#include "BoardDataReaderThread.h"
+#include "BroadcastData.h"
+#include "BoardDataReader.h"
 #include "Logger.h"
 
 extern Logger Logging;
 
-extern BroadcastDataThread BroadcastData;
+extern BroadcastData BroadcastData;
 extern BoardDataReader Board;
 
 

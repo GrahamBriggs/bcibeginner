@@ -36,9 +36,6 @@
     <None Include="brainHat-Release.vgdbsettings">
       <Filter>VisualGDB settings</Filter>
     </None>
-    <ClCompile Include="TCPServerThread.cpp">
-      <Filter>Source files</Filter>
-    </ClCompile>
     <ClCompile Include="TerminalDisplay.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
@@ -51,34 +48,7 @@
     <ClCompile Include="Logger.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="CMD.cpp">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="CMDifconfig.cpp">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="CMDiwconfig.cpp">
-      <Filter>Source files</Filter>
-    </ClCompile>
     <ClCompile Include="Parser.cpp">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="BroadcastDataThread.cpp">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="CommandServerThread.cpp">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="FileSimulatorThread.cpp">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="LightsThread.cpp">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="BoardDataReaderThread.cpp">
-      <Filter>Source files</Filter>
-    </ClCompile>
-    <ClCompile Include="BroadcastStatusThread.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
     <ClCompile Include="NetworkExtensions.cpp">
@@ -90,15 +60,33 @@
     <ClCompile Include="BoardDataSource.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
+    <ClCompile Include="BoardDataReader.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="BoardFileSimulator.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="BroadcastData.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="BroadcastStatus.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="TCPServerThread.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandServer.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="GpioPinManager.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="StringExtensions.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
-    <ClInclude Include="TCPServerThread.h">
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="TerminalDisplay.h">
@@ -116,46 +104,19 @@
     <ClInclude Include="Logger.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="CMD.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
-    <ClInclude Include="CMDifconfig.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
-    <ClInclude Include="CMDiwconfig.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
     <ClInclude Include="Parser.h">
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="json.hpp">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="BroadcastDataThread.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
     <ClInclude Include="NetworkAddresses.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
-    <ClInclude Include="CommandServerThread.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
-    <ClInclude Include="FileSimulatorThread.h">
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="brainHat.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="LightsThread.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
-    <ClInclude Include="BoardDataReaderThread.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
     <ClInclude Include="BrainHatServerStatus.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
-    <ClInclude Include="BroadcastStatusThread.h">
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="NetworkExtensions.h">
@@ -171,6 +132,27 @@
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="BoardDataSource.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="BoardDataReader.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="BoardFileSimulator.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="BroadcastData.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="BroadcastStatus.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandServer.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="TCPServerThread.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="GpioPinManager.h">
       <Filter>Header files</Filter>
     </ClInclude>
   </ItemGroup>

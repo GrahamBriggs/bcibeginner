@@ -28,20 +28,16 @@ BoardDataSource::BoardDataSource()
 
 void BoardDataSource::Init()
 {
-	
 	BoardId = -99;
 	SampleRate = -1;
 	DataRows = 0;
-	TimeStampIndex = 0;
-	
-	
+	TimeStampIndex = -1;	
 	
 	LastSampleIndex = -1;
 	LastTimeStampSync = 0;
 	CountMissingIndex = 0;
 	
 	InspectDataStreamLogTimer.Start();
-	
 }
 
 
@@ -53,6 +49,45 @@ BoardDataSource::~BoardDataSource()
 }
 
 
+//  Regiter a C++ connection changed callback
+//
+void BoardDataSource::RegisterConnectionChangedDelegate(ConnectionChangedDelegateFn connectionChangedDel)
+{
+	ConnectionChangedDelegate = connectionChangedDel;
+}
+
+
+//  Board connection properties changed
+//
+void BoardDataSource::ConnectionChanged(BoardConnectionStates state, int boardId, int sampleRate)
+{
+	if (ConnectionChangedCallback != NULL)
+		ConnectionChangedCallback(state, boardId, sampleRate);
+	if (ConnectionChangedDelegate != NULL)
+		ConnectionChangedDelegate(state, boardId, sampleRate);
+}
+
+
+//  Enable or disable the board
+//  will signal the main program to take action required (such as turn on power to the board)
+//
+void BoardDataSource::EnableBoard(bool enable)
+{
+	if (BoardOn != enable)
+	{
+		//  toggle board to opposite state
+		if (BoardOn)
+			ConnectionChanged(PowerOff, BoardId, SampleRate);
+		else
+			ConnectionChanged(PowerOn, BoardId, SampleRate);
+		
+		BoardOn = enable;
+	}
+}
+
+
+//  Inspect the data stream and report statistics on a regular basis
+//
 void BoardDataSource::InspectDataStream(BFSample* data)
 {
 	DataInspecting.push_back(new BFSample(data));
@@ -107,7 +142,8 @@ void BoardDataSource::InspectDataStream(BFSample* data)
 }
 
 
-
+//  Get the sample index difference accounting for roll over
+//
 int BoardDataSource::SampleIndexDifference(double nextIndex)
 {
 	int difference = -1;
@@ -128,7 +164,8 @@ int BoardDataSource::SampleIndexDifference(double nextIndex)
 }
 
 
-
+//  Check the sample index difference (different boards count by 1 or 2 ..?
+//
 void BoardDataSource::InspectSampleIndexDifference(double nextIndex)
 {
 	auto diff = SampleIndexDifference(nextIndex);

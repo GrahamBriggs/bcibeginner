@@ -8,7 +8,7 @@
 #include <chrono>
 #include <brainflow_constants.h>
 #include "brainHat.h"
-#include "FileSimulatorThread.h"
+#include "BoardFileSimulator.h"
 #include "StringExtensions.h"
 #include "BFCyton8.h"
 
@@ -18,29 +18,29 @@ using namespace chrono;
 
 //  Constructor
 //
-FileSimulatorThread::FileSimulatorThread()
+BoardFileSimulator::BoardFileSimulator(ConnectionChangedCallbackFn connectionChangedFn)
 {
-	
+	ConnectionChangedCallback = connectionChangedFn;
 }
 
 
 //  Destructor
 //
-FileSimulatorThread::~FileSimulatorThread()
+BoardFileSimulator::~BoardFileSimulator()
 {
 	Cancel();
 }
 
 
 
-string FileSimulatorThread::ReportSource()
+string BoardFileSimulator::ReportSource()
 {
 	return format("Reading data from file %s id %d at %d Hz.", FileName.c_str(), BoardId, SampleRate);
 }
 
 //  Thread Start
 //
-int FileSimulatorThread::Start(string fileName)
+int BoardFileSimulator::Start(string fileName)
 {
 	if (LoadFile(fileName))
 	{
@@ -54,7 +54,7 @@ int FileSimulatorThread::Start(string fileName)
 
 //  Thread Cancel
 //  
-void FileSimulatorThread::Cancel()
+void BoardFileSimulator::Cancel()
 {
 	Thread::Cancel();
 	
@@ -65,7 +65,7 @@ void FileSimulatorThread::Cancel()
 
 //  Thread Run Function
 //
-void FileSimulatorThread::RunFunction()
+void BoardFileSimulator::RunFunction()
 {
 	//  we will broadcast the simulator data as if it started now
 	double realStartTime = (duration_cast< seconds >(system_clock::now().time_since_epoch())).count();
@@ -103,7 +103,7 @@ void FileSimulatorThread::RunFunction()
 			
 			if(LastLoggedStatusTime.ElapsedMilliseconds() > 5000)
 			{
-				Logging.AddLog("FileSimulatorThread", "RunFunction", format("Reading raw data from %s. File time %.3lf.", FileName.c_str(), ((*it)->TimeStamp - fileStartTime)), LogLevelTrace);
+				Logging.AddLog("BoardFileSimulator", "RunFunction", format("Reading raw data from %s. File time %.3lf.", FileName.c_str(), ((*it)->TimeStamp - fileStartTime)), LogLevelTrace);
 				LastLoggedStatusTime.Reset();
 			}
 		}
@@ -117,7 +117,7 @@ void FileSimulatorThread::RunFunction()
 
 // Load OpenBCI format txt file into the demo data collecion
 //
-bool FileSimulatorThread::LoadFile(std::string fileName)
+bool BoardFileSimulator::LoadFile(std::string fileName)
 {
 	FileName = fileName;
 	
@@ -141,15 +141,15 @@ bool FileSimulatorThread::LoadFile(std::string fileName)
 
 		dataFile.close();
 		
+		ConnectionChanged(New, BoardId, SampleRate);
 		return true;
 	}
-	
 	return false;
 }
 
 
 //  TODO MoreBoards - finish this function
-void FileSimulatorThread::AddSample(string readLine)
+void BoardFileSimulator::AddSample(string readLine)
 {
 	switch ((BoardIds)BoardId)
 	{
@@ -169,7 +169,7 @@ void FileSimulatorThread::AddSample(string readLine)
 
 
 //  TODO MoreBoards - finish this function
-BFSample* FileSimulatorThread::CopySample(BFSample* copy)
+BFSample* BoardFileSimulator::CopySample(BFSample* copy)
 {
 	switch ((BoardIds)BoardId)
 	{
@@ -189,7 +189,7 @@ BFSample* FileSimulatorThread::CopySample(BFSample* copy)
 
 
 
-void FileSimulatorThread::ReadHeaderLine(string readLine)
+void BoardFileSimulator::ReadHeaderLine(string readLine)
 {
 	if (readLine.substr(0, 12) == "%Sample Rate")
 	{

@@ -3,15 +3,13 @@
 #include <unistd.h>
 #include "Logger.h"
 #include "StringExtensions.h"
-#include "BroadcastDataThread.h"
-#include "BroadcastStatusThread.h"
-#include "BoardDataReaderThread.h"
-#include "CommandServerThread.h"
+#include "BroadcastData.h"
+#include "BroadcastStatus.h"
+#include "BoardDataReader.h"
+#include "CommandServer.h"
 #include "OpenBciDataFile.h"
-#include "FileSimulatorThread.h"
-#include "LightsThread.h"
-#include "CMDifconfig.h"
-#include "CMDiwconfig.h"
+#include "BoardFileSimulator.h"
+#include "GpioPinManager.h"
 #include "TimeExtensions.h"
 #include <lsl_cpp.h>
 
@@ -19,15 +17,15 @@
 using namespace std;
 
 //  callback functions
-void BoardConnectionStateChanged(int state);
+void BoardConnectionStateChanged(BoardConnectionStates state, int boardId, int sampleRate);
 void GetBoardParams(int& boardId, int& sampleRate);
 
 //  Program objects
 Logger Logging;
-BroadcastDataThread BroadcastData;
-BroadcastStatusThread BroadcastStatus(GetBoardParams);
-CommandServerThread ComServer;
-LightsThread Lights;
+BroadcastData BroadcastData;
+BroadcastStatus BroadcastStatus(GetBoardParams);
+CommandServer ComServer;
+GpioManager Lights;
 
 
 
@@ -37,7 +35,7 @@ BoardDataReader Board(BoardConnectionStateChanged);
 
 //  The Simulator
 string DemoFileName = "";
-FileSimulatorThread SimulatorThread;
+BoardFileSimulator SimulatorThread(BoardConnectionStateChanged);
 
 bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int *board_id, string &demoFileName);
 void RunBoardData();
@@ -82,6 +80,8 @@ int main(int argc, char *argv[])
 
 	
 	StartLights();
+	BroadcastStatus.Start();
+	ComServer.Start();
 	
 	//  start board or file simulator data
 	if (Board_Id >= -1)
@@ -107,12 +107,7 @@ int main(int argc, char *argv[])
 //
 void RunBoardData()
 {	
-	//  TODO - deal with set sampling rate for live board
-	BroadcastData.Start(Board_Id, 250 );
-	BroadcastStatus.Start();
-	ComServer.Start();
-	
-	BoardConnectionStateChanged(0);
+	Lights.PowerToBoard(true);
 	
 	if (Board.Start(Board_Id, BrainflowBoardParams) != 0)
 	{
@@ -169,11 +164,7 @@ void RunFileData()
 		Logging.AddLog("main", "RunFileData", "Unable to load file.", LogLevelError);
 		return;
 	}
-	
-	BroadcastData.Start(SimulatorThread.GetBoardId(), SimulatorThread.GetSampleRate());
-	BroadcastStatus.Start();
-	ComServer.Start();
-	
+
 	Logging.AddLog("main", "RunFileData", "Starting file data. Enter Q to quit.", LogLevelInfo);
 	
 	string input;
@@ -210,27 +201,34 @@ void RunFileData()
 	}
 }
 
-void BoardConnectionStateChanged(int state)
+void BoardConnectionStateChanged(BoardConnectionStates state, int boardId, int sampleRate)
 {
+
 	switch (state)
 	{
-	case 0:	//  power off board
+	case New:
+		Lights.Mode = LightsSequence;
+		BroadcastData.SetBoard(boardId, sampleRate);
+		break;
+		
+	case PowerOff:	//  power On board
 		Lights.AllOff();
 		break;
 		
-	case 1:	//  power on board
-		if(Board_Id >= -1)
+	case PowerOn:	//  power on board
+		if(Board_Id > -1)
 		{
-		
 			Lights.PowerToBoard(true);
-			break;
+			Sleep(2000);
 		}
+		Lights.Mode = LightsFlash;
+		break;
 		
-	case 2:	//  board connected
+	case Connected:	//  board connected
 		Lights.Mode = LightsSequence;
 		break;
 		
-	case 3: //  board disconnected	
+	case Disconnected: //  board disconnected	
 		Lights.Mode = LightsFlash;
 		break;
 	}
@@ -239,7 +237,7 @@ void BoardConnectionStateChanged(int state)
 
 void GetBoardParams(int& boardId, int& sampleRate)
 {
-	if (Board_Id >= -1)
+	if (Board_Id > -1)
 	{
 		boardId = Board.GetBoardId();
 		sampleRate = Board.GetSampleRate();

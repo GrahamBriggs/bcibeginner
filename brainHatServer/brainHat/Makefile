@@ -64,7 +64,7 @@ error:
 	$(error Invalid configuration, please check your inputs)
 endif
 
-SOURCEFILES := BoardDataSource.cpp BroadcastStatusThread.cpp CMD.cpp CMDifconfig.cpp CMDiwconfig.cpp CommandServerThread.cpp FileSimulatorThread.cpp brainHat.cpp LightsThread.cpp Logger.cpp NetworkExtensions.cpp Parser.cpp BroadcastDataThread.cpp BoardDataReaderThread.cpp TCPServerThread.cpp TerminalDisplay.cpp Thread.cpp TimeExtensions.cpp UdpMulticastServerThread.cpp
+SOURCEFILES := BoardDataSource.cpp BroadcastStatus.cpp CommandServer.cpp BoardFileSimulator.cpp brainHat.cpp GpioPinManager.cpp Logger.cpp NetworkExtensions.cpp Parser.cpp BroadcastData.cpp BoardDataReader.cpp TCPServerThread.cpp TerminalDisplay.cpp Thread.cpp TimeExtensions.cpp UdpMulticastServerThread.cpp
 EXTERNAL_LIBS := 
 EXTERNAL_LIBS_COPIED := $(foreach lib, $(EXTERNAL_LIBS),$(BINARYDIR)/$(notdir $(lib)))
 

@@ -3,10 +3,8 @@
 #include <iostream>
 
 #include "brainHat.h"
-#include "BroadcastDataThread.h"
+#include "BroadcastData.h"
 #include "StringExtensions.h"
-#include "CMDifconfig.h"
-#include "CMDiwconfig.h"
 #include "TimeExtensions.h"
 #include "wiringPi.h"
 #include "json.hpp"
@@ -25,7 +23,7 @@ using namespace lsl;
 
 //  Constructor
 //
-BroadcastDataThread::BroadcastDataThread()
+BroadcastData::BroadcastData()
 {
 	LslEnabled = true;
 	LSLOutlet = NULL;
@@ -34,7 +32,7 @@ BroadcastDataThread::BroadcastDataThread()
 
 //  Destructor
 //
-BroadcastDataThread::~BroadcastDataThread()
+BroadcastData::~BroadcastData()
 {
 	//  TODO - other LSL close?
 	if(LSLOutlet != NULL)
@@ -42,24 +40,22 @@ BroadcastDataThread::~BroadcastDataThread()
 }
 
 
-//  Start the thread
-//  make sure we can open the server socket for multicast before starting thread
-void BroadcastDataThread::Start(int boardId, int sampleRate)
-{
-	HostName = GetHostName();
 
+
+void BroadcastData::SetBoard(int boardId, int sampleRate)
+{
 	BoardId = boardId;
 	SampleRate = sampleRate;
 	
 	SetupLslForBoard();
 	
+	HostName = GetHostName();
+
 	Thread::Start();
 }
 
 
-
-
-void BroadcastDataThread::SetupLslForBoard()
+void BroadcastData::SetupLslForBoard()
 {
 	int numChannels, accelChannels, otherChannels, analogChannels;
 	BoardShim::get_exg_channels(BoardId, &numChannels);
@@ -112,7 +108,7 @@ void BroadcastDataThread::SetupLslForBoard()
 
 
 
-void BroadcastDataThread::AddData(BFSample* data)
+void BroadcastData::AddData(BFSample* data)
 {
 	{
 		LockMutex lockQueue(QueueMutex);
@@ -123,26 +119,20 @@ void BroadcastDataThread::AddData(BFSample* data)
 
 //  Run function
 //
-void BroadcastDataThread::RunFunction()
+void BroadcastData::RunFunction()
 {
-	unsigned int lastStatusBroadcast = millis();
-	unsigned int lastDataBroadcast = millis();
-	unsigned int lastIpSetup = millis();
-
 	while (ThreadRunning)
 	{		
-	
 		Sleep(10);
-		
-		BroadcastData();
+		BroadcastDataToLslOutlet();
 	}
 }
 
 
 
-//  Broadcast the sample data
+//  Broadcast the sample data to the LSL outlet
 //
-void BroadcastDataThread::BroadcastData()
+void BroadcastData::BroadcastDataToLslOutlet()
 {
 	double rawSample[SampleSize];
 	

@@ -11,11 +11,17 @@ enum LightStates
 	LightsSequence,
 };
 
-class LightsThread : public Thread
+
+//  Class to manage GPIO pins on the Pi running brainHat
+//  the brainHat bread board prototypes have lights on them to display status and otherwise flash and look cool
+//  by default all the pins used by this program are set to number 0, which means that nothign will happen on the GPIO
+//  there is mapping to known host names that will set specific pins for different prototypes
+//
+class GpioManager : public Thread
 {
 public:
-	LightsThread();
-	virtual ~LightsThread();
+	GpioManager();
+	virtual ~GpioManager();
 	
 	void StartThreadForHost(std::string hostName);
 	

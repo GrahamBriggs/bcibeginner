@@ -10,11 +10,11 @@ typedef void(*GetBoardParamsCallbackFn)(int&,int&);
 
 //  UDP multicast thread for status broadcast
 //
-class BroadcastStatusThread : public UdpMulticastServerThread
+class BroadcastStatus : public UdpMulticastServerThread
 {
 public:
-	BroadcastStatusThread(GetBoardParamsCallbackFn getBoardParams);
-	virtual ~BroadcastStatusThread();
+	BroadcastStatus(GetBoardParamsCallbackFn getBoardParams);
+	virtual ~BroadcastStatus();
 	
 	virtual void Start();
 	
@@ -35,6 +35,6 @@ protected:
 
 	void SetIpConfig();
 	
-	void BroadcastStatus();
+	void BroadcastStatusOverMulticast();
 };
 

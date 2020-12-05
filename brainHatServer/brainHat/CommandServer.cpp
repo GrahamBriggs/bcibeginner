@@ -3,7 +3,7 @@
 #include  <algorithm>
 
 #include "brainHat.h"
-#include "CommandServerThread.h"
+#include "CommandServer.h"
 #include "Parser.h"
 #include "StringExtensions.h"
 #include "TimeExtensions.h"
@@ -16,7 +16,7 @@ using namespace std;
 
 //  Constructor
 //
-CommandServerThread::CommandServerThread()
+CommandServer::CommandServer()
 {
 	
 }
@@ -24,19 +24,19 @@ CommandServerThread::CommandServerThread()
 
 //  Destructor
 //
-CommandServerThread::~CommandServerThread()
+CommandServer::~CommandServer()
 {
 }
 
 
 //  Thread Start
 //  override to open server socket
-void CommandServerThread::Start()
+void CommandServer::Start()
 {
 	int port = OpenServerSocket(COMSERVER_PORT, true);
 	if (port < 0)
 	{
-		Logging.AddLog("CommandServerThread", "Start", "Unable to open server socket port", LogLevelFatal);
+		Logging.AddLog("CommandServer", "Start", "Unable to open server socket port", LogLevelFatal);
 		return;
 	}
 	
@@ -46,9 +46,9 @@ void CommandServerThread::Start()
 
 //  Thread run function
 //  waits on accept client TCPIP request, then handles the request
-void CommandServerThread::RunFunction()
+void CommandServer::RunFunction()
 {
-	Logging.AddLog("CommandServerThread", "RunFunction", "Starting CommandServerThread::RunFunction", LogLevelDebug);
+	Logging.AddLog("CommandServer", "RunFunction", "Starting CommandServer::RunFunction", LogLevelDebug);
 	
 	while (ThreadRunning)
 	{
@@ -62,7 +62,7 @@ void CommandServerThread::RunFunction()
 		
 		readFromSocket.erase(remove(readFromSocket.begin(), readFromSocket.end(), '\r'), readFromSocket.end());
 		readFromSocket.erase(remove(readFromSocket.begin(), readFromSocket.end(), '\n'), readFromSocket.end());
-		Logging.AddLog("CommandServerThread", "RunFunction", format("Read from socket: %s", readFromSocket.c_str()), LogLevelTrace);
+		Logging.AddLog("CommandServer", "RunFunction", format("Read from socket: %s", readFromSocket.c_str()), LogLevelTrace);
 		
 		Parser readParser(readFromSocket, "?");
 		string command = readParser.GetNextString();
@@ -81,7 +81,7 @@ void CommandServerThread::RunFunction()
 		}
 		else
 		{
-			Logging.AddLog("CommandServerThread", "RunFunction", format("Unrecognized command: %s", command.c_str()), LogLevelWarn);
+			Logging.AddLog("CommandServer", "RunFunction", format("Unrecognized command: %s", command.c_str()), LogLevelWarn);
 			WriteStringToSocket(acceptFileDescriptor, "NAK?response=Unrecognized command.\n");
 		}
 		
@@ -91,7 +91,7 @@ void CommandServerThread::RunFunction()
 
 //  Keyboard input request
 //
-void CommandServerThread::HandleKeyboardInputRequest(int acceptFileDesc, string args)
+void CommandServer::HandleKeyboardInputRequest(int acceptFileDesc, string args)
 {
 	Parser argParser(args, "=&");
 	string key = argParser.GetNextString();
@@ -102,7 +102,7 @@ void CommandServerThread::HandleKeyboardInputRequest(int acceptFileDesc, string 
 
 //  Change log level request
 //
-void CommandServerThread::HandleLogLevelChangeRequest(int acceptFileDesc, string args)
+void CommandServer::HandleLogLevelChangeRequest(int acceptFileDesc, string args)
 {
 	Parser argParser(args, "=&");
 			

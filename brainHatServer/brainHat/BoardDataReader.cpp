@@ -8,34 +8,38 @@
 #include <chrono>
 
 #include "brainHat.h"
-#include "BoardDataReaderThread.h"
+#include "BoardDataReader.h"
 #include "StringExtensions.h"
 #include "BFCyton8.h"
 #include "BFCyton16.h"
 
 
-#define SENSOR_SLEEP (50)
+#define SENSOR_SLEEP (20)
 
 using namespace std;
 using namespace chrono;
 
-//  Constructor
-//
-BoardDataReader::BoardDataReader()
-{
-	Init();
-	
-}
 
-BoardDataReader::BoardDataReader(ConnectionChangedCallbackFn cbf)
+//  Construct with C callback function for connection state change
+//
+BoardDataReader::BoardDataReader(ConnectionChangedCallbackFn connectionChangedFn)
 {
 	Init();
 	BoardOn = true;
-	ConnectionChangedCallback = cbf;
+	ConnectionChangedCallback = connectionChangedFn;
 }
 
 
+//  Destructor
+//
+BoardDataReader::~BoardDataReader()
+{
+	Cancel();
+}
 
+
+//  Initialize properties
+//
 void BoardDataReader::Init()
 {
 	Board = NULL;
@@ -47,53 +51,15 @@ void BoardDataReader::Init()
 	BoardDataSource::Init();
 }
 
+
+//  Describe the source of the data
+//
 string BoardDataReader::ReportSource()
 {
 	return format("Reading data from board id %d at %d Hz.", BoardId, SampleRate);
 }
 
-//  Destructor
-//
-BoardDataReader::~BoardDataReader()
-{
-	Cancel();
-}
 
-
-//  Regiter connection changed callback
-//
-void BoardDataReader::RegisterConnectionChangedDelegate(ConnectionChangedDelegateFn cbf)
-{
-	ConnectionChangedDelegate = cbf;
-}
-
-
-// Connection Changed Event
-//  0 = Board Off
-//  1 = Board On
-//  2 = Board connected
-//  3 = Board disconnected
-void BoardDataReader::ConnectionChanged(int state)
-{
-	if (ConnectionChangedCallback != NULL)
-		ConnectionChangedCallback(state);
-	if (ConnectionChangedDelegate != NULL)
-		ConnectionChangedDelegate(state);
-		
-}
-
-void BoardDataReader::EnableBoard(bool enable)
-{
-	if (BoardOn != enable)
-	{
-		if (BoardOn)
-			ConnectionChanged(0);
-		else
-			ConnectionChanged(1);
-		
-		BoardOn = enable;
-	}
-}
 
 //  Thread Start
 //
@@ -138,7 +104,7 @@ void BoardDataReader::ReleaseBoard()
 		delete Board;
 		Board = NULL;
 		InvalidSampleCounter = 0;
-		ConnectionChanged(3);
+		ConnectionChanged(Disconnected, BoardId, SampleRate);
 	}
 }
 
@@ -167,6 +133,7 @@ int BoardDataReader::InitializeBoard()
 			BoardId = std::stoi(BoardParamaters.other_info);
 		}	
 		
+		bool newConnection = SampleRate < 0;
 			
 		LastSampleIndex = -1;
 		LastTimeStampSync = -1;
@@ -178,8 +145,8 @@ int BoardDataReader::InitializeBoard()
 		int channels;
 		auto channelsArray = BoardShim::get_exg_channels(BoardId, &channels);
 		
-		InspectDataStreamLogTimer.Start();
-		ConnectionChanged(2);
+		InspectDataStreamLogTimer.Start(); 
+		ConnectionChanged(newConnection ? New : Connected ,BoardId, SampleRate);
 	}
 	catch (const BrainFlowException &err)
 	{
@@ -262,7 +229,7 @@ void BoardDataReader::RunFunction()
 		}
 		catch (const BrainFlowException &err)
 		{
-			BoardShim::log_message((int)LogLevels::LEVEL_ERROR, err.what());
+			Logging.AddLog("BoardDataReader", "RunFunction", err.what(), LogLevelError);
 			
 			//  this is the error code thrown when board read fails due to power outage
 			if(err.exit_code == 15)
@@ -274,11 +241,11 @@ void BoardDataReader::RunFunction()
 
 // Process a chunk of data read from the board
 // send to broadcast thread and logging if enabled
-void BoardDataReader::ProcessData(double **data_buf, int sampleCount)
+void BoardDataReader::ProcessData(double **chunk, int sampleCount)
 {
 	//  'improve' the time stamp to be more accurate
 	double period, oldestSampleTime;
-	CalculateReadingTimeThisChunk(data_buf, sampleCount, period, oldestSampleTime);
+	CalculateReadingTimeThisChunk(chunk, sampleCount, period, oldestSampleTime);
 	
 	//  count the epochs where we have no data, will trigger a reconnect eventually		
 	if(sampleCount == 0)
@@ -288,12 +255,11 @@ void BoardDataReader::ProcessData(double **data_buf, int sampleCount)
 	
 	for (int i = 0; i < sampleCount; i++)
 	{
-		BFSample* sample = ParseRawData(data_buf, i);
+		BFSample* sample = ParseRawData(chunk, i);
 	
 		//  fix the time stamp
 		sample->TimeStamp = oldestSampleTime + ((i + 1)*period);
 				
-		
 		//  send it to the broadcast
 		BroadcastData.AddData(sample);
 		
@@ -320,8 +286,18 @@ BFSample* BoardDataReader::ParseRawData(double** chunk, int sampleCount)
 
 void BoardDataReader::CalculateReadingTimeThisChunk(double** chunk, int samples, double& period, double& oldestSampleTime)
 {
+	auto timeNow = (chrono::duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count() / 1000.0);	
+		
 	double newestSampleTime = chunk[TimeStampIndex][samples - 1];
 	oldestSampleTime = chunk[TimeStampIndex][0];
+  	if (fabs(newestSampleTime - timeNow) > 100 || fabs(oldestSampleTime - timeNow) > 100)
+	{
+		  //TODO - Cyton 16 seems to throw out 0.0 timestamps once and a while, fix that here
+	    	//Logging.AddLog("BoardDataReader", "CalculateReadingTimeThisChunk", format("Invalid time stamp? Sample index %.0lf old %.3lf new %.3lf", chunk[0][samples - 1], oldestSampleTime, newestSampleTime), LogLevelError);
+		newestSampleTime = timeNow;
+		oldestSampleTime = timeNow - (samples * 1.0 / SampleRate);
+	}
+	
 	if (LastTimeStampSync > 0)
 	{
 		oldestSampleTime = LastTimeStampSync;

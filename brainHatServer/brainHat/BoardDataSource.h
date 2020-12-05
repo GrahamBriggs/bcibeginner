@@ -11,20 +11,39 @@
 #include "BFSample.h"
 #include "TimeExtensions.h"
 
+//  Board connection states
+enum BoardConnectionStates
+{
+	New,
+	PowerOn,
+	PowerOff,
+	Connected,
+	Disconnected,
+};
+
+//  Sensor connection state changed event
+//  callback function for C code
+//  state, boardId, sampleRate
+typedef void(*ConnectionChangedCallbackFn)(BoardConnectionStates, int, int);
+//  callback function C++ class
+typedef std::function<void(BoardConnectionStates, int, int)> ConnectionChangedDelegateFn;
+
 
 
 class BoardDataSource : public Thread
 {
 public:
 	BoardDataSource();
-
+	BoardDataSource(ConnectionChangedCallbackFn connectionChangedFn);
 	virtual ~BoardDataSource();
 	
+	void RegisterConnectionChangedDelegate(ConnectionChangedDelegateFn connectionChangedDel);
+	
+	bool Enabled() { return BoardOn;}
+	void EnableBoard(bool enable);
 	
 	int GetBoardId() { return BoardId; }
 	int GetSampleRate() { return SampleRate; }
-	
-
 	
 protected:
 	
@@ -32,26 +51,29 @@ protected:
 	
 	virtual std::string ReportSource() = 0;
 	
+	//  basic properties
 	int BoardId;
 	int SampleRate;
 	int DataRows;
 	int TimeStampIndex;
+	//
+	bool BoardOn;
 	
 	
-	
+	//  inspecting data mechanisms
 	double LastSampleIndex;
 	double LastTimeStampSync;
 	int CountMissingIndex;
 	void InspectSampleIndexDifference(double nextIndex);
 	int SampleIndexDifference(double nextIndex);
 	
-			
-	ChronoTimer ReadTimer;
-	
-	//  Data inspection mechanisms
 	int RecordsLogged;
 	ChronoTimer InspectDataStreamLogTimer;
 	void InspectDataStream(BFSample* data);
 	std::list<BFSample*> DataInspecting;
 	
+	void ConnectionChanged(BoardConnectionStates state, int boardId, int sampleRate);
+	
+	ConnectionChangedCallbackFn ConnectionChangedCallback;
+	ConnectionChangedDelegateFn ConnectionChangedDelegate;
 };

@@ -10,18 +10,11 @@
 #include "BFSample.h"
 #include "TimeExtensions.h"
 
-//  Sensor connection state changed event
-//  callback function for C code
-typedef void(*ConnectionChangedCallbackFn)(int);
-//  callback function C++ class
-typedef std::function<void(int)> ConnectionChangedDelegateFn;
-
 
 class BoardDataReader : public BoardDataSource
 {
 public:
-	BoardDataReader();
-	BoardDataReader(ConnectionChangedCallbackFn cbf);
+	BoardDataReader(ConnectionChangedCallbackFn connectionChangedFn);
 	virtual ~BoardDataReader();
 	
 	int Start(int board_id, struct BrainFlowInputParams params);
@@ -29,12 +22,7 @@ public:
 	virtual void Cancel();
 	
 	virtual void RunFunction();
-	
-	void RegisterConnectionChangedDelegate(ConnectionChangedDelegateFn cbf);
-	
-	bool Enabled() { return BoardOn;}
-	void EnableBoard(bool enable);
-	
+
 protected:
 	
 	virtual void Init();
@@ -44,7 +32,8 @@ protected:
 	BoardShim* Board;
 	struct BrainFlowInputParams BoardParamaters;
 
-	bool BoardOn;
+	//  read data on a timer
+	ChronoTimer ReadTimer;
 	
 	BFSample* ParseRawData(double** data, int sample);
 	void CalculateReadingTimeThisChunk(double** chunk, int samples, double& period, double& oldestSampleTime);
@@ -57,13 +46,5 @@ protected:
 	
 	//  Process the chunk read from the board
 	void ProcessData(double **data_buf, int sampleCount);
-				
-	ChronoTimer ReadTimer;
-	
 
-	
-	ConnectionChangedCallbackFn ConnectionChangedCallback;
-	ConnectionChangedDelegateFn ConnectionChangedDelegate;
-	
-	void ConnectionChanged(int state);
 };

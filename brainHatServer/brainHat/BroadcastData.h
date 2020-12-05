@@ -8,13 +8,13 @@
 
 //  UDP multicast thread for status broadcast
 //
-class BroadcastDataThread : public Thread
+class BroadcastData : public Thread
 {
 public:
-	BroadcastDataThread();
-	virtual ~BroadcastDataThread();
+	BroadcastData();
+	virtual ~BroadcastData();
 	
-	void Start(int boardId, int sampleRate);
+	void SetBoard(int boardId, int sampleRate);
 	
 	virtual void RunFunction();
 	
@@ -42,7 +42,7 @@ protected:
 	
 	int GetAvailableDataPort();
 	
-	void BroadcastData();
+	void BroadcastDataToLslOutlet();
 	
 	
 	

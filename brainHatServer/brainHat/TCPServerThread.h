@@ -3,9 +3,9 @@
 #include "Thread.h"
 
 
-#define TCPSERVER_READBUFFERSIZE 1024
+#define TCPServerThread_READBUFFERSIZE 1024
 
-//  ServerThread
+//  TCP Server Thread
 //  Runs a TCP socket server thread
 //
 class TCPServerThread : public Thread

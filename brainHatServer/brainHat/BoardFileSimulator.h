@@ -9,18 +9,18 @@
 #include "board_shim.h"
 #include "BFCyton8.h"
 #include "TimeExtensions.h"
-
+#include "BoardDataSource.h"
 
 
 //  File Simulator Thread
 //  Will play back an OpenBCI_GUI format .txt file (adjusting time stamps so the data appears current)
 //  TODO - this is hard coded for Cyton8
 //
-class FileSimulatorThread : public BoardDataSource
+class BoardFileSimulator : public BoardDataSource
 {
 public:
-	FileSimulatorThread();
-	virtual ~FileSimulatorThread();
+	BoardFileSimulator(ConnectionChangedCallbackFn connectionChangedFn);
+	virtual ~BoardFileSimulator();
 	
 	int Start(std::string fileName);
 	
