@@ -20,7 +20,7 @@ namespace BrainflowDataProcessing
         //  Events
         public event LogEventDelegate Log;
         public event ProcessorCurrentStateReportDelegate CurrentDataStateReported;
-        public event BFSampleEventDelegate NewReading;
+        public event BFSampleEventDelegate NewSample;
 
 
         //  Public Methods
@@ -43,7 +43,7 @@ namespace BrainflowDataProcessing
 
             await BandPowers.StartMonitorAsync();
 
-            TimeTagFirstReading = -1;
+            TimeTagFirstSample = -1;
 
             Log?.Invoke(this, new LogEventArgs(this, "StartDataProcessor", $"Starting Brainflow data processor for {Name}.", LogLevel.INFO));
         }
@@ -67,9 +67,11 @@ namespace BrainflowDataProcessing
                 RawDataQueueProcessorTask = null;
                 PeriodicProcessorTask = null;
                 DataMonitorTask = null;
+
+                Log?.Invoke(this, new LogEventArgs(this, "StopDataProcessor", $"Stopped Brainflow data processor for {Name}.", LogLevel.INFO));
             }
 
-            Log?.Invoke(this, new LogEventArgs(this, "StopDataProcessor", $"Stopped Brainflow data processor for {Name}.", LogLevel.INFO));
+            
         }
 
 
@@ -81,7 +83,7 @@ namespace BrainflowDataProcessing
         /// </summary>
         public void AddDataToProcessor(object sender, BFSampleEventArgs e)
         {
-            AddDataToProcessor(e.Reading);
+            AddDataToProcessor(e.Sample);
         }
 
         /// <summary>
@@ -160,7 +162,7 @@ namespace BrainflowDataProcessing
             BandPowers.GetData = GetUnfilteredData;
             BandPowers.Log += OnComponentLog;
         
-            TimeTagFirstReading = -1;
+            TimeTagFirstSample = -1;
                     
             //  default periods for periodic loops
             PeriodMsUpdateData = 200;       //  5Hz for update data message
@@ -203,7 +205,7 @@ namespace BrainflowDataProcessing
         //  Band power monitor
         protected BandPowerMonitor BandPowers { get; private set; }
 
-        double TimeTagFirstReading { get; set; }
+        double TimeTagFirstSample { get; set; }
         
 
         //  Performance testing and monitoring
@@ -297,6 +299,8 @@ namespace BrainflowDataProcessing
                             swStats.Restart();
                         }
                     }
+                    catch (OperationCanceledException)
+                    { }
                     catch (Exception ex)
                     {
                         Log?.Invoke(this, new LogEventArgs(this, "RunDataMonitorAsync", ex, LogLevel.ERROR));
@@ -323,7 +327,7 @@ namespace BrainflowDataProcessing
             if (Data.Count > 0 /*&& DateTimeOffset.UtcNow.ToUnixTimeInDoubleSeconds() - Data.First().TimeStamp < 5*/)
             {
 
-                report.CurrentReading = Data.First();
+                report.CurrentSample = Data.First();
                 report.CurrentDeviation = GenerateDeviationReport(.25);
                 report.CurrentDevMedian = StdDevMedians;
                 report.CurrentBandPower08 = BandPowers.GetBandPower(8);
@@ -345,7 +349,7 @@ namespace BrainflowDataProcessing
         /// </summary>
         private void LogProcessorStats(TimeSpan elapsed)
         {
-            if ( ProcessingTimesFilter.Count > 0 && ProcessingTimesQueue.Count > 0)
+            if ( ProcessingTimesFilter.Count > 0 || ProcessingTimesQueue.Count > 0)
             {
                 IBFSample first;
                 lock (Data)
@@ -363,6 +367,11 @@ namespace BrainflowDataProcessing
                 
                 Log?.Invoke(this, new LogEventArgs(this, "LogProcessorStats", $"{Name} processing: Age {(DateTimeOffset.UtcNow.ToUnixTimeInDoubleSeconds() - first.TimeStamp).ToString("F6")}.  {processor}  {filter}", LogLevel.TRACE));
                 
+                if ( CountMissingIndex > 0 )
+                {
+                    Log?.Invoke(this, new LogEventArgs(this, "LogProcessorStats", $"Missed {CountMissingIndex} samples in the past {(int)(PeriodMsUpdateProcessorStats/1000)} seconds.", LogLevel.WARN));
+                    CountMissingIndex = 0;
+                }
                 ProcessingTimesFilter.RemoveAll();
                 ProcessingTimesQueue.RemoveAll();
             }
@@ -386,8 +395,8 @@ namespace BrainflowDataProcessing
                         var sw = new System.Diagnostics.Stopwatch();
                         sw.Start();
 
-                        DataToProcess.TryDequeue(out var nextReading);
-                        ProcessDataQueue(nextReading);
+                        DataToProcess.TryDequeue(out var nextSample);
+                        ProcessDataQueue(nextSample);
 
                         sw.Stop();
                         ProcessingTimesQueue.Enqueue(sw.Elapsed.TotalSeconds);
@@ -413,8 +422,8 @@ namespace BrainflowDataProcessing
                     {
                         try
                         {
-                            DataToProcess.TryDequeue(out var nextReading);
-                            ProcessDataQueue(nextReading);
+                            DataToProcess.TryDequeue(out var nextSample);
+                            ProcessDataQueue(nextSample);
                         }
                         catch (Exception ex)
                         {
@@ -429,56 +438,59 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Process the data in the queue
         /// </summary>
-        private void ProcessDataQueue(IBFSample reading)
+        private void ProcessDataQueue(IBFSample sample)
         {
             lock (Data)
-                Data.Insert(0, reading);
+                Data.Insert(0, sample);
 
-            //  TODO - hook this back up
-           // InspectSampleIndex(reading);
+            InspectSampleIndex(sample);
 
-            NewReading?.Invoke(this, new BFSampleEventArgs(reading));
+            NewSample?.Invoke(this, new BFSampleEventArgs(sample));
         }
 
+        int SampleIndexDifference(int nextIndex)
+        {
+            int difference = -1;
+            if (Math.Abs((LastSampleIndex - nextIndex) - 255) < 0.1)
+            {
+                difference = 1;
+            }
+            else if (nextIndex < LastSampleIndex)
+            {
+                difference = (int)nextIndex + (255 - (int)LastSampleIndex);
+            }
+            else
+            {
+                difference = nextIndex - LastSampleIndex;
+            }
+            LastSampleIndex = nextIndex;
+            return difference;
+        }
+
+
+        private int CountMissingIndex;
 
         /// <summary>
         /// Check the sample index sequence
         /// log a warning if sample index is missing
         /// </summary>
-        private void InspectSampleIndex(IBFSample reading)
+        private void InspectSampleIndex(IBFSample sample)
         {
-            if (LastSampleIndex < 0)
-            {
-                //  this is the very first one, remember it
-                LastSampleIndex = (int)reading.SampleIndex;
-                return;
-            }
-            else
-            {
-                switch (LastSampleIndex)
-                {
-                    case 255:
-                        //  roll over condition
-                        if ((int)reading.SampleIndex == 0)
-                        {
-                            LastSampleIndex = 0;
-                            return;
-                        }
-                        break;
+            var difference = SampleIndexDifference((int)(sample.SampleIndex));
 
-                    default:
-                        if ((int)reading.SampleIndex - LastSampleIndex == 1)
-                        {
-                            LastSampleIndex = (int)reading.SampleIndex;
-                            return;
-                        }
-                        break;
-                }
-            }
+            switch (BoardId)
+            {
+                case 0:
+                    if (difference > 1)
+                        CountMissingIndex++;
+                    break;
 
-            //  there was a sample index mismatch
-            Log?.Invoke(this, new LogEventArgs(this, "InspectSampleIndex", $"{Name} had mismatch of sample index at {(int)reading.SampleIndex} Last Index {LastSampleIndex}. At reading {reading.TimeStamp.ToString("F6")}.", LogLevel.WARN));
-            LastSampleIndex = (int)reading.SampleIndex;
+                case 2:
+                    if (difference > 2)
+                        CountMissingIndex++;
+                    break;
+
+            }
         }
 
 

@@ -93,7 +93,6 @@ public:
 protected:
 	
 	std::string HostName;
-	int GetAvailableLogPort();
 	
 	bool RemoteLoggingEnabled;
 	

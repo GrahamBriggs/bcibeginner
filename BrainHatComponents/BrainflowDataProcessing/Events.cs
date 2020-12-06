@@ -16,8 +16,8 @@ namespace BrainflowDataProcessing
             Details = details;
         }
 
-        //  Number of readings received in this reporting epoch
-        public int NumberOfReadings { get; set; }
+        //  Number of samples received in this reporting epoch
+        public int NumberOfSamples { get; set; }
         //  Duration of this reporting epoch
         public TimeSpan EpochDuration { get; set; }
         //  Details string
@@ -39,7 +39,7 @@ namespace BrainflowDataProcessing
             
         }
 
-        public IBFSample CurrentReading { get; set; }
+        public IBFSample CurrentSample { get; set; }
         public IBFSample CurrentDeviation { get; set; }
         public IBFSample CurrentDevMedian { get; set; }
         public IBFSample CurrentBandPower08 { get; set; }

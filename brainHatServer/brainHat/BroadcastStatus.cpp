@@ -61,7 +61,7 @@ void BroadcastStatus::Start()
 
 
 //  broadcast timeouts for different status properties
-int BroadcastTimeoutStatus = (10 * 1000);
+int BroadcastTimeoutStatus = (2 * 1000);
 int CheckIpConfigTimeout = (60 * 1000);
 
 
@@ -114,8 +114,6 @@ void BroadcastStatus::BroadcastStatusOverMulticast()
 	status.Wlan0Mode = Wlan0Mode;
 	status.LogPort = Logging.GetPortNumber();
 	
-	status.BoardId = Board.GetBoardId();
-	status.SampleRate = Board.GetSampleRate();
 	GetBoardParams(status.BoardId, status.SampleRate);
 	
 	status.UnixTimeMillis = GetUnixTimeMilliseconds();

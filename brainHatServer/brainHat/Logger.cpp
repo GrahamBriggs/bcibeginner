@@ -201,42 +201,13 @@ void Logger::Notify()
 
 
 
-//  Get an open data port
-//  TODO - eventually this function should open candidate ports and listen for a few seconds to see if it is clear
-//  for now,  port is hard coded based on host name
-//
-int Logger::GetAvailableLogPort()
-{
-	if (HostName.compare("brainHat") == 0)
-	{
-		return 49010;
-	}
-	else if (HostName.compare("brainHat1") == 0)
-	{
-		return 49011;
-	}
-	else if (HostName.compare("brainHat2") == 0)
-	{
-		return 49012;
-	}
-	else if (HostName.compare("brainHat3") == 0)
-	{
-		return 49013;
-	}
-	else if (HostName.compare("brainHelmet") == 0)
-	{
-		return 49014;
-	}
-	else
-		return 49015;
-}
 
 
 void Logger::Start()
 {
 	HostName = GetHostName();
 	
-	PortNumber = OpenServerSocket(GetAvailableLogPort(), MULTICAST_GROUPADDRESS);
+	PortNumber = OpenServerSocket(MULTICAST_LOGPORT, MULTICAST_GROUPADDRESS);
 	
 	if (PortNumber < 0)
 	{
@@ -321,7 +292,8 @@ void Logger::RunFunction()
 				if (RemoteLoggingEnabled)
 				{
 					log->HostName = HostName;
-					WriteMulticastString(format("log?hostname=%s&log=%s\n", HostName.c_str(), log->SerializeAsJson().c_str()));
+					auto logText = log->SerializeAsJson().substr(0,480);
+					WriteMulticastString(format("log?hostname=%s&log=%s\n", HostName.c_str(), logText.c_str()));
 				}
 				
 				delete(*nextItem);

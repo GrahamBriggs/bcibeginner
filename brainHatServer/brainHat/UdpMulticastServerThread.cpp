@@ -83,11 +83,7 @@ int UdpMulticastServerThread::OpenServerSocket(int port, string group)
 
 void UdpMulticastServerThread::WriteMulticastString(string writeString)
 {
-	auto size = writeString.size();
-	if (size > 478)
-		int i = 0;
-	
 	int sent = sendto(SocketFileDescriptor, writeString.c_str(), strlen(writeString.c_str()), 0, (struct sockaddr*) &SocketAddress, sizeof(SocketAddress));
-	if (sent != writeString.length())
-		Logging.AddLog("UdpMulticastServerThread", "WriteMulticaststring", format("Bytes written %d not equal to string length %d for %s.",sent, writeString.length(), writeString.c_str()), LogLevelError);
+//	if (sent != writeString.length())
+//		Logging.AddLog("UdpMulticastServerThread", "WriteMulticaststring", format("Bytes written %d not equal to string length %d for %s.",sent, writeString.length(), writeString.c_str()), LogLevelError);
 }

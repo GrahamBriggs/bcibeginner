@@ -82,8 +82,6 @@ namespace BrainHatServersMonitor
 
             MonitorCancelTokenSource = new CancellationTokenSource();
             ReadDataPortTask = RunReadDataPortAsync(MonitorCancelTokenSource.Token);
-            ReadLogPortTask = RunReadLogPortAsync(MonitorCancelTokenSource.Token);
-      
             CountRecordsTimer.Start();
         }
 
@@ -97,11 +95,10 @@ namespace BrainHatServersMonitor
             {
                 MonitorCancelTokenSource.Cancel();
                 if (ReadDataPortTask != null)
-                    await Task.WhenAll(ReadDataPortTask, ReadLogPortTask);
+                    await ReadDataPortTask;
 
                 MonitorCancelTokenSource = null;
                 ReadDataPortTask = null;
-                ReadLogPortTask = null;
             }
         }
 
@@ -161,13 +158,11 @@ namespace BrainHatServersMonitor
         CancellationTokenSource MonitorCancelTokenSource { get; set; }
         //  Read data port task
         Task ReadDataPortTask { get; set; }
-        // Monitor task
-        Task ReadLogPortTask { get; set; }
-
+    
 
 
         /// <summary>
-        /// Run function for reading data on UDP multicast data port
+        /// Run function for reading data on LSL multicast data port
         /// </summary>
         protected async Task RunReadDataPortAsync(CancellationToken cancelToken)
         {
@@ -187,11 +182,11 @@ namespace BrainHatServersMonitor
                         var newSample = ParseSample(rawSample);
                         RawDataReceived?.Invoke(this, new BFSampleEventArgs(newSample));
                         LogRawDataProcessingPerformance(newSample);
-
                     }
                     catch (Exception ex)
                     {
-                        Log?.Invoke(this, new LogEventArgs(this, "RunUdpMulticastReader", ex, LogLevel.ERROR));
+                        Log?.Invoke(this, new LogEventArgs(this, "RunUdpMulticastReader", ex, LogLevel.WARN));
+                        await Task.Delay(500);
                     }
                 }
             }
@@ -207,6 +202,11 @@ namespace BrainHatServersMonitor
             }
         }
 
+
+        /// <summary>
+        /// Parse the sample into a known data type
+        /// Currently only Cyton and Cyton+Daisy are supported
+        /// </summary>
         private IBFSample ParseSample(double[] sample)
         {
 
@@ -222,12 +222,6 @@ namespace BrainHatServersMonitor
 
             return null;
         }
-
-
-
-    
-
-
 
 
 
@@ -260,72 +254,7 @@ namespace BrainHatServersMonitor
         }
 
 
-        //  Remote Log Monitor
-        #region RemoteLogMonitor
-
-        private async Task RunReadLogPortAsync(CancellationToken cancelToken)
-        {
-            try
-            {
-                using (var udpClient = new UdpClient(LogPort))
-                {
-                    try
-                    {
-                        udpClient.JoinMulticastGroup(IPAddress.Parse(BrainHatNetworkAddresses.MulticastGroupAddress));
-                        cancelToken.Register(() => udpClient.Close());
-
-                        while (!cancelToken.IsCancellationRequested)
-                        {
-                            try
-                            {
-                                //  wait for the next read, and then split it into the command and the arguments
-                                var parseReceived = Encoding.ASCII.GetString((await udpClient.ReceiveAsync()).Buffer).Split('?');
-
-                                if (parseReceived.Count() == 2)
-                                {
-                                    //  see if this is recognized command
-                                    switch (parseReceived[0])
-                                    {
-                                        case "log":
-                                            //  parse the arguments
-                                            var responseArgs = HttpUtility.ParseQueryString(parseReceived[1]);
-                                            var logString = responseArgs.Get("log");
-                                            var hostName = responseArgs.Get("hostname");
-                                            if (logString != null)
-                                            {
-                                                var log = JsonConvert.DeserializeObject<RemoteLogEventArgs>(logString);
-                                                Log?.Invoke(this, new LogEventArgs(log));
-                                            }
-                                            break;
-
-                                        default:
-                                            Log?.Invoke(this, new LogEventArgs(this, "RunMonitor", $"Received invalid remote log: {parseReceived}.", LogLevel.WARN));
-                                            break;
-                                    }
-                                }
-                            }
-                            catch (Exception exc)
-                            {
-                                Log?.Invoke(this, new LogEventArgs(this, "RunMonitor", exc, LogLevel.ERROR));
-                            }
-                        }
-                    }
-                    catch (OperationCanceledException)
-                    { }
-                    catch (Exception ex)
-                    {
-                        Log?.Invoke(this, new LogEventArgs(this, "RunMonitor", ex, LogLevel.FATAL));
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Log?.Invoke(this, new LogEventArgs(this, "RunMonitor", e, LogLevel.FATAL));
-            }
-        }
-
-
-        #endregion
+       
         /// <summary>
         /// Pass through to the log function for the data processor component
         /// </summary>

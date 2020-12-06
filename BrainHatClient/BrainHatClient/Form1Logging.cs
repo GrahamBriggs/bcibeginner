@@ -24,8 +24,8 @@ namespace BrainHatClient
 
             // log settings combo box
             comboBoxLogLevel.DataSource = Enum.GetValues(typeof(LogLevel));
-            Logger.LogLevelDisplay = LogLevel.TRACE; 
-            comboBoxLogLevel.SelectedItem = LogLevel.TRACE;
+            Logger.LogLevelDisplay = LogLevel.INFO; 
+            comboBoxLogLevel.SelectedItem = LogLevel.INFO;
             comboBoxLogLevel.SelectedIndexChanged += comboBoxLogLevel_SelectedIndexChanged;
             
             

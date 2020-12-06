@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace BrainflowInterfaces
 {
     /// <summary>
-    /// Data structure for Brainflow reading of sample from Cyton board data
+    /// Data structure for Brainflow sample from Cyton8 board
     /// mimicing the property names from OpenBCI_GUI csv file
     /// </summary>
     public class BFCyton8Sample : IBFSample

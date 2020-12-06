@@ -17,7 +17,7 @@ namespace BrainflowDataProcessing
         public event DetectedBlinkDelegate DetectedBlink;
 
         //  Delegates
-        public GetBFSamplesDelegate GetData;
+        public GetBFChunkDelegate GetData;
         public GetBFSampleDelegate GetStdDevMedians;
         
         //  Blink detector properties
@@ -41,13 +41,13 @@ namespace BrainflowDataProcessing
         /// Handler for new reading event
         /// will check for blinks on each new reading
         /// </summary>
-        public void OnNewReading(object sender, BFSampleEventArgs e)
+        public void OnNewSample(object sender, BFSampleEventArgs e)
         {
             var data = GetData(.25);
             var stdDevLeft = data.GetExgDataForChannel(0).StdDev();
             var stdDevRight = data.GetExgDataForChannel(1).StdDev();
             var stdDevMedians = GetStdDevMedians();
-            DetectBlinks(e.Reading, stdDevLeft, stdDevMedians.GetExgDataForChannel(0), stdDevRight, stdDevMedians.GetExgDataForChannel(1));
+            DetectBlinks(e.Sample, stdDevLeft, stdDevMedians.GetExgDataForChannel(0), stdDevRight, stdDevMedians.GetExgDataForChannel(1));
         }
 
         /// <summary>

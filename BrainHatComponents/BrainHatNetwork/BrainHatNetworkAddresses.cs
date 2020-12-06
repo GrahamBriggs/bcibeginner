@@ -12,20 +12,24 @@ namespace BrainHatNetwork
         //  C++ hatSimulator
         //  TCPIP
         private static readonly int ComServerPort = 49997;
-        //  UDP Multicast
+        //  UDP Multicast Status
         private static readonly int MulticastStatusPort = 49999;
+        //  UDP Multicast Logs
+        private static readonly int MulticastLogPort = 49998;
 
         //  C# hatSimulator
         //  TCPIP
         private static readonly int ComServerPortChannel1 = 50997;
         //  UDP Multicast
         private static readonly int MulticastStatusPortChannel1 = 50999;
+        //  UDP Multicast Logs
+        private static readonly int MulticastLogPortChannel1 = 50998;
 
         //  set this flag to to true to monitor alternate channel 1
         public static bool Channel1 { get; set; } = false;
 
         public static int ServerPort => Channel1 ? ComServerPortChannel1 : ComServerPort;
         public static int StatusPort => Channel1 ? MulticastStatusPortChannel1 : MulticastStatusPort;
-
+        public static int LogPort => Channel1 ? MulticastLogPortChannel1 : MulticastLogPort;
     }
 }

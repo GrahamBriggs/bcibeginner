@@ -14,7 +14,7 @@
 #include "BFCyton16.h"
 
 
-#define SENSOR_SLEEP (20)
+#define SENSOR_SLEEP (100)
 
 using namespace std;
 using namespace chrono;
@@ -58,7 +58,6 @@ string BoardDataReader::ReportSource()
 {
 	return format("Reading data from board id %d at %d Hz.", BoardId, SampleRate);
 }
-
 
 
 //  Thread Start
@@ -150,8 +149,8 @@ int BoardDataReader::InitializeBoard()
 	}
 	catch (const BrainFlowException &err)
 	{
-		Logging.AddLog("SensorThread", "InitializeBoard", format("Failed to connect to board. Error %d.", err.exit_code), LogLevelError);
-		Logging.AddLog("SensorThread", "InitializeBoard", string(err.what()), LogLevelWarn);
+		Logging.AddLog("BoardDataReader", "InitializeBoard", format("Failed to connect to board. Error %d.", err.exit_code), LogLevelError);
+		Logging.AddLog("BoardDataReader", "InitializeBoard", string(err.what()), LogLevelWarn);
 		res = err.exit_code;
 		if (Board->is_prepared())
 		{
@@ -167,14 +166,14 @@ int BoardDataReader::InitializeBoard()
 //  tries to restart board streaming
 void BoardDataReader::ReconnectToBoard()
 {
-	Logging.AddLog("SensorThread", "ReconnectToBoard", "Lost connection to the board. Attempting to reconnect", LogLevelWarn);
+	Logging.AddLog("BoardDataReader", "ReconnectToBoard", "Lost connection to the board. Attempting to reconnect", LogLevelWarn);
 
 	ReleaseBoard();
 	
 	if (InitializeBoard() != 0)
 	{
 		Sleep(3000);
-		Logging.AddLog("SensorThread", "ReconnectToBoard", "Faled to reconnect to the board.", LogLevelWarn);
+		Logging.AddLog("BoardDataReader", "ReconnectToBoard", "Faled to reconnect to the board.", LogLevelWarn);
 	}
 }
 	
@@ -288,27 +287,19 @@ void BoardDataReader::CalculateReadingTimeThisChunk(double** chunk, int samples,
 {
 	auto timeNow = (chrono::duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count() / 1000.0);	
 		
-	double newestSampleTime = chunk[TimeStampIndex][samples - 1];
-	oldestSampleTime = chunk[TimeStampIndex][0];
-  	if (fabs(newestSampleTime - timeNow) > 100 || fabs(oldestSampleTime - timeNow) > 100)
-	{
-		  //TODO - Cyton 16 seems to throw out 0.0 timestamps once and a while, fix that here
-	    	//Logging.AddLog("BoardDataReader", "CalculateReadingTimeThisChunk", format("Invalid time stamp? Sample index %.0lf old %.3lf new %.3lf", chunk[0][samples - 1], oldestSampleTime, newestSampleTime), LogLevelError);
-		newestSampleTime = timeNow;
-		oldestSampleTime = timeNow - (samples * 1.0 / SampleRate);
-	}
-	
 	if (LastTimeStampSync > 0)
 	{
 		oldestSampleTime = LastTimeStampSync;
-		LastTimeStampSync = newestSampleTime;
 	}
 	else
 	{
-		LastTimeStampSync = oldestSampleTime;
+		oldestSampleTime = timeNow - (samples / SampleRate);
 	}
 	
-	period = (newestSampleTime - oldestSampleTime) / samples;
+	LastTimeStampSync = timeNow;
+		
+	period = (timeNow - oldestSampleTime) / samples;
+	
 }
 
 

@@ -20,9 +20,11 @@ namespace BrainHatClient
         /// <summary>
         /// Start the file writer
         /// </summary>
-        public async Task StartWritingToFileAsync(string fileNameRoot)
+        public async Task StartWritingToFileAsync(string fileNameRoot, int boardId, int sampleRate)
         {
             FileNameRoot = fileNameRoot;
+            BoardId = boardId;
+            SampleRate = sampleRate;
 
             await StopWritingToFileAsync();
             Data.RemoveAll();
@@ -52,7 +54,7 @@ namespace BrainHatClient
         /// </summary>
         public void AddData(object sender, BFSampleEventArgs e)
         {
-            AddData(e.Reading);
+            AddData(e.Sample);
         }
 
 
@@ -88,8 +90,24 @@ namespace BrainHatClient
 
         //  File Name Root
         string FileNameRoot;
+        int BoardId;
+        int SampleRate;
 
+        //OpenBCI_GUI$BoardCytonSerialDaisy
+        //OpenBCI_GUI$BoardCytonSerial
 
+        private string FileBoardDescription()
+        {
+            switch ( BoardId)
+            {
+                case 0:
+                    return "OpenBCI_GUI$BoardCytonSerial";
+                case 2:
+                    return "OpenBCI_GUI$BoardCytonSerialDaisy";
+                default:
+                    return "Unknown?";
+            }
+        }
         /// <summary>
         /// Run function
         /// </summary>
@@ -111,9 +129,9 @@ namespace BrainHatClient
                 {
                     //  write header
                     file.WriteLine("%OpenBCI Raw EEG Data");
-                    file.WriteLine("%Number of channels = 8");
-                    file.WriteLine("%Sample Rate = 250 Hz");
-                    file.WriteLine("%Board = OpenBCI_GUI$BoardCytonSerial");
+                    file.WriteLine($"%Number of channels = {brainflow.BoardShim.get_exg_channels(BoardId).Length}");
+                    file.WriteLine($"%Sample Rate = {SampleRate} Hz");
+                    file.WriteLine($"%Board = {FileBoardDescription()}");
                     file.WriteLine("%Logger = BCIpi Data Logger");
                     bool writeHeader = false;
 

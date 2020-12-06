@@ -30,9 +30,9 @@
         {
             this.groupBoxLogging = new System.Windows.Forms.GroupBox();
             this.labelConnectedDevice = new System.Windows.Forms.Label();
-            this.comboBoxConnectedDevice = new System.Windows.Forms.ComboBox();
             this.labelConnectionStatus = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
+            this.comboBoxConnectedDevice = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.comboBoxLogLevelRemote = new System.Windows.Forms.ComboBox();
             this.comboBoxLogLevel = new System.Windows.Forms.ComboBox();
@@ -81,16 +81,6 @@
             this.labelConnectedDevice.TabIndex = 7;
             this.labelConnectedDevice.Text = "Connected Device:";
             // 
-            // comboBoxConnectedDevice
-            // 
-            this.comboBoxConnectedDevice.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.comboBoxConnectedDevice.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxConnectedDevice.FormattingEnabled = true;
-            this.comboBoxConnectedDevice.Location = new System.Drawing.Point(848, 41);
-            this.comboBoxConnectedDevice.Name = "comboBoxConnectedDevice";
-            this.comboBoxConnectedDevice.Size = new System.Drawing.Size(195, 21);
-            this.comboBoxConnectedDevice.TabIndex = 6;
-            // 
             // labelConnectionStatus
             // 
             this.labelConnectionStatus.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -109,6 +99,16 @@
             this.label3.Size = new System.Drawing.Size(94, 13);
             this.label3.TabIndex = 5;
             this.label3.Text = "Remote Log Level";
+            // 
+            // comboBoxConnectedDevice
+            // 
+            this.comboBoxConnectedDevice.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.comboBoxConnectedDevice.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxConnectedDevice.FormattingEnabled = true;
+            this.comboBoxConnectedDevice.Location = new System.Drawing.Point(848, 41);
+            this.comboBoxConnectedDevice.Name = "comboBoxConnectedDevice";
+            this.comboBoxConnectedDevice.Size = new System.Drawing.Size(195, 21);
+            this.comboBoxConnectedDevice.TabIndex = 6;
             // 
             // label2
             // 
@@ -271,7 +271,7 @@
             this.Controls.Add(this.groupBoxExgChannels);
             this.Controls.Add(this.groupBoxLogging);
             this.Name = "Form1";
-            this.Text = "Form1";
+            this.Text = "brainHat Data Viewer for Windows";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.groupBoxLogging.ResumeLayout(false);
             this.groupBoxLogging.PerformLayout();

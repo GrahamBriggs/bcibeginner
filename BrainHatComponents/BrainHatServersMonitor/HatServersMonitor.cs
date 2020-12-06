@@ -9,11 +9,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using BrainflowInterfaces;
-using static BrainHatNetwork.Tcpip;
 using Newtonsoft.Json;
 using BrainHatNetwork;
-using LSL;
 using System.Xml.Linq;
 using static LSL.liblsl;
 
@@ -41,6 +38,7 @@ namespace BrainHatServersMonitor
             MonitorCancelTokenSource = new CancellationTokenSource();
             UdpReaderRunTask = RunUdpMulticastReaderAsync(MonitorCancelTokenSource.Token);
             ConnectionMonitorRunTask = RunConnectionStatusMonitorAsync(MonitorCancelTokenSource.Token);
+            ReadLogPortTask = RunReadLogPortAsync(MonitorCancelTokenSource.Token);
             LslScannerRunTask = RunLslScannerAsync(MonitorCancelTokenSource.Token);
         }
 
@@ -56,20 +54,21 @@ namespace BrainHatServersMonitor
             {
                 MonitorCancelTokenSource.Cancel();
                 if (UdpReaderRunTask != null)
-                    await Task.WhenAll(UdpReaderRunTask, ConnectionMonitorRunTask, LslScannerRunTask);
+                    await Task.WhenAll(UdpReaderRunTask, ConnectionMonitorRunTask, LslScannerRunTask, ReadLogPortTask);
 
                 MonitorCancelTokenSource = null;
                 UdpReaderRunTask = null;
                 ConnectionMonitorRunTask = null;
+                ReadLogPortTask = null;
             }
         }
 
 
-        public IEnumerable<IBrainHatServerConnection> ConnectedServers
+        public IEnumerable<HatServer> ConnectedServers
         {
             get
             {
-                return new List<IBrainHatServerConnection>(DiscoveredServers.Values);
+                return new List<HatServer>(DiscoveredServers.Values);
             }
         }
 
@@ -105,6 +104,7 @@ namespace BrainHatServersMonitor
         Task UdpReaderRunTask { get; set; }
         Task ConnectionMonitorRunTask { get; set; }
         Task LslScannerRunTask { get; set; }
+        Task ReadLogPortTask { get; set; }
 
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace BrainHatServersMonitor
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1));
 
-                    var oldConnections = DiscoveredServers.Where(x => (DateTimeOffset.UtcNow - x.Value.TimeStamp) > TimeSpan.FromSeconds(1000));
+                    var oldConnections = DiscoveredServers.Where(x => (DateTimeOffset.UtcNow - x.Value.TimeStamp) > TimeSpan.FromSeconds(10));
 
                     if (oldConnections.Any())
                     {
@@ -132,6 +132,8 @@ namespace BrainHatServersMonitor
                                 DiscoveredServers.TryRemove(nextConnection.Key, out var discard);
                                 await discard.StopMonitorAsync();
                                 discard.Log -= OnComponentLog;
+
+                                DiscoveredLslStreams.TryRemove(nextConnection.Key, out var discardLsl);
                             }
                             catch (Exception ex)
                             {
@@ -341,6 +343,9 @@ namespace BrainHatServersMonitor
         }
 
 
+
+        System.Diagnostics.Stopwatch PingTimer = new System.Diagnostics.Stopwatch();
+
         /// <summary>
         /// Send connection status update event
         /// </summary>
@@ -348,6 +353,7 @@ namespace BrainHatServersMonitor
         {
             try
             {
+                //  TODO - hook up ping speed
                 var pingSpeed = TimeSpan.FromSeconds(-1);
                 try
                 {
@@ -356,7 +362,7 @@ namespace BrainHatServersMonitor
                     {
                         var sw = new System.Diagnostics.Stopwatch();
                         sw.Start();
-                        var response = await Tcpip.GetTcpResponse(server.IpAddress, BrainHatNetworkAddresses.ServerPort, "ping\n", 2000, 2000);
+                        var response = await Tcpip.GetTcpResponse(server.IpAddress, BrainHatNetworkAddresses.ServerPort, "ping\n", 5000, 5000);
                         sw.Stop();
                         pingSpeed = sw.Elapsed;
                     }
@@ -366,8 +372,22 @@ namespace BrainHatServersMonitor
                     Log?.Invoke(this, new LogEventArgs(this, "SendConnectionStatusChangedEvents", e, LogLevel.WARN));
                 }
 
+                if ( DiscoveredLslStreams.ContainsKey(status.HostName) )
+                {
+                    var streamInfo = DiscoveredLslStreams[status.HostName];
+                    var doc = XDocument.Parse(streamInfo.as_xml());
+                    if (doc != null)
+                    {
+                        var port = doc.Element("info")?.Element("v4data_port").Value;
+                        int portNumber;
+                        if (int.TryParse(port, out portNumber))
+                            status.DataPort = portNumber;
+                    }
+                }
+
+
                 status.PingSpeed = pingSpeed;
-            
+
 
                 HatStatusUpdate?.Invoke(this, new BrainHatStatusEventArgs(status));
             }
@@ -376,6 +396,74 @@ namespace BrainHatServersMonitor
                 Log?.Invoke(this, new LogEventArgs(this, "SendConnectionStatusChangedEvents", e, LogLevel.ERROR));
             }
         }
+
+
+        //  Remote Log Monitor
+        #region RemoteLogMonitor
+
+        private async Task RunReadLogPortAsync(CancellationToken cancelToken)
+        {
+            try
+            {
+                using (var udpClient = new UdpClient(BrainHatNetwork.BrainHatNetworkAddresses.LogPort))
+                {
+                    try
+                    {
+                        udpClient.JoinMulticastGroup(IPAddress.Parse(BrainHatNetworkAddresses.MulticastGroupAddress));
+                        cancelToken.Register(() => { try { udpClient.Close(); } catch { } });
+
+                        while (!cancelToken.IsCancellationRequested)
+                        {
+                            try
+                            {
+                                //  wait for the next read, and then split it into the command and the arguments
+                                var parseReceived = Encoding.ASCII.GetString((await udpClient.ReceiveAsync()).Buffer).Split('?');
+
+                                if (parseReceived.Count() == 2)
+                                {
+                                    //  see if this is recognized command
+                                    switch (parseReceived[0])
+                                    {
+                                        case "log":
+                                            //  parse the arguments
+                                            var responseArgs = HttpUtility.ParseQueryString(parseReceived[1]);
+                                            var logString = responseArgs.Get("log");
+                                            var hostName = responseArgs.Get("hostname");
+                                            if (logString != null)
+                                            {
+                                                var log = JsonConvert.DeserializeObject<RemoteLogEventArgs>(logString);
+                                                Log?.Invoke(this, new LogEventArgs(log));
+                                            }
+                                            break;
+
+                                        default:
+                                            Log?.Invoke(this, new LogEventArgs(this, "RunReadLogPortAsync", $"Received invalid remote log: {parseReceived}.", LogLevel.WARN));
+                                            break;
+                                    }
+                                }
+                            }
+                            catch (Exception exc)
+                            {
+                                Log?.Invoke(this, new LogEventArgs(this, "RunReadLogPortAsync", exc, LogLevel.ERROR));
+                            }
+                        }
+                    }
+                    catch (OperationCanceledException)
+                    { }
+                    catch (Exception ex)
+                    {
+                        Log?.Invoke(this, new LogEventArgs(this, "RunReadLogPortAsync", ex, LogLevel.FATAL));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Log?.Invoke(this, new LogEventArgs(this, "RunReadLogPortAsync", e, LogLevel.FATAL));
+            }
+        }
+
+
+        #endregion
 
 
 

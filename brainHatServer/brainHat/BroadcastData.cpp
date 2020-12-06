@@ -46,11 +46,10 @@ void BroadcastData::SetBoard(int boardId, int sampleRate)
 {
 	BoardId = boardId;
 	SampleRate = sampleRate;
+	HostName = GetHostName();
 	
 	SetupLslForBoard();
 	
-	HostName = GetHostName();
-
 	Thread::Start();
 }
 
@@ -65,7 +64,7 @@ void BroadcastData::SetupLslForBoard()
 	
 	SampleSize = 2 + numChannels + accelChannels + otherChannels + analogChannels;
 	
-	lsl::stream_info info("BrainHat", "BFSample", SampleSize, SampleRate, lsl::cf_double64, HostName);
+	lsl::stream_info info(format("BrainHat BFSample", HostName.c_str()), "BFSample", SampleSize, SampleRate, lsl::cf_double64, HostName);
 
 	// add some description fields
 	info.desc().append_child_value("manufacturer", "OpenBCI");

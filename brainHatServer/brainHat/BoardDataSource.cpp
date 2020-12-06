@@ -97,6 +97,9 @@ void BoardDataSource::InspectDataStream(BFSample* data)
 	//  log data stream inspection every five seconds
 	if(InspectDataStreamLogTimer.ElapsedMilliseconds() > 5000)
 	{
+		Logging.AddLog("BoardDataSource", "InspectDataStream", ReportSource(), LogLevelTrace);
+	
+		//  calculate sample times
 		double averageTimeBetweenSamples = 0.0;	
 		double sampleTimeHigh = 0.0;
 		double sampleTimeLow = 1000000.0;
@@ -119,7 +122,8 @@ void BoardDataSource::InspectDataStream(BFSample* data)
 		}
 		
 		averageTimeBetweenSamples /= DataInspecting.size();
-		Logging.AddLog("BoardDataSource", "InspectDataStream", format("Inspecting %d readings. %d readings per second.  Average time %.6lf s. Max time %.6lf s. Min time %.6lf s.", DataInspecting.size(), DataInspecting.size() / 5, averageTimeBetweenSamples, sampleTimeHigh, sampleTimeLow), LogLevelTrace);
+		
+		Logging.AddLog("BoardDataSource", "InspectDataStream", format("Read %d samples. %d sps. Avg %.4lf s. Max %.4lf s. Min %.4lf s.", DataInspecting.size(), DataInspecting.size() / 5, averageTimeBetweenSamples, sampleTimeHigh, sampleTimeLow), LogLevelTrace);
 
 		for (auto it = DataInspecting.begin(); it != DataInspecting.end(); ++it)
 		{
@@ -130,14 +134,12 @@ void BoardDataSource::InspectDataStream(BFSample* data)
 		
 		auto timeNow = chrono::duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count() / 1000.0;	
 		
-		Logging.AddLog("BoardDataSource", "InspectDataStream", ReportSource(), LogLevelTrace);
-		Logging.AddLog("BoardDataSource", "InspectDataStream", format("System time - samle index time: %.6lf", (timeNow - LastTimeStampSync)), LogLevelTrace);
-
-		if (CountMissingIndex > 5)
+	
+		if (CountMissingIndex > 0)
 		{
-			Logging.AddLog("BoardDataSource", "InspectDataStream", format("Missed %d samples this period.", CountMissingIndex), LogLevelWarn);
+			Logging.AddLog("BoardDataSource", "InspectDataStream", format("Missed %d samples in the last 5 seconds.", CountMissingIndex), LogLevelWarn);
+			CountMissingIndex = 0;
 		}
-		CountMissingIndex = 0;
 	}
 }
 
