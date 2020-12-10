@@ -61,9 +61,9 @@ int main(int argc, char *argv[])
 			BrainflowBoardParams.serial_port = "/dev/ttyUSB0";
 		
 		//  default demo file
-		if(Board_Id < -1 && DemoFileName == "")
+		if(Board_Id < 0 && DemoFileName == "")
 		{
-			cout << "Invalid startup parameters. Exiting program." << endl;
+			cout << "Invalid startup parameters. This program only supports --board-id 0|1|2 (Cyton, Ganglion, Cyton+Daisy) Exiting program." << endl;
 			getchar();
 			return -1;
 		}	
@@ -84,11 +84,10 @@ int main(int argc, char *argv[])
 	ComServer.Start();
 	
 	//  start board or file simulator data
-	if (Board_Id >= -1)
-		RunBoardData();
-	else
+	if(Board_Id < 0)
 		RunFileData();
-	
+	else
+		RunBoardData();
 	
 	
 	// stop threads
