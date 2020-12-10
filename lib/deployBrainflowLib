@@ -1,0 +1,18 @@
+#!/bin/bash  
+
+echo "Copying brainflow lib to /usr/lib"
+cp ./brainflow/RPi32/lib/* /usr/lib
+
+echo "Copying brainflow include to /usr/include
+cp ./brainflow/RPi32/inc/* /usr/include
+
+echo "Copying lsl lib to /usr/local/lib
+cp ./lsl/Rpi32/lib/liblsl.so.1.14.0 /usr/local/lib
+
+echo "Making symlinks for liblsl.so.1.14.0
+ls -s /usr/local/lib/liblsl.so.1.14.0 /usr/local/lib/liblsl.so
+ls -s /usr/local/lib/liblsl.so.1.14.0 /usr/lib/liblsl.so
+
+echo "Copying lsl include to /usr/local/include"
+cp -r ./lsl/RPi32/include /usr/local/include
+
