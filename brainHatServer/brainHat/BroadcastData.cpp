@@ -53,6 +53,20 @@ void BroadcastData::SetBoard(int boardId, int sampleRate)
 	Thread::Start();
 }
 
+string StreamName(int boardId)
+{
+	switch (boardId)
+	{
+	case 0:
+		return "Cyton8_BFSample";
+	case 2:
+		return "Cyton16_BFSample";
+	case 1:
+		return "Ganglion_BFSample";
+	default:
+		return "BFSample";
+	}
+}
 
 void BroadcastData::SetupLslForBoard()
 {
@@ -64,7 +78,7 @@ void BroadcastData::SetupLslForBoard()
 	
 	SampleSize = 2 + numChannels + accelChannels + otherChannels + analogChannels;
 	
-	lsl::stream_info info(format("BrainHat BFSample", HostName.c_str()), "BFSample", SampleSize, SampleRate, lsl::cf_double64, HostName);
+	lsl::stream_info info(StreamName(BoardId), "BFSample", SampleSize, SampleRate, lsl::cf_double64, HostName);
 
 	// add some description fields
 	info.desc().append_child_value("manufacturer", "OpenBCI");

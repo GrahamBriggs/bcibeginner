@@ -149,6 +149,10 @@ namespace BrainHatServersMonitor
             {
                 Log?.Invoke(this, new LogEventArgs(this, "RunConnectionStatusMonitor", e, LogLevel.ERROR));
             }
+            finally
+            {
+                var test = 1;
+            }
         }
 
 
@@ -169,7 +173,7 @@ namespace BrainHatServersMonitor
                     {
                         
                         
-                        System.Console.Write(nextStreamInfo.as_xml());
+                        //System.Console.Write(nextStreamInfo.as_xml());
                         var doc = XDocument.Parse(nextStreamInfo.as_xml());
                         if (doc != null)
                         {
@@ -308,7 +312,7 @@ namespace BrainHatServersMonitor
 
                     //  update server connection state
                     await server.UpdateConnection(serverStatus);
-                    server.TimeStamp = serverStatus.TimeStamp;
+                    server.TimeStamp = DateTimeOffset.UtcNow;
 
                     //  set raw data status for the event message
                     serverStatus.ReceivingRaw = server.ReceivingRaw;
@@ -336,10 +340,11 @@ namespace BrainHatServersMonitor
             Log?.Invoke(this, new LogEventArgs(this, "ProcessNetworkStatus", $"Discovered new brainHat server {serverStatus.HostName}.", LogLevel.INFO));
 
             var hatServer = new HatServer(serverStatus, DiscoveredLslStreams[serverStatus.HostName]);
+            hatServer.TimeStamp = DateTimeOffset.UtcNow;
             hatServer.Log += OnComponentLog;
             await hatServer.StartMonitorAsync();
             DiscoveredServers.TryAdd(serverStatus.HostName, hatServer);
-            HatConnectionChanged?.Invoke(this, new HatConnectionEventArgs(HatConnectionState.Discovered, serverStatus.HostName));
+            HatConnectionChanged?.Invoke(this, new HatConnectionEventArgs(HatConnectionState.Discovered, serverStatus.HostName, serverStatus.IpAddress, serverStatus.BoardId, serverStatus.SampleRate));
         }
 
 
@@ -353,7 +358,6 @@ namespace BrainHatServersMonitor
         {
             try
             {
-                //  TODO - hook up ping speed
                 var pingSpeed = TimeSpan.FromSeconds(-1);
                 try
                 {

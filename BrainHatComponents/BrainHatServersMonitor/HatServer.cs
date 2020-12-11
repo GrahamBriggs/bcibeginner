@@ -167,6 +167,9 @@ namespace BrainHatServersMonitor
         protected async Task RunReadDataPortAsync(CancellationToken cancelToken)
         {
             var inlet = new StreamInlet(StreamInfo);
+            inlet.open_stream();
+           // Console.WriteLine(inlet.info().as_xml());
+
             double[] rawSample = new double[SampleSize];
 
             await Task.Delay(1000);
@@ -178,10 +181,13 @@ namespace BrainHatServersMonitor
                 {
                     try
                     {
-                        inlet.pull_sample(rawSample);
-                        var newSample = ParseSample(rawSample);
-                        RawDataReceived?.Invoke(this, new BFSampleEventArgs(newSample));
-                        LogRawDataProcessingPerformance(newSample);
+                        if (inlet.samples_available() > 0)
+                        {
+                            inlet.pull_sample(rawSample, 2);
+                            var newSample = ParseSample(rawSample);
+                            RawDataReceived?.Invoke(this, new BFSampleEventArgs(newSample));
+                            LogRawDataProcessingPerformance(newSample);
+                        }
                     }
                     catch (Exception ex)
                     {

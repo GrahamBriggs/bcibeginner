@@ -70,8 +70,6 @@ namespace BrainflowDataProcessing
 
                 Log?.Invoke(this, new LogEventArgs(this, "StopDataProcessor", $"Stopped Brainflow data processor for {Name}.", LogLevel.INFO));
             }
-
-            
         }
 
 
