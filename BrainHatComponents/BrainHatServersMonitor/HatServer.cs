@@ -166,28 +166,26 @@ namespace BrainHatServersMonitor
         /// </summary>
         protected async Task RunReadDataPortAsync(CancellationToken cancelToken)
         {
-            var inlet = new StreamInlet(StreamInfo);
-            inlet.open_stream();
-           // Console.WriteLine(inlet.info().as_xml());
-
-            double[] rawSample = new double[SampleSize];
-
-            await Task.Delay(1000);
-
+            StreamInlet inlet = null;
             try
             {
+                inlet = new StreamInlet(StreamInfo);
+                inlet.open_stream();
+                // Console.WriteLine(inlet.info().as_xml());
+
+                double[] rawSample = new double[SampleSize];
+
+                await Task.Delay(100);
+
                 //  spin until canceled
                 while (!cancelToken.IsCancellationRequested)
                 {
                     try
                     {
-                        if (inlet.samples_available() > 0)
-                        {
-                            inlet.pull_sample(rawSample, 2);
-                            var newSample = ParseSample(rawSample);
-                            RawDataReceived?.Invoke(this, new BFSampleEventArgs(newSample));
-                            LogRawDataProcessingPerformance(newSample);
-                        }
+                        inlet.pull_sample(rawSample, 2);
+                        var newSample = ParseSample(rawSample);
+                        RawDataReceived?.Invoke(this, new BFSampleEventArgs(newSample));
+                        LogRawDataProcessingPerformance(newSample);
                     }
                     catch (Exception ex)
                     {
@@ -204,7 +202,8 @@ namespace BrainHatServersMonitor
             }
             finally
             {
-                inlet.close_stream();
+                if ( inlet != null )
+                    inlet.close_stream();
             }
         }
 
@@ -258,21 +257,6 @@ namespace BrainHatServersMonitor
                 RecordsCount = 0;
             }
         }
-
-
-       
-        /// <summary>
-        /// Pass through to the log function for the data processor component
-        /// </summary>
-        private void OnComponentLog(object sender, LogEventArgs e)
-        {
-            Log?.Invoke(sender, e);
-        }
-
-
-
-
-
 
     }
 }

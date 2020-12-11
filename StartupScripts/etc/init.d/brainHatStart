@@ -1,0 +1,49 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:   brainHat
+# Required-Start: $local_fs $remote_fs
+# Required-Stop:  $local_fs $remote_fs
+# Should-Start:   $network
+# Should-Stop:    $network
+# Default-Start:  2 3 4 5
+# Default-Stop:   0 1 6
+# Short-Description:    Open BCI LSL Data Server
+# Description:    Open BCI data to LSL stream server program
+### END INIT INFO
+
+
+
+case "$1" in
+
+  demo)
+    screen -S brainHat -d -m /home/pi/Source/bcibeginner/brainHatServer/brainHat/Release/brainHat --demo-file /home/pi/Source/BCI/DataLogs/SeekingAlpha.txt
+    echo "brainHat demo file started on screen brainHat"
+    ;;
+
+   cyton8)
+    screen -S brainHat -d -m /home/pi/Source/bcibeginner/brainHatServer/brainHat/Release/brainHat --board-id 0 --serial-port /dev/ttyUSB0
+    echo "brainHat Cyton board started on screen brainHat"
+   ;;
+   
+   cyton16)
+    screen -S brainHat -d -m /home/pi/Source/bcibeginner/brainHatServer/brainHat/Release/brainHat --board-id 2 --serial-port /dev/ttyUSB0
+    echo "brainHat Cyton+Daisy board started on screen brainHat"
+   ;;
+   
+   ganglion)
+    screen -S brainHat -d -m /home/pi/Source/bcibeginner/brainHatServer/brainHat/Release/brainHat --board-id 1 --serial-port /dev/ttyUSB0
+    echo "brainHat Ganglion board started on screen brainHat"
+   ;;
+
+  stop)
+    screen -X -S brainHat  kill
+    echo "brainHat  shutting down"
+    ;;
+  *)
+    echo "Usage: /etc/init.d/brainHat {demo|cyton8|cyton16|ganglion|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0

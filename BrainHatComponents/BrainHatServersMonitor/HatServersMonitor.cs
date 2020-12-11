@@ -24,7 +24,7 @@ namespace BrainHatServersMonitor
         //  Events
         public event LogEventDelegate Log;
 
-        public event HatStatusUpdateDelegate HatStatusUpdate;
+        public event HatConnectionStatusUpdateDelegate HatConnectionStatusUpdate;
         public event HatConnectionUpdateDelegate HatConnectionChanged;
 
         /// <summary>
@@ -393,7 +393,7 @@ namespace BrainHatServersMonitor
                 status.PingSpeed = pingSpeed;
 
 
-                HatStatusUpdate?.Invoke(this, new BrainHatStatusEventArgs(status));
+                HatConnectionStatusUpdate?.Invoke(this, new BrainHatStatusEventArgs(status));
             }
             catch (Exception e)
             {

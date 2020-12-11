@@ -1,0 +1,15 @@
+ [Unit]
+ Description=brainHat
+ After=multi-user.target
+
+ [Service]
+ Type=forking
+ # enable the appropriate line here
+ ExecStart=/etc/init.d/brainHatStart demo
+ #ExecStart=/etc/init.d/brainHatStart cyton8
+ #ExecStart=/etc/init.d/brainHatStart cyton16
+ #ExecStart=/etc/init.d/brainHatStart ganglion
+
+ 
+ [Install]
+ WantedBy=multi-user.target

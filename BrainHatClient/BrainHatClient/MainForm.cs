@@ -18,28 +18,20 @@ namespace BrainHatClient
     public partial class MainForm : Form
     {
         public MainForm()
-        {
-            BrainHatNetworkAddresses.Channel1 = false;
-
-            //  create the program logging object
+        {  
             Logger = new Logging();
-
 
             InitializeComponent();
 
             SetupDevicesList();
 
-            //  start logging thread
             StartLogging();
 
-            // create the hat servers monitor
             BrainHatServers = new HatServersMonitor();
-            // hook up hat monitor events
             BrainHatServers.Log += OnLog;
-            BrainHatServers.HatStatusUpdate += OnHatStatusUpdate;
+            BrainHatServers.HatConnectionStatusUpdate += OnHatStatusUpdate;
             BrainHatServers.HatConnectionChanged += OnHatConnectionChanged;
 
-            //  we will create a data processor and blink detector for each server
             DataProcessors = new ConcurrentDictionary<string, BrainflowDataProcessor>();
             BlinkDetectors = new ConcurrentDictionary<string, BlinkDetector>();
 
@@ -50,9 +42,6 @@ namespace BrainHatClient
             {
                 await BrainHatServers.StartMonitorAsync();
             });
-
-
-
         }
 
         //  Logging
@@ -92,12 +81,14 @@ namespace BrainHatClient
 
             if (OpenForms.ContainsKey(hostName))
             {
+                //  window for this device is open already, bring it to the foreground
                 OpenForms[hostName].WindowState = FormWindowState.Minimized;
                 OpenForms[hostName].Show();
                 OpenForms[hostName].WindowState = FormWindowState.Normal;
             }
             else
             {
+                //  open a new window for this device
                 var server = BrainHatServers.ConnectedServers.Where(x => x.HostName == hostName).FirstOrDefault();
                 if (server != null)
                 {
@@ -106,6 +97,10 @@ namespace BrainHatClient
                     newForm.FormClosing += NewForm_FormClosing;
                     newForm.Show();
                     OpenForms.TryAdd(hostName, newForm);
+                }
+                else
+                {
+                    MessageBox.Show("Error. That server does not exist", "brainHat", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -126,9 +121,6 @@ namespace BrainHatClient
         /// </summary>
         private async void OnHatConnectionChanged(object sender, HatConnectionEventArgs e)
         {
-            // Logger.AddLog(new LogEventArgs(this, "OnHatConnectionChanged", $"Hat connection changed {e.HostName} {e.State}.", LogLevel.INFO));
-
-
             switch (e.State)
             {
                 case HatConnectionState.Discovered:
@@ -200,31 +192,39 @@ namespace BrainHatClient
         /// </summary>
         private async void CreateDataObjectsForNewServer(HatServer server)
         {
-            var dataProcessor = new BrainflowDataProcessor(server.HostName, server.BoardId, server.SampleRate);
-            dataProcessor.Log += OnLog;
-            server.RawDataReceived += dataProcessor.AddDataToProcessor;
-            DataProcessors.TryAdd(server.HostName, dataProcessor);
+            try
+            {
+                var dataProcessor = new BrainflowDataProcessor(server.HostName, server.BoardId, server.SampleRate);
+                dataProcessor.Log += OnLog;
+                server.RawDataReceived += dataProcessor.AddDataToProcessor;
+                DataProcessors.TryAdd(server.HostName, dataProcessor);
 
-            var blinkDetector = new BlinkDetector();
-            blinkDetector.Log += OnLog;
-            dataProcessor.NewSample += blinkDetector.OnNewSample;
-            blinkDetector.GetData = dataProcessor.GetRawData;
-            blinkDetector.GetStdDevMedians = dataProcessor.GetStdDevianMedians;
-            BlinkDetectors.TryAdd(server.HostName, blinkDetector);
+                var blinkDetector = new BlinkDetector();
+                blinkDetector.Log += OnLog;
+                dataProcessor.NewSample += blinkDetector.OnNewSample;
+                blinkDetector.GetData = dataProcessor.GetRawData;
+                blinkDetector.GetStdDevMedians = dataProcessor.GetStdDevianMedians;
+                BlinkDetectors.TryAdd(server.HostName, blinkDetector);
 
-            await dataProcessor.StartDataProcessorAsync();
+                await dataProcessor.StartDataProcessorAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.AddLog(new LogEventArgs(this, "CreateDataObjectsForNewServer", ex, LogLevel.ERROR));
+            }
         }
+
 
         /// <summary>
         /// We lost connection to a server, shut down the objects connected to this server
         /// </summary>
         private async Task ShutDownDataObjectsForServer(HatServer server)
         {
-            if (!DataProcessors.ContainsKey(server.HostName) && !BlinkDetectors.ContainsKey(server.HostName))
-                return;
-
             try
             {
+                if (!DataProcessors.ContainsKey(server.HostName) && !BlinkDetectors.ContainsKey(server.HostName))
+                    return;
+
                 DataProcessors.TryRemove(server.HostName, out var removedProcessor);
                 await removedProcessor.StopDataProcessorAsync();
                 removedProcessor.Log -= OnLog;
@@ -236,7 +236,7 @@ namespace BrainHatClient
             }
             catch (Exception ex)
             {
-                Logger.AddLog(new LogEventArgs(this, "OnHatConnectionChanged", ex, LogLevel.ERROR));
+                Logger.AddLog(new LogEventArgs(this, "ShutDownDataObjectsForServer", ex, LogLevel.ERROR));
             }
         }
 

@@ -44,7 +44,7 @@ namespace BrainHatNetwork
 
     }
     //
-    public delegate void HatStatusUpdateDelegate(object sender, BrainHatStatusEventArgs e);
+    public delegate void HatConnectionStatusUpdateDelegate(object sender, BrainHatStatusEventArgs e);
 
 
 
