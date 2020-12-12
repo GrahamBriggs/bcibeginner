@@ -81,6 +81,9 @@
     <ClCompile Include="GpioPinManager.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
+    <ClCompile Include="FileRecorder.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
@@ -153,6 +156,15 @@
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="GpioPinManager.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileRecorder.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="UriParser.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileExtensions.h">
       <Filter>Header files</Filter>
     </ClInclude>
   </ItemGroup>

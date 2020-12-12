@@ -3,13 +3,14 @@
 #include <string>
 #include "TCPServerThread.h"
 
+typedef bool(*HandleRequestCallbackFn)(std::string);
 
 //  TCP Server thread waits for query or command from remote client applicaiton
 //
 class CommandServer : public TCPServerThread
 {
 public:
-	CommandServer();
+	CommandServer(HandleRequestCallbackFn handleRequestFn);
 	virtual ~CommandServer();
 	
 	virtual void Start();
@@ -18,7 +19,8 @@ public:
 	
 protected:
 	
-	void HandleKeyboardInputRequest(int acceptFileDesc, std::string args);
+	HandleRequestCallbackFn HandleRequestCallback;
+	
 	void HandleLogLevelChangeRequest(int acceptFileDesc, std::string args);
 };
 

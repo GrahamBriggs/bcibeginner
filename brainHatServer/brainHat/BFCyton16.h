@@ -119,15 +119,6 @@ public:
 	}
 	
 	
-	//  CopyConstructor
-	Cyton16Sample(BFSample* copy)
-	{
-		Init();
-		SampleIndex = copy->SampleIndex;
-		TimeStamp = copy->TimeStamp;
-	}
-	
-	
 	//  Copy Constructor
 	Cyton16Sample(Cyton16Sample* copy)
 	{
@@ -178,8 +169,15 @@ public:
 	{
 	}
 	
+	virtual BFSample* Copy()
+	{
+		return new Cyton16Sample(this);
+	}
 	
-	//  Get EXG data for a channel
+	
+	//  EXG Channels
+	virtual int GetNumberOfExgChannels() { return 16;}
+	//
 	virtual double GetExg(int channel)
 	{
 		switch (channel)
@@ -222,7 +220,9 @@ public:
 	}
 	
 	
-	//  Get accelerometer data for a channel
+	//  Accelerometer Channels
+	virtual int GetNumberOfAccelChannels() { return 3;}
+	//
 	virtual double GetAccel(int channel)
 	{
 		switch (channel)
@@ -233,6 +233,50 @@ public:
 			return AcelCh1;
 		case 2:
 			return AcelCh2;
+		default:
+			return MISSING_VALUE;
+		}
+	}
+	
+	//  Other Channels
+	virtual int GetNumberOfOtherChannels() { return 7;}
+	//
+	virtual double GetOther(int channel)
+	{
+		switch (channel)
+		{
+		case 0:
+			return Other0;
+		case 1:
+			return Other1;
+		case 2:
+			return Other2;
+		case 3:
+			return Other3;
+		case 4:
+			return Other4;
+		case 5:
+			return Other5;
+		case 6:
+			return Other6;
+		default:
+			return MISSING_VALUE;
+		}
+	}
+	
+	//  Analog Channels
+	virtual int GetNumberOfAnalogChannels() { return 3;}
+	//
+	virtual double GetAnalog(int channel)
+	{
+		switch (channel)
+		{
+		case 0:
+			return AngCh0;
+		case 1:
+			return AngCh1;
+		case 2:
+			return AngCh2;
 		default:
 			return MISSING_VALUE;
 		}
@@ -275,7 +319,6 @@ public:
 		sample[30] = TimeStamp;
 	}
 	
-	
 	//  Convert to json
 	virtual void AsJson(std::string& json)
 	{					
@@ -315,8 +358,4 @@ public:
 		
 		json = j.dump();
 	}
-	
-
-	
-
 };

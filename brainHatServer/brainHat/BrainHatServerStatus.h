@@ -20,6 +20,8 @@ public:
 	bool RecordingDataBoard;
 	std::string RecordingFileNameBrainHat;
 	std::string RecordingFileNameBoard;
+	double RecordingDurationBrainHat;
+	double RecordingDurationBoard;
 	//
 	long long UnixTimeMillis;
 	
@@ -38,6 +40,8 @@ public:
 		RecordingDataBoard = false;
 		RecordingFileNameBrainHat = "";
 		RecordingFileNameBoard = "";
+		RecordingDurationBrainHat = 0.0;
+		RecordingDurationBoard = 0.0;
 		UnixTimeMillis = 0;
 	}
 	
@@ -58,6 +62,8 @@ public:
 		j["RecordingDataBoard"] = RecordingDataBoard;
 		j["RecordingFileNameBrainHat"] = RecordingFileNameBrainHat;
 		j["RecordingFileNameBoard"] = RecordingFileNameBoard;
+		j["RecordingDurationBrainHat"] = RecordingDurationBrainHat;
+		j["RecordingDurationBoard"] = RecordingDurationBoard;
 		j["UnixTimeMillis"] = UnixTimeMillis;
 		
 		return j;

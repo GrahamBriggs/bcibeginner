@@ -22,11 +22,12 @@ using namespace chrono;
 
 //  Construct with C callback function for connection state change
 //
-BoardDataReader::BoardDataReader(ConnectionChangedCallbackFn connectionChangedFn)
+BoardDataReader::BoardDataReader(ConnectionChangedCallbackFn connectionChangedFn, NewSampleCallbackFn newSampleFn)
 {
 	Init();
 	BoardOn = true;
 	ConnectionChangedCallback = connectionChangedFn;
+	NewSampleCallback = newSampleFn;
 }
 
 
@@ -259,11 +260,11 @@ void BoardDataReader::ProcessData(double **chunk, int sampleCount)
 		//  fix the time stamp
 		sample->TimeStamp = oldestSampleTime + ((i + 1)*period);
 				
-		//  send it to the broadcast
-		BroadcastData.AddData(sample);
-		
 		//  inspect data stream
 		InspectDataStream(sample);
+		
+		//  notify new sample
+		NewSampleCallback(sample);
 	}
 }
 

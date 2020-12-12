@@ -54,6 +54,10 @@ namespace BrainHatServersMonitor
 
         public string RecordingFileNameBoard { get; set; }
 
+        public double RecordingDurationBrainHat { get; set; }
+
+        public double RecordingDurationBoard { get; set; }
+
         public DateTimeOffset TimeStamp { get; set; }
 
         public bool ReceivingRaw => RawDataProcessedLast.ElapsedMilliseconds < 5000;
@@ -158,7 +162,8 @@ namespace BrainHatServersMonitor
         CancellationTokenSource MonitorCancelTokenSource { get; set; }
         //  Read data port task
         Task ReadDataPortTask { get; set; }
-    
+
+        
 
 
         /// <summary>

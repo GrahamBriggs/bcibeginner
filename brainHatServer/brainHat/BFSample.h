@@ -11,38 +11,33 @@ public:
 	{
 	}
 	
-	//  CopyConstructor
-	BFSample(BFSample* copy)
-	{
-		SampleIndex = copy->SampleIndex;
-		TimeStamp = copy->TimeStamp;
-	}
 	
 	virtual ~BFSample()
 	{
 	}
 	
+	virtual BFSample* Copy() = 0;
+		
 	double SampleIndex;
 	double TimeStamp;
 	
-	virtual double GetExg(int channel)
-	{
-		return MISSING_VALUE;
-	}
+	virtual int GetNumberOfExgChannels() = 0;
+	virtual double GetExg(int channel) = 0;
 	
-	virtual double GetAccel(int channel)
-	{
-		return MISSING_VALUE;
-	}
+	virtual int GetNumberOfAccelChannels() = 0;
+	virtual double GetAccel(int channel) = 0;
 	
-	virtual void AsRawSample(double* sample)
-	{
-		
-	}
+	virtual int GetNumberOfOtherChannels() = 0;
+	virtual double GetOther(int channel) = 0;
 	
-	virtual void AsJson(std::string& json)
-	{
-	}
+	virtual int GetNumberOfAnalogChannels() = 0;
+	virtual double GetAnalog(int channel) = 0;
+	
+
+
+	virtual void AsRawSample(double* sample) = 0;
+	
+	virtual void AsJson(std::string& json) = 0;
 	
 protected:
 };

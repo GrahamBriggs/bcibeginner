@@ -7,9 +7,9 @@
 #include <brainflow_constants.h>
 #include "Thread.h"
 #include "board_shim.h"
-#include "BFCyton8.h"
 #include "TimeExtensions.h"
 #include "BoardDataSource.h"
+#include "BFSample.h"
 
 
 //  File Simulator Thread
@@ -19,7 +19,7 @@
 class BoardFileSimulator : public BoardDataSource
 {
 public:
-	BoardFileSimulator(ConnectionChangedCallbackFn connectionChangedFn);
+	BoardFileSimulator(ConnectionChangedCallbackFn connectionChangedFn, NewSampleCallbackFn newSampleFn);
 	virtual ~BoardFileSimulator();
 	
 	int Start(std::string fileName);
@@ -47,6 +47,6 @@ protected :
 	
 	ChronoTimer LastLoggedStatusTime;
 	
-	std::list<Cyton8Sample*> DataRecords;
+	std::list<BFSample*> DataRecords;
 
 };

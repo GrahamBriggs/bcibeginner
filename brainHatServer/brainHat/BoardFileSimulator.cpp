@@ -18,9 +18,10 @@ using namespace chrono;
 
 //  Constructor
 //
-BoardFileSimulator::BoardFileSimulator(ConnectionChangedCallbackFn connectionChangedFn)
+BoardFileSimulator::BoardFileSimulator(ConnectionChangedCallbackFn connectionChangedFn, NewSampleCallbackFn newSampleFn)
 {
 	ConnectionChangedCallback = connectionChangedFn;
+	NewSampleCallback = newSampleFn;
 }
 
 
@@ -87,15 +88,17 @@ void BoardFileSimulator::RunFunction()
 			
 			//  make new BCI data from the original
 			//  TODO - this is hard coded expecting cyton 8 samples
-			BFSample* nextSample = CopySample(*it);
+			BFSample* nextSample = (*it)->Copy();
 			
 			//  set the demo time = start time of simulator + delta time in test + number of times looped * duration
 			nextSample->TimeStamp = realStartTime + ((*it)->TimeStamp - fileStartTime);
 			LastTimeStampSync = nextSample->TimeStamp;
 			
-			//  broadcast the data
-			BroadcastData.AddData(nextSample);
 			InspectDataStream(nextSample);
+			
+			//  broadcast the data
+			NewSampleCallback(nextSample);
+
 			
 			//  calculate the delay to wait for next epoch
 			usleep(((*it)->TimeStamp - previousTimeStamp) * 1000000.0);
@@ -167,24 +170,6 @@ void BoardFileSimulator::AddSample(string readLine)
 
 }
 
-
-//  TODO MoreBoards - finish this function
-BFSample* BoardFileSimulator::CopySample(BFSample* copy)
-{
-	switch ((BoardIds)BoardId)
-	{
-	case BoardIds::GANGLION_BOARD:
-		break;
-		
-	case BoardIds::CYTON_BOARD:
-		return new Cyton8Sample((Cyton8Sample*)copy);
-		break;
-		
-	case BoardIds::CYTON_DAISY_BOARD:
-		break;
-		
-	}
-}
 
 
 

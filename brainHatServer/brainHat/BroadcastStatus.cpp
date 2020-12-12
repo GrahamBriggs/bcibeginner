@@ -113,6 +113,9 @@ void BroadcastStatus::BroadcastStatusOverMulticast()
 	status.Wlan0Address  = Wlan0Address;
 	status.Wlan0Mode = Wlan0Mode;
 	status.LogPort = Logging.GetPortNumber();
+	status.RecordingDataBrainHat = FileRecording.IsRecording();
+	status.RecordingFileNameBrainHat = FileRecording.IsRecording() ? FileRecording.FileName() : "";
+	status.RecordingDurationBrainHat = FileRecording.IsRecording() ? FileRecording.ElapsedRecordingTime() : 0.0;
 	
 	GetBoardParams(status.BoardId, status.SampleRate);
 	

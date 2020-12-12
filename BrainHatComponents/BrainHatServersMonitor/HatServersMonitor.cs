@@ -312,7 +312,7 @@ namespace BrainHatServersMonitor
 
                     //  update server connection state
                     await server.UpdateConnection(serverStatus);
-                    server.TimeStamp = DateTimeOffset.UtcNow;
+                    server.TimeStamp = serverStatus.TimeStamp;
 
                     //  set raw data status for the event message
                     serverStatus.ReceivingRaw = server.ReceivingRaw;
@@ -366,7 +366,7 @@ namespace BrainHatServersMonitor
                     {
                         var sw = new System.Diagnostics.Stopwatch();
                         sw.Start();
-                        var response = await Tcpip.GetTcpResponse(server.IpAddress, BrainHatNetworkAddresses.ServerPort, "ping\n", 5000, 5000);
+                        var response = await Tcpip.GetTcpResponseAsync(server.IpAddress, BrainHatNetworkAddresses.ServerPort, "ping\n", 5000, 5000);
                         sw.Stop();
                         pingSpeed = sw.Elapsed;
                     }

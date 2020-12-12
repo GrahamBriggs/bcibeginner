@@ -79,6 +79,8 @@
     <ClInclude Include="CommandServer.h" />
     <ClInclude Include="BoardFileSimulator.h" />
     <ClInclude Include="brainHat.h" />
+    <ClInclude Include="FileExtensions.h" />
+    <ClInclude Include="FileRecorder.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="GpioPinManager.h" />
     <ClInclude Include="Logger.h" />
@@ -95,6 +97,7 @@
     <ClInclude Include="Thread.h" />
     <ClInclude Include="TimeExtensions.h" />
     <ClInclude Include="UdpMulticastServerThread.h" />
+    <ClInclude Include="UriParser.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
@@ -105,6 +108,7 @@
     <ClCompile Include="CommandServer.cpp" />
     <ClCompile Include="BoardFileSimulator.cpp" />
     <ClCompile Include="brainHat.cpp" />
+    <ClCompile Include="FileRecorder.cpp" />
     <ClCompile Include="GpioPinManager.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="NetworkExtensions.cpp" />

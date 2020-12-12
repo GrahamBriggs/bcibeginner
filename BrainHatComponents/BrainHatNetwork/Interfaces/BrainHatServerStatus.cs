@@ -27,6 +27,8 @@ namespace BrainHatNetwork
         bool RecordingDataBoard { get; }
         string RecordingFileNameBrainHat { get; }
         string RecordingFileNameBoard { get; }
+        double RecordingDurationBrainHat { get;  }
+        double RecordingDurationBoard { get;  }
 
         bool ReceivingRaw { get; }
         double RawLatency { get;  }
@@ -63,6 +65,8 @@ namespace BrainHatNetwork
         public bool RecordingDataBoard { get; set; }
         public string RecordingFileNameBrainHat { get; set; }
         public string RecordingFileNameBoard { get; set; }
+        public double RecordingDurationBrainHat { get; set; }
+        public double RecordingDurationBoard { get; set; }
 
         public long UnixTimeMillis { get; set; }
 

@@ -1,6 +1,9 @@
 #include <iostream>
 #include <algorithm>
 #include <unistd.h>
+#include <lsl_cpp.h>
+
+#include "brainHat.h"
 #include "Logger.h"
 #include "StringExtensions.h"
 #include "BroadcastData.h"
@@ -11,43 +14,50 @@
 #include "BoardFileSimulator.h"
 #include "GpioPinManager.h"
 #include "TimeExtensions.h"
-#include <lsl_cpp.h>
+#include "Parser.h"
+#include "UriParser.h"
+
 
 
 using namespace std;
 
-//  callback functions
+//  Callback Functions
 void BoardConnectionStateChanged(BoardConnectionStates state, int boardId, int sampleRate);
 void GetBoardParams(int& boardId, int& sampleRate);
+void NewSample(BFSample* sample);
+bool HandleServerRequest(string request);
 
-//  Program objects
+//  Program Components
 Logger Logging;
 BroadcastData BroadcastData;
 BroadcastStatus BroadcastStatus(GetBoardParams);
-CommandServer ComServer;
-GpioManager Lights;
+CommandServer ComServer(HandleServerRequest);
+GpioManager PinManager;
 
-
-
+//  Board Data Reader
 int Board_Id = -99;
 struct BrainFlowInputParams BrainflowBoardParams;
-BoardDataReader Board(BoardConnectionStateChanged);
+BoardDataReader Board(BoardConnectionStateChanged, NewSample);
 
-//  The Simulator
+//  Board file simulator
 string DemoFileName = "";
-BoardFileSimulator SimulatorThread(BoardConnectionStateChanged);
+BoardFileSimulator SimulatorThread(BoardConnectionStateChanged, NewSample);
 
+//  File Recorder
+FileRecorder FileRecording;
+
+//  Program functions
 bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int *board_id, string &demoFileName);
 void RunBoardData();
 void RunFileData();
+bool ProcessKeyboardInput(string input); 
 void StartLights();
+bool LiveData() { return Board_Id >= 0; }
 
 //  Main function
 //
 int main(int argc, char *argv[])
 {
-		
-	//  did we launch with command line args
 	if (argc > 1)
 	{
 		//  parse the args
@@ -56,12 +66,12 @@ int main(int argc, char *argv[])
 			return -1;
 		}
 		
-		//  for conveinence, set defaults in absense of command line args
-		if(Board_Id >= 0 && BrainflowBoardParams.serial_number.size() == 0)
+		//  default serial port if it was not specified
+		if(LiveData() && BrainflowBoardParams.serial_number.size() == 0)
 			BrainflowBoardParams.serial_port = "/dev/ttyUSB0";
 		
-		//  default demo file
-		if(Board_Id < 0 && DemoFileName == "")
+		//  default demo file if it was not 
+		if(! LiveData() && DemoFileName == "")
 		{
 			cout << "Invalid startup parameters. This program only supports --board-id 0|1|2 (Cyton, Ganglion, Cyton+Daisy) Exiting program." << endl;
 			getchar();
@@ -70,7 +80,7 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		//  default to Cyton board on the default port
+		// no command line args,  default to Cyton board on the default port
 		Board_Id = 0;
 		BrainflowBoardParams.serial_port = "/dev/ttyUSB0";
 	}
@@ -88,14 +98,13 @@ int main(int argc, char *argv[])
 		RunFileData();
 	else
 		RunBoardData();
-	
-	
+
 	// stop threads
 	BroadcastData.Cancel();
 	BroadcastStatus.Cancel();
 	ComServer.Cancel();
 	Logging.Cancel();
-	Lights.Cancel();
+	PinManager.Cancel();
 	
 	return 0;
 }
@@ -106,7 +115,7 @@ int main(int argc, char *argv[])
 //
 void RunBoardData()
 {	
-	Lights.PowerToBoard(true);
+	PinManager.PowerToBoard(true);
 	
 	if (Board.Start(Board_Id, BrainflowBoardParams) != 0)
 	{
@@ -121,34 +130,10 @@ void RunBoardData()
 		getline(cin, input);
 		toUpper(input);
 		
-		if (input.compare("Q") == 0) 
+		if (!ProcessKeyboardInput(input))
 		{
 			Board.Cancel();
 			break;
-		}
-		else if (input.compare("S") == 0)
-		{
-			Logging.ResetDisplay();
-		}
-		else if (input.compare("0") == 0)
-		{
-			Lights.Mode = LightsOff;
-		}
-		else if (input.compare("1") == 0)
-		{
-			Lights.Mode = LightsOn;
-		}
-		else if (input.compare("2") == 0)
-		{
-			Lights.Mode = LightsFlash;
-		}
-		else if (input.compare("3") == 0)
-		{
-			Lights.Mode = LightsSequence;
-		}
-		else if (input.compare("b") == 0)
-		{
-			Board.EnableBoard(!Board.Enabled());
 		}
 	}
 }
@@ -172,63 +157,58 @@ void RunFileData()
 		getline(cin, input);
 		toUpper(input);
 		
-		if (input.compare("Q") == 0) 
+		if (!ProcessKeyboardInput(input))
 		{
 			SimulatorThread.Cancel();
 			break;
 		}
-		else if (input.compare("S") == 0)
-		{
-			Logging.ResetDisplay();
-		}
-		else if (input.compare("0") == 0)
-		{
-			Lights.Mode = LightsOff;
-		}
-		else if (input.compare("1") == 0)
-		{
-			Lights.Mode = LightsOn;
-		}
-		else if (input.compare("2") == 0)
-		{
-			Lights.Mode = LightsFlash;
-		}
-		else if (input.compare("3") == 0)
-		{
-			Lights.Mode = LightsSequence;
-		}
 	}
 }
 
+
+//  Handle samples from the data source
+void NewSample(BFSample* sample)
+{
+	//  broadcast it
+	BroadcastData.AddData(sample->Copy());
+	
+	if (FileRecording.IsRecording())
+		FileRecording.AddData(sample->Copy());
+	
+	//  log it to the file
+	delete sample;
+}
+
+
+
 void BoardConnectionStateChanged(BoardConnectionStates state, int boardId, int sampleRate)
 {
-
-	switch (state)
+	switch (state) 
 	{
 	case New:
-		Lights.Mode = LightsSequence;
+		PinManager.Mode = LightsSequence;
 		BroadcastData.SetBoard(boardId, sampleRate);
 		break;
 		
 	case PowerOff:	//  power On board
-		Lights.AllOff();
+		PinManager.AllOff();
 		break;
 		
 	case PowerOn:	//  power on board
 		if(Board_Id > -1)
 		{
-			Lights.PowerToBoard(true);
+			PinManager.PowerToBoard(true);
 			Sleep(2000);
 		}
-		Lights.Mode = LightsFlash;
+		PinManager.Mode = LightsFlash;
 		break;
 		
 	case Connected:	//  board connected
-		Lights.Mode = LightsSequence;
+		PinManager.Mode = LightsSequence;
 		break;
 		
 	case Disconnected: //  board disconnected	
-		Lights.Mode = LightsFlash;
+		PinManager.Mode = LightsFlash;
 		break;
 	}
 }
@@ -247,6 +227,74 @@ void GetBoardParams(int& boardId, int& sampleRate)
 		sampleRate = SimulatorThread.GetSampleRate();
 	}
 	
+}
+
+
+
+bool HandleServerRequest(string request)
+{
+	int i = 0;
+	Parser requestParser(request, "?");
+	string command = requestParser.GetNextString();
+	
+	if (command == "recording")
+	{
+		UriArgParser args(requestParser.GetNextString());
+		
+		auto fileName = args.GetValue("filename");
+		auto enable = args.GetValue("enable");
+		
+		if (enable == "true")
+		{
+			if (FileRecording.IsRecording())
+			{
+				FileRecording.Cancel();
+			}
+			
+			FileRecording.StartRecording(fileName, Board_Id, Board.GetSampleRate());
+			
+		}
+		else if (enable == "false")
+		{
+			if (FileRecording.IsRecording())
+				FileRecording.Cancel();
+		}
+	}
+}
+
+
+bool ProcessKeyboardInput(string input)
+{
+	if (input.compare("Q") == 0) 
+	{
+		return false;
+	}
+	else if (input.compare("S") == 0)
+	{
+		Logging.ResetDisplay();
+	}
+	else if (input.compare("0") == 0)
+	{
+		PinManager.Mode = LightsOff;
+	}
+	else if (input.compare("1") == 0)
+	{
+		PinManager.Mode = LightsOn;
+	}
+	else if (input.compare("2") == 0)
+	{
+		PinManager.Mode = LightsFlash;
+	}
+	else if (input.compare("3") == 0)
+	{
+		PinManager.Mode = LightsSequence;
+	}
+	else if (input.compare("b") == 0)
+	{
+		Board.EnableBoard(!Board.Enabled());
+	}
+	
+	return true;
 }
 
 
@@ -405,7 +453,7 @@ void StartLights()
 	gethostname(host, 1024);
 	
 	string hostName = string(host);
-	Lights.Mode = LightsSequence;
-	Lights.StartThreadForHost(hostName);
+	PinManager.Mode = LightsSequence;
+	PinManager.StartThreadForHost(hostName);
 	
 }

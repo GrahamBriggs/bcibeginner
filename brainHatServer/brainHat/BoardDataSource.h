@@ -28,13 +28,14 @@ typedef void(*ConnectionChangedCallbackFn)(BoardConnectionStates, int, int);
 //  callback function C++ class
 typedef std::function<void(BoardConnectionStates, int, int)> ConnectionChangedDelegateFn;
 
+typedef void(*NewSampleCallbackFn)(BFSample* sample);
 
 
 class BoardDataSource : public Thread
 {
 public:
 	BoardDataSource();
-	BoardDataSource(ConnectionChangedCallbackFn connectionChangedFn);
+	BoardDataSource(ConnectionChangedCallbackFn connectionChangedFn, NewSampleCallbackFn newSampleFn);
 	virtual ~BoardDataSource();
 	
 	void RegisterConnectionChangedDelegate(ConnectionChangedDelegateFn connectionChangedDel);
@@ -74,6 +75,7 @@ protected:
 	
 	void ConnectionChanged(BoardConnectionStates state, int boardId, int sampleRate);
 	
+	NewSampleCallbackFn NewSampleCallback;
 	ConnectionChangedCallbackFn ConnectionChangedCallback;
 	ConnectionChangedDelegateFn ConnectionChangedDelegate;
 };

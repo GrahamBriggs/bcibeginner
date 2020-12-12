@@ -14,7 +14,7 @@
 class BoardDataReader : public BoardDataSource
 {
 public:
-	BoardDataReader(ConnectionChangedCallbackFn connectionChangedFn);
+	BoardDataReader(ConnectionChangedCallbackFn connectionChangedFn, NewSampleCallbackFn newSampleFn);
 	virtual ~BoardDataReader();
 	
 	int Start(int board_id, struct BrainFlowInputParams params);

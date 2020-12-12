@@ -9,7 +9,7 @@ namespace BrainHatNetwork
 {
     public static class Tcpip
     {
-        public static async Task<string> GetTcpResponse(string address, int port, string send, int readTimeout = 1000, int writeTimeout = 1000)
+        public static async Task<string> GetTcpResponseAsync(string address, int port, string send, int readTimeout = 1000, int writeTimeout = 1000)
         {
             try
             {

@@ -21,6 +21,9 @@ using namespace chrono;
 //
 BoardDataSource::BoardDataSource()
 {
+	ConnectionChangedCallback = NULL;
+	ConnectionChangedDelegate = NULL;
+	NewSampleCallback = NULL;
 	
 	Init();
 }
@@ -90,7 +93,7 @@ void BoardDataSource::EnableBoard(bool enable)
 //
 void BoardDataSource::InspectDataStream(BFSample* data)
 {
-	DataInspecting.push_back(new BFSample(data));
+	DataInspecting.push_back(data->Copy());
 
 	InspectSampleIndexDifference(data->SampleIndex);
 	

@@ -29,6 +29,7 @@ namespace BrainHatClient
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.listViewDevices = new System.Windows.Forms.ListView();
             this.SuspendLayout();
             // 
@@ -51,6 +52,7 @@ namespace BrainHatClient
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(423, 450);
             this.Controls.Add(this.listViewDevices);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
             this.Text = "brainHat Client";
             this.ResumeLayout(false);

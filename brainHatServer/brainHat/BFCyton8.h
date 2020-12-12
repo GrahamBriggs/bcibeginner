@@ -93,16 +93,7 @@ public:
 		AngCh2 = rawData[21][sample];
 		TimeStamp = rawData[22][sample];
 	}
-	
-	
-	//  CopyConstructor
-	Cyton8Sample(BFSample* copy)
-	{
-		Init();
-		SampleIndex = copy->SampleIndex;
-		TimeStamp = copy->TimeStamp;
-	}
-	
+
 	
 	//  Copy Constructor
 	Cyton8Sample(Cyton8Sample* copy)
@@ -146,8 +137,16 @@ public:
 	{
 	}
 	
+	//  Return a copy of yourself
+	virtual BFSample* Copy()
+	{
+		return new Cyton8Sample(this);
+	}
+
 	
-	//  Get EXG data for a channel
+	//  EXG Channels
+	virtual int GetNumberOfExgChannels() { return 8;}
+	//
 	virtual double GetExg(int channel)
 	{
 		switch (channel)
@@ -173,8 +172,9 @@ public:
 		}
 	}
 	
-	
-	//  Get accelerometer data for a channel
+	//  Accelerometer Channels
+	virtual int GetNumberOfAccelChannels() { return 3;}
+	//
 	virtual double GetAccel(int channel)
 	{
 		switch (channel)
@@ -190,7 +190,50 @@ public:
 		}
 	}
 	
+	//  Other Channels
+	virtual int GetNumberOfOtherChannels() { return 7;}
+	//
+	virtual double GetOther(int channel)
+	{
+		switch (channel)
+		{
+		case 0:
+			return Other0;
+		case 1:
+			return Other1;
+		case 2:
+			return Other2;
+		case 3:
+			return Other3;
+		case 4:
+			return Other4;
+		case 5:
+			return Other5;
+		case 6:
+			return Other6;
+		default:
+			return MISSING_VALUE;
+		}
+	}
 	
+	//  Analog Channels
+	virtual int GetNumberOfAnalogChannels() { return 3;}
+	//
+	virtual double GetAnalog(int channel)
+	{
+		switch (channel)
+		{
+		case 0:
+			return AngCh0;
+		case 1:
+			return AngCh1;
+		case 2:
+			return AngCh2;
+		default:
+			return MISSING_VALUE;
+		}
+	}
+		
 	//  Convert to a raw sample
 	virtual void AsRawSample(double* sample)
 	{
