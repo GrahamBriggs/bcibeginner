@@ -4,16 +4,13 @@
 #include "TimeExtensions.h"
 
 
-//  callback function for get board parameters
-typedef void(*GetBoardParamsCallbackFn)(int&,int&);
-
 
 //  UDP multicast thread for status broadcast
 //
 class BroadcastStatus : public UdpMulticastServerThread
 {
 public:
-	BroadcastStatus(GetBoardParamsCallbackFn getBoardParams);
+	BroadcastStatus();
 	virtual ~BroadcastStatus();
 	
 	virtual void Start();
@@ -23,7 +20,6 @@ public:
 		
 protected:
 	
-	GetBoardParamsCallbackFn GetBoardParams;
 	
 	std::string HostName;
 	std::string Eth0Address;

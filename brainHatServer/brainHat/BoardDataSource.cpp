@@ -17,7 +17,8 @@
 using namespace std;
 using namespace chrono;
 
-//  Constructor
+//  Board Data Source
+//  Base class for board data reader and board file simulator
 //
 BoardDataSource::BoardDataSource()
 {
@@ -29,6 +30,8 @@ BoardDataSource::BoardDataSource()
 }
 
 
+//  Initialize properties
+//
 void BoardDataSource::Init()
 {
 	BoardId = -99;
@@ -100,8 +103,6 @@ void BoardDataSource::InspectDataStream(BFSample* data)
 	//  log data stream inspection every five seconds
 	if(InspectDataStreamLogTimer.ElapsedMilliseconds() > 5000)
 	{
-		Logging.AddLog("BoardDataSource", "InspectDataStream", ReportSource(), LogLevelTrace);
-	
 		//  calculate sample times
 		double averageTimeBetweenSamples = 0.0;	
 		double sampleTimeHigh = 0.0;
@@ -126,7 +127,7 @@ void BoardDataSource::InspectDataStream(BFSample* data)
 		
 		averageTimeBetweenSamples /= DataInspecting.size();
 		
-		Logging.AddLog("BoardDataSource", "InspectDataStream", format("Read %d samples. %d sps. Avg %.4lf s. Max %.4lf s. Min %.4lf s.", DataInspecting.size(), DataInspecting.size() / 5, averageTimeBetweenSamples, sampleTimeHigh, sampleTimeLow), LogLevelTrace);
+		Logging.AddLog("BoardDataSource", "InspectDataStream", format("%s. Read %d samples. %d sps. Avg %.4lf s. Max %.4lf s. Min %.4lf s.", ReportSource().c_str(), DataInspecting.size(), DataInspecting.size() / 5, averageTimeBetweenSamples, sampleTimeHigh, sampleTimeLow), LogLevelTrace);
 
 		for (auto it = DataInspecting.begin(); it != DataInspecting.end(); ++it)
 		{
@@ -177,14 +178,24 @@ void BoardDataSource::InspectSampleIndexDifference(double nextIndex)
 	
 	switch (BoardId)
 	{
-	case 0:
-		if (diff > 1)
-			CountMissingIndex++;
+	case 0:	//  Cyton
+		{
+			if (diff > 1)
+				CountMissingIndex++;
+		}
 		break;
 		
-	case 2:
-		if (diff > 2)
-			CountMissingIndex++;
+	case 2: //  Cyton+Daisy
+		{
+			if (diff > 2)
+				CountMissingIndex++;
+		}
+		break;
+		
+	case 1:	//  Ganglion
+		{	
+			//  TODO
+		}
 		break;
 		
 	}

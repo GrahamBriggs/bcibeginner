@@ -104,7 +104,7 @@ namespace BrainHatClient
 
                     for (int i = 0; i < e.CurrentSample.NumberExgChannels; i++)
                     {
-                        label += $"Channel {i}: {string.Format("{0,9}", (e.CurrentSample.GetExgDataForChannel(i) / 1000.0).ToString("N3"))}     {string.Format("{0,9}", e.CurrentDeviation.GetExgDataForChannel(i).ToString("N3"))}     {string.Format("{0,9}", e.CurrentDevMedian.GetExgDataForChannel(i).ToString("N3"))}     {string.Format("{0,9}", e.CurrentBandPower10.GetExgDataForChannel(i).ToString("N3"))}     {string.Format("{0,9}", (e.CurrentBandPower10.GetExgDataForChannel(i) / e.CurrentBandPower08.GetExgDataForChannel(i)).ToString("N3"))}      {string.Format("{0,9}", (e.CurrentBandPower10.GetExgDataForChannel(i) / e.CurrentBandPower12.GetExgDataForChannel(i)).ToString("N3"))}\n";
+                        label += $"Channel {i:D2}: {string.Format("{0,9}", (e.CurrentSample.GetExgDataForChannel(i) / 1000.0).ToString("N3"))}     {string.Format("{0,9}", e.CurrentDeviation.GetExgDataForChannel(i).ToString("N3"))}     {string.Format("{0,9}", e.CurrentDevMedian.GetExgDataForChannel(i).ToString("N3"))}     {string.Format("{0,9}", e.CurrentBandPower10.GetExgDataForChannel(i).ToString("N3"))}     {string.Format("{0,9}", (e.CurrentBandPower10.GetExgDataForChannel(i) / e.CurrentBandPower08.GetExgDataForChannel(i)).ToString("N3"))}      {string.Format("{0,9}", (e.CurrentBandPower10.GetExgDataForChannel(i) / e.CurrentBandPower12.GetExgDataForChannel(i)).ToString("N3"))}\n";
                     }
                 }
 

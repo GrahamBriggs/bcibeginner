@@ -84,6 +84,20 @@ namespace LoggingInterfaces
             Remote = false;
         }
 
+        public LogEventArgs(string hostName, object sender, string functionName, object data, LogLevel level)
+        {
+            Time = DateTimeOffset.UtcNow;
+            Level = level;
+            Thread = System.Threading.Thread.CurrentThread.ManagedThreadId;
+
+            Sender = sender;
+            Function = functionName;
+            Data = data;
+            HostName = hostName;
+
+            Remote = false;
+        }
+
         public LogEventArgs(long unixTimeMilliseconds, int thread, object sender, LogLevel level, string functionName, object data)
         {
             Time = DateTimeOffset.FromUnixTimeMilliseconds(unixTimeMilliseconds);

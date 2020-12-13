@@ -23,7 +23,7 @@ public:
 	GpioManager();
 	virtual ~GpioManager();
 	
-	void StartThreadForHost(std::string hostName);
+	void StartThreadForHost();
 	
 	virtual void Cancel();
 	
@@ -38,7 +38,9 @@ public:
 	
 protected:
 	
-	void SetupGpio(std::string hostName);
+	std::string HostName;
+	
+	void SetupGpio();
 	
 	std::vector<int> PinsInUse;
 	

@@ -20,7 +20,10 @@ using namespace std;
 using namespace chrono;
 
 
-//  Construct with C callback function for connection state change
+//  Board Data Reader, reads data from the board
+//  Construct with callback functions:
+//    -  ConnectionChanged will be called on first discovery of board parameters, then on connect / disconnect state
+//    -  NewSample will be called when new data is read from the board
 //
 BoardDataReader::BoardDataReader(ConnectionChangedCallbackFn connectionChangedFn, NewSampleCallbackFn newSampleFn)
 {
@@ -57,7 +60,7 @@ void BoardDataReader::Init()
 //
 string BoardDataReader::ReportSource()
 {
-	return format("Reading data from board id %d at %d Hz.", BoardId, SampleRate);
+	return format("Board id %d at %d Hz.", BoardId, SampleRate);
 }
 
 
@@ -75,8 +78,6 @@ int BoardDataReader::Start(int board_id, struct BrainFlowInputParams params)
 	
 	return res;
 }
-
-
 
 
 //  Thread Cancel
@@ -270,7 +271,8 @@ void BoardDataReader::ProcessData(double **chunk, int sampleCount)
 
 
 
-
+//  Parse the raw data and create a sample type for this board
+//
 BFSample* BoardDataReader::ParseRawData(double** chunk, int sampleCount)
 {
 	switch (BoardId)
@@ -279,11 +281,16 @@ BFSample* BoardDataReader::ParseRawData(double** chunk, int sampleCount)
 		return new Cyton8Sample(chunk, sampleCount);
 	case 2:
 		return new Cyton16Sample(chunk, sampleCount);
+	case 1:
+		return NULL;	//  TODO Ganglion
 	default:
 		return NULL;
 	}
 }
 
+
+//  Calculate the reading time this chunk
+//  used to smooth out the sample times
 void BoardDataReader::CalculateReadingTimeThisChunk(double** chunk, int samples, double& period, double& oldestSampleTime)
 {
 	auto timeNow = (chrono::duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count() / 1000.0);	

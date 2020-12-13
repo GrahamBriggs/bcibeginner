@@ -107,7 +107,7 @@ namespace BrainHatClient
         private async System.Threading.Tasks.Task SetRemoteLogLevel(LogLevel level)
         {
             OnProgramLog(this, new LogEventArgs(this, "comboBoxRemoteLogLevel_SelectedIndexChanged", $"Setting remote log level {level}.", LogLevel.INFO));
-            var response = await Tcpip.GetTcpResponse(IpAddress, BrainHatNetworkAddresses.ServerPort, $"loglevel?object=a&level={(int)level}");
+            var response = await Tcpip.GetTcpResponseAsync(IpAddress, BrainHatNetworkAddresses.ServerPort, $"loglevel?object=a&level={(int)level}\n");
             if (!response.CheckHatResponse())
             {
                 OnProgramLog(this, new LogEventArgs(this, "comboBoxRemoteLogLevel_SelectedIndexChanged", $"Received an invalid response {response}.", LogLevel.ERROR));

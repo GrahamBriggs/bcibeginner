@@ -10,11 +10,11 @@
 
 //  File recording class
 //
-class FileRecorder : public Thread
+class OpenBCIFileRecorder : public Thread
 {
 public:
-	FileRecorder();
-	virtual ~FileRecorder();
+	OpenBCIFileRecorder();
+	virtual ~OpenBCIFileRecorder();
 	
 	bool StartRecording(std::string fileName, int boardId, int sampleRate);
 	virtual void Cancel();

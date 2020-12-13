@@ -2,6 +2,7 @@
 
 #include <string>
 #include "TCPServerThread.h"
+#include "UriParser.h"
 
 typedef bool(*HandleRequestCallbackFn)(std::string);
 
@@ -21,7 +22,7 @@ protected:
 	
 	HandleRequestCallbackFn HandleRequestCallback;
 	
-	void HandleLogLevelChangeRequest(int acceptFileDesc, std::string args);
+	void HandleLogLevelChangeRequest(int acceptFileDesc, UriArgParser& argParser);
 };
 
 

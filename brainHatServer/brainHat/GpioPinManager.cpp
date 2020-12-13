@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include "GpioPinManager.h"
 #include "wiringPi.h"
 
@@ -31,13 +32,13 @@ int PinHapticMotor = 0;
 
 int PinPowerSwitch = 0;
 
-
+//  Wrap wiringPi functions to do nothing with pin 0
 void DigitalWrite(int pin, int value)
 {
 	if (pin != 0)
 		digitalWrite(pin, value);
 }
-
+//
 void AllPinsOff(vector<int> pins)
 {
 	for (auto it = pins.begin(); it != pins.end(); ++it)
@@ -46,7 +47,7 @@ void AllPinsOff(vector<int> pins)
 			DigitalWrite(*it, LOW);
 	}
 }
-
+//
 void AllPinsOn(vector<int> pins)
 {
 	for (auto it = pins.begin(); it != pins.end(); ++it)
@@ -57,9 +58,12 @@ void AllPinsOn(vector<int> pins)
 }
 
 
-void GpioManager::SetupGpio(string hostName)
+// Setup GPIO
+// this will set pin numbers for known host names where the prototypes have wired pins
+//
+void GpioManager::SetupGpio()
 {
-	if (hostName.compare("brainHelmet") == 0)
+	if (HostName.compare("brainHelmet") == 0)
 	{
 		PinRightRising = 37;
 		PinRightFalling = 38;
@@ -68,7 +72,6 @@ void GpioManager::SetupGpio(string hostName)
 		PinLeftRising = 0;
 		PinLeftFalling = 0;
 		PinLeftBlink = 0;
-
 
 		PinLightStringA5 = 35;
 		PinLightStringA4 = 32;
@@ -86,7 +89,7 @@ void GpioManager::SetupGpio(string hostName)
 
 		PinPowerSwitch = 40;
 	}
-	else if (hostName.compare("brainHat") == 0)
+	else if (HostName.compare("brainHat") == 0)
 	{
 		PinLeftRising = 40;
 		PinLeftFalling = 38;
@@ -188,12 +191,17 @@ GpioManager::~GpioManager()
 }
 
 
-void GpioManager::StartThreadForHost(string hostName)
+void GpioManager::StartThreadForHost()
 {
+	char host[1024];
+	gethostname(host, 1024);
+	
+	HostName = string(host);
+	
 	//  only do something if this is a device with pins hooked up
-	if (hostName.compare("brainHat") == 0 || hostName.compare("brainHelmet") == 0)
+	if(HostName.compare("brainHat") == 0 || HostName.compare("brainHelmet") == 0)
 	{
-		SetupGpio(hostName);
+		SetupGpio();
 	
 		Thread::Start();
 	}

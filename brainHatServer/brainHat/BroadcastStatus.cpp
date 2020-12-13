@@ -17,10 +17,9 @@ using json = nlohmann::json;
 
 //  Constructor
 //
-BroadcastStatus::BroadcastStatus(GetBoardParamsCallbackFn getBoardParams)
+BroadcastStatus::BroadcastStatus()
 {
 	SocketFileDescriptor = -1;	
-	GetBoardParams = getBoardParams;
 	
 	Eth0Address = "";
 	Wlan0Address = "";
@@ -113,11 +112,15 @@ void BroadcastStatus::BroadcastStatusOverMulticast()
 	status.Wlan0Address  = Wlan0Address;
 	status.Wlan0Mode = Wlan0Mode;
 	status.LogPort = Logging.GetPortNumber();
-	status.RecordingDataBrainHat = FileRecording.IsRecording();
-	status.RecordingFileNameBrainHat = FileRecording.IsRecording() ? FileRecording.FileName() : "";
-	status.RecordingDurationBrainHat = FileRecording.IsRecording() ? FileRecording.ElapsedRecordingTime() : 0.0;
+	status.RecordingDataBrainHat = FileRecorder.IsRecording();
+	status.RecordingFileNameBrainHat = FileRecorder.IsRecording() ? FileRecorder.FileName() : "";
+	status.RecordingDurationBrainHat = FileRecorder.IsRecording() ? FileRecorder.ElapsedRecordingTime() : 0.0;
 	
-	GetBoardParams(status.BoardId, status.SampleRate);
+	if (DataSource != NULL)
+	{
+		status.BoardId = DataSource->GetBoardId();
+		status.SampleRate = DataSource->GetSampleRate();
+	}
 	
 	status.UnixTimeMillis = GetUnixTimeMilliseconds();
 	

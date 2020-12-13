@@ -16,7 +16,10 @@
 using namespace std;
 using namespace chrono;
 
-//  Constructor
+//  Board Demo File Reader, reads data from a demo file and simulates live board
+//  Construct with callback functions:
+//    -  ConnectionChanged will be called on first discovery of board parameters, then on connect / disconnect state
+//    -  NewSample will be called when new data is read from the board
 //
 BoardFileSimulator::BoardFileSimulator(ConnectionChangedCallbackFn connectionChangedFn, NewSampleCallbackFn newSampleFn)
 {
@@ -33,11 +36,14 @@ BoardFileSimulator::~BoardFileSimulator()
 }
 
 
-
+//  Describe the source of the data
+//
 string BoardFileSimulator::ReportSource()
 {
-	return format("Reading data from file %s id %d at %d Hz.", FileName.c_str(), BoardId, SampleRate);
+	return format("Demo File board %d at %d Hz.", FileName.c_str(), BoardId, SampleRate);
 }
+
+
 
 //  Thread Start
 //
@@ -151,7 +157,8 @@ bool BoardFileSimulator::LoadFile(std::string fileName)
 }
 
 
-//  TODO MoreBoards - finish this function
+//  Add a sample from data file text line
+//  TODO - finish this function for all supported boards
 void BoardFileSimulator::AddSample(string readLine)
 {
 	switch ((BoardIds)BoardId)
@@ -167,13 +174,13 @@ void BoardFileSimulator::AddSample(string readLine)
 		break;
 		
 	}
-
 }
 
 
 
 
-
+//  Read a header line to setup board parameters
+//
 void BoardFileSimulator::ReadHeaderLine(string readLine)
 {
 	if (readLine.substr(0, 12) == "%Sample Rate")

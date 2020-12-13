@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <iostream>
 #include "brainHat.h"
-#include "FileRecorder.h"
+#include "OpenBCIFileRecorder.h"
 #include "StringExtensions.h"
 #include "TimeExtensions.h"
 #include "wiringPi.h"
@@ -27,7 +27,7 @@ using namespace lsl;
 
 //  Constructor
 //
-FileRecorder::FileRecorder()
+OpenBCIFileRecorder::OpenBCIFileRecorder()
 {
 	Recording = false;
 }
@@ -35,15 +35,15 @@ FileRecorder::FileRecorder()
 
 //  Destructor
 //
-FileRecorder::~FileRecorder()
+OpenBCIFileRecorder::~OpenBCIFileRecorder()
 {
 	
 }
 
 
-
-
-bool FileRecorder::StartRecording(string fileName, int boardId, int sampleRate)
+// Start recording, opens the file and kicks off a thread to write to the file
+//
+bool OpenBCIFileRecorder::StartRecording(string fileName, int boardId, int sampleRate)
 {	
 	if (OpenFile(fileName))
 	{
@@ -60,14 +60,24 @@ bool FileRecorder::StartRecording(string fileName, int boardId, int sampleRate)
 	return false;
 }
 
-void FileRecorder::Cancel()
+
+//  Cancel thread, close the file
+//
+void OpenBCIFileRecorder::Cancel()
 {
 	Thread::Cancel();	
 	Recording = false;
 	RecordingFile.close();
-	
+	Logging.AddLog("OpenBCIFileRecorder", "Cancel", format("Closed recording file %s.", RecordingFileName.c_str()), LogLevelInfo);
 }
 
+
+//  Recording folder
+#define RECORDINGFOLDER ("/home/pi/bhRecordings/")
+
+
+// Format string description for this board type
+//
 string FileBoardDescription(int boardId)
 {
 	switch (boardId)
@@ -82,9 +92,9 @@ string FileBoardDescription(int boardId)
 }
 
 
-#define RECORDINGFOLDER ("/home/pi/bhRecordings/")
-
-bool FileRecorder::OpenFile(string fileName)
+//  Check that the recording folder exists, if not create it
+//
+bool CheckRecordingFolder()
 {
 	//  check to see that our recording folder exists
 	DIR* dir = opendir(RECORDINGFOLDER);
@@ -95,18 +105,29 @@ bool FileRecorder::OpenFile(string fileName)
 	else if (ENOENT == errno) 
 	{
 		//  does not exist, make it
-		if (!MakePath(RECORDINGFOLDER))
+		if(!MakePath(RECORDINGFOLDER))
 		{
-			Logging.AddLog("FileRecorder", "OpenFile", format("Failed to create directory %s", RECORDINGFOLDER), LogLevelError);
+			Logging.AddLog("OpenBCIFileRecorder", "OpenFile", format("Failed to create directory %s", RECORDINGFOLDER), LogLevelError);
 			return false;
 		}
 	}
 	else 
 	{
 		//  some other directory error
-		Logging.AddLog("FileRecorder", "OpenFile", "Directory error opening recording file.", LogLevelError);
+		Logging.AddLog("OpenBCIFileRecorder", "OpenFile", "Directory error opening recording file.", LogLevelError);
 		return false;
 	}
+	
+	return true;
+}	
+	
+	
+//  Open the  file
+//
+bool OpenBCIFileRecorder::OpenFile(string fileName)
+{
+	if (!CheckRecordingFolder())
+		return false;
 	
 	timeval tv;
 	gettimeofday(&tv, NULL);
@@ -118,57 +139,31 @@ bool FileRecorder::OpenFile(string fileName)
 	RecordingFileName = os.str();	
 	os.str("");
 	os << RECORDINGFOLDER << RecordingFileName;	
+	auto fullPath = os.str();
 	
+	//  open the file
 	{
 		LockMutex lockFile(RecordingFileMutex);
 			
 		//  open log file
 		RecordingFile.open(os.str());
-		if (!RecordingFile.is_open())
+		if (RecordingFile.is_open())
 		{
-			//  todo - log it
+			Logging.AddLog("OpenBCIFileRecorder", "OpenFile", format("Opened recording file %s.", fullPath.c_str()), LogLevelInfo);
+			return true;
+		}
+		else
+		{
+			Logging.AddLog("OpenBCIFileRecorder", "OpenFile", format("Failed to open recording file %s.", fullPath.c_str()), LogLevelError);
 			return false;
 		}
-		
-		Logging.AddLog("FileRecorder", "OpenFile", format("Opened recording file %s.", RecordingFileName.c_str()), LogLevelInfo);
-		
-		return true;
 	}
 }
 
 
-void FileRecorder::WriteHeader(BFSample* firstSample)
-{
-	//  header
-	RecordingFile << "%OpenBCI Raw EEG Data" << endl;
-	RecordingFile << "%Number of channels = " << firstSample->GetNumberOfExgChannels() << endl;
-	RecordingFile << "%Sample Rate = " << SampleRate << " Hz" << endl;
-	RecordingFile << "%Board = " << FileBoardDescription(BoardId) << endl;
-	RecordingFile << "%Logger = brainHat" << endl;
-	RecordingFile << "Sample Index";
-		
-	for (int i = 0; i < firstSample->GetNumberOfExgChannels(); i++)
-		RecordingFile << ", EXG Channel " << i;
-	
-	for (int i = 0; i < firstSample->GetNumberOfAccelChannels(); i++)
-		RecordingFile << ", Accel Channel " << i;
-	
-	for (int i = 0; i < firstSample->GetNumberOfOtherChannels(); i++)
-		RecordingFile << ", Other";
-	
-	for (int i = 0; i < firstSample->GetNumberOfAnalogChannels(); i++)
-		RecordingFile << ", Analog Channel " << i;
-	
-	RecordingFile << ", Timestamp, Timestamp (Formatted)" << endl; 
-	
-	RecordingFile <<  fixed << showpoint;
-	
-	WroteHeader = true;
-
-}
-
-
-void FileRecorder::AddData(BFSample* data)
+//  Add data to the queue
+//
+void OpenBCIFileRecorder::AddData(BFSample* data)
 {
 	if (!Recording)
 		return;
@@ -182,7 +177,7 @@ void FileRecorder::AddData(BFSample* data)
 
 //  Run function
 //
-void FileRecorder::RunFunction()
+void OpenBCIFileRecorder::RunFunction()
 {
 	while (ThreadRunning)
 	{		
@@ -192,10 +187,9 @@ void FileRecorder::RunFunction()
 }
 
 
-
-//  Broadcast the sample data to the LSL outlet
+//  Write all of the available data in the queue to the file
 //
-void FileRecorder::WriteDataToFile()
+void OpenBCIFileRecorder::WriteDataToFile()
 {
 	//  empty the queue and put the samples to send into a list
 	list<BFSample*> samples;
@@ -223,7 +217,46 @@ void FileRecorder::WriteDataToFile()
 	}
 }
 
-void FileRecorder::WriteSample(BFSample* sample)
+
+//  Write the header to the file
+//
+void OpenBCIFileRecorder::WriteHeader(BFSample* firstSample)
+{
+	{
+		LockMutex lockFile(RecordingFileMutex);
+		
+		//  header
+		RecordingFile << "%OpenBCI Raw EEG Data" << endl;
+		RecordingFile << "%Number of channels = " << firstSample->GetNumberOfExgChannels() << endl;
+		RecordingFile << "%Sample Rate = " << SampleRate << " Hz" << endl;
+		RecordingFile << "%Board = " << FileBoardDescription(BoardId) << endl;
+		RecordingFile << "%Logger = brainHat" << endl;
+		RecordingFile << "Sample Index";
+		
+		for (int i = 0; i < firstSample->GetNumberOfExgChannels(); i++)
+			RecordingFile << ", EXG Channel " << i;
+	
+		for (int i = 0; i < firstSample->GetNumberOfAccelChannels(); i++)
+			RecordingFile << ", Accel Channel " << i;
+	
+		for (int i = 0; i < firstSample->GetNumberOfOtherChannels(); i++)
+			RecordingFile << ", Other";
+	
+		for (int i = 0; i < firstSample->GetNumberOfAnalogChannels(); i++)
+			RecordingFile << ", Analog Channel " << i;
+	
+		RecordingFile << ", Timestamp, Timestamp (Formatted)" << endl; 
+	
+		RecordingFile <<  fixed << showpoint;
+	
+		WroteHeader = true;
+	}
+}
+
+
+//  Write a sample to the file
+//
+void OpenBCIFileRecorder::WriteSample(BFSample* sample)
 {
 	{
 		LockMutex lockFile(RecordingFileMutex);

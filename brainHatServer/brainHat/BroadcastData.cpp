@@ -21,7 +21,8 @@ using namespace lsl;
 
 
 
-//  Constructor
+//  Broadcast data thread
+//  Sends samples to the network using LSL
 //
 BroadcastData::BroadcastData()
 {
@@ -40,8 +41,8 @@ BroadcastData::~BroadcastData()
 }
 
 
-
-
+//  Set Board properties, and kick off the broadcast thread
+//
 void BroadcastData::SetBoard(int boardId, int sampleRate)
 {
 	BoardId = boardId;
@@ -53,6 +54,8 @@ void BroadcastData::SetBoard(int boardId, int sampleRate)
 	Thread::Start();
 }
 
+
+//  Stream name for board
 string StreamName(int boardId)
 {
 	switch (boardId)
@@ -68,6 +71,9 @@ string StreamName(int boardId)
 	}
 }
 
+
+//  Configure the LSL stream for the specific board
+//
 void BroadcastData::SetupLslForBoard()
 {
 	int numChannels, accelChannels, otherChannels, analogChannels;
@@ -120,7 +126,8 @@ void BroadcastData::SetupLslForBoard()
 
 
 
-
+//  Add data to the broadcast queue
+//
 void BroadcastData::AddData(BFSample* data)
 {
 	{
@@ -131,6 +138,7 @@ void BroadcastData::AddData(BFSample* data)
 
 
 //  Run function
+//  sends out data from the queue
 //
 void BroadcastData::RunFunction()
 {
@@ -168,7 +176,6 @@ void BroadcastData::BroadcastDataToLslOutlet()
 		if (LSLOutlet->have_consumers())
 		{
 			(*nextSample)->AsRawSample(rawSample);
-		
 			LSLOutlet->push_sample(rawSample);
 		}
 		

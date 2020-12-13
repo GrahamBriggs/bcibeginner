@@ -174,13 +174,13 @@ namespace BrainHatServersMonitor
             StreamInlet inlet = null;
             try
             {
+                await Task.Delay(100);
+
                 inlet = new StreamInlet(StreamInfo);
-                inlet.open_stream();
+                //inlet.open_stream();
                 // Console.WriteLine(inlet.info().as_xml());
 
                 double[] rawSample = new double[SampleSize];
-
-                await Task.Delay(100);
 
                 //  spin until canceled
                 while (!cancelToken.IsCancellationRequested)

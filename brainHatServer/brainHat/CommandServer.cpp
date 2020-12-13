@@ -1,6 +1,7 @@
 #include <netinet/in.h>
 #include <string>
 #include  <algorithm>
+#include <sstream>
 
 #include "brainHat.h"
 #include "CommandServer.h"
@@ -14,7 +15,7 @@
 using namespace std;
 
 
-//  Constructor
+//  TCPIP server socket accepting command requests from clients
 //
 CommandServer::CommandServer(HandleRequestCallbackFn handleRequestFn)
 {
@@ -30,7 +31,7 @@ CommandServer::~CommandServer()
 
 
 //  Thread Start
-//  override to open server socket
+//  
 void CommandServer::Start()
 {
 	int port = OpenServerSocket(COMSERVER_PORT, true);
@@ -61,17 +62,14 @@ void CommandServer::RunFunction()
 			continue;
 		
 		readFromSocket.erase(remove(readFromSocket.begin(), readFromSocket.end(), '\r'), readFromSocket.end());
-		readFromSocket.erase(remove(readFromSocket.begin(), readFromSocket.end(), '\n'), readFromSocket.end());
-		Logging.AddLog("CommandServer", "RunFunction", format("Read from socket: %s", readFromSocket.c_str()), LogLevelTrace);
-		
-		Parser readParser(readFromSocket, "?");
-		string command = readParser.GetNextString();
-		
-		if (command.compare("loglevel") == 0)
+		readFromSocket.erase(remove(readFromSocket.begin(), readFromSocket.end(), '\n'), readFromSocket.end());	
+		UriArgParser argParser(readFromSocket);
+
+		if (argParser.GetRequest() == "loglevel")
 		{
-			HandleLogLevelChangeRequest(acceptFileDescriptor, readParser.GetNextString());
+			HandleLogLevelChangeRequest(acceptFileDescriptor, argParser);
 		}
-		else if(command.compare("ping") == 0)
+		else if(argParser.GetRequest() == "ping")
 		{	
 			WriteStringToSocket(acceptFileDescriptor, format("ACK?time=%llu\n", GetUnixTimeMilliseconds()));
 		}
@@ -79,15 +77,13 @@ void CommandServer::RunFunction()
 		{
 			if (HandleRequestCallback(readFromSocket))
 			{
-				WriteStringToSocket(acceptFileDescriptor, format("ACK?command=%s&time=%llu\n", command.c_str(), GetUnixTimeMilliseconds()));
+				WriteStringToSocket(acceptFileDescriptor, format("ACK?request=%s&time=%llu\n", argParser.GetRequest().c_str(), GetUnixTimeMilliseconds()));
 			}
 			else
 			{
-				Logging.AddLog("CommandServer", "RunFunction", format("Handle reuest failed: %s", command.c_str()), LogLevelWarn);
-				WriteStringToSocket(acceptFileDescriptor, "NAK?response=Invalid request.\n");
+				WriteStringToSocket(acceptFileDescriptor, "NAK?response=Invalid.\n");
 			}
 		}
-		
 	}
 }
 
@@ -97,27 +93,25 @@ void CommandServer::RunFunction()
 
 //  Change log level request
 //
-void CommandServer::HandleLogLevelChangeRequest(int acceptFileDesc, string args)
-{
-	Parser argParser(args, "=&");
-			
-	string destKey = argParser.GetNextString();
-	string destValue = argParser.GetNextString();
-			
-	string levelKey = argParser.GetNextString();
-	int level = argParser.GetNextInt();
-			
-	if (destValue == "a")
+void CommandServer::HandleLogLevelChangeRequest(int acceptFileDesc, UriArgParser& argParser)
+{		
+	if (argParser.GetArg("object") == "a")
 	{	
-		if (destValue == "a")
+		auto logLevel = argParser.GetArg("level");
+		
+		int level;
+		stringstream converter;
+		converter << logLevel;
+		converter >> level;
+
+		if (!converter.fail())
 		{
 			Logging.ToggleAppLogLevel((LogLevel)level);
+			WriteStringToSocket(acceptFileDesc, format("ACK?response=Log level set to %d.\n", level).c_str());
+			return;
 		}
+	}
 	
-		WriteStringToSocket(acceptFileDesc, format("ACK?response=Log level for %s set to %d.\n", destValue.c_str(), level).c_str());
-	}
-	else 
-	{
-		WriteStringToSocket(acceptFileDesc, format("NAK?response=Unrecognized command %s.\n", args.c_str()).c_str());
-	}
+	//  failed
+	WriteStringToSocket(acceptFileDesc, "NAK?response=Invalid arguments for loglevel.\n");	
 }

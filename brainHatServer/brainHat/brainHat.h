@@ -2,13 +2,13 @@
 #include "BroadcastData.h"
 #include "BoardDataReader.h"
 #include "Logger.h"
-#include "FileRecorder.h"
+#include "OpenBCIFileRecorder.h"
 
 extern Logger Logging;
 
 
-extern BoardDataReader Board;
-extern FileRecorder FileRecording;
+extern BoardDataSource* DataSource;
+extern OpenBCIFileRecorder FileRecorder;
 
 
 

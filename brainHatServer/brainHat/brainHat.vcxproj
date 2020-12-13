@@ -80,7 +80,7 @@
     <ClInclude Include="BoardFileSimulator.h" />
     <ClInclude Include="brainHat.h" />
     <ClInclude Include="FileExtensions.h" />
-    <ClInclude Include="FileRecorder.h" />
+    <ClInclude Include="OpenBCIFileRecorder.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="GpioPinManager.h" />
     <ClInclude Include="Logger.h" />
@@ -108,7 +108,7 @@
     <ClCompile Include="CommandServer.cpp" />
     <ClCompile Include="BoardFileSimulator.cpp" />
     <ClCompile Include="brainHat.cpp" />
-    <ClCompile Include="FileRecorder.cpp" />
+    <ClCompile Include="OpenBCIFileRecorder.cpp" />
     <ClCompile Include="GpioPinManager.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="NetworkExtensions.cpp" />

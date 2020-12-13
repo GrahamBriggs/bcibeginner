@@ -8,7 +8,12 @@ class UriArgParser
 public:
 	inline UriArgParser(std::string uri)
 	{
-		Parser argParser(uri, "&");
+		Parser requestParser(uri, "?");
+		Request = requestParser.GetNextString();
+		
+		Parser argParser(requestParser.GetNextString(), "&");
+		
+		// cycle through all the args
 		auto nextArg = argParser.GetNextString();
 		while (nextArg.length() > 0)
 		{
@@ -18,7 +23,9 @@ public:
 		}
 	}
 	
-	inline std::string GetValue(std::string key)
+	inline std::string GetRequest() { return Request;}
+		
+	inline std::string GetArg(std::string key)
 	{
 		if (Args.find(key) != Args.end())
 			return Args[key];
@@ -27,6 +34,9 @@ public:
 	}
 	
 	
+	
+protected:
+	std::string Request;
 	std::map<std::string, std::string> Args;
 	
 };

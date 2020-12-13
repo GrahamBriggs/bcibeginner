@@ -118,7 +118,7 @@ namespace BrainHatServersMonitor
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1));
 
-                    var oldConnections = DiscoveredServers.Where(x => (DateTimeOffset.UtcNow - x.Value.TimeStamp) > TimeSpan.FromSeconds(10));
+                    var oldConnections = DiscoveredServers.Where(x => (DateTimeOffset.UtcNow - x.Value.TimeStamp) > TimeSpan.FromSeconds(1000));    //  TODO - connection timeout
 
                     if (oldConnections.Any())
                     {
@@ -126,7 +126,7 @@ namespace BrainHatServersMonitor
                         {
                             try
                             {
-                                Log?.Invoke(this, new LogEventArgs(this, "RunConnectionStatusMonitor", $"Lost connection to brainHat server {nextConnection.Key}.", LogLevel.INFO));
+                                Log?.Invoke(this, new LogEventArgs(nextConnection.Key, this, "RunConnectionStatusMonitor", $"Lost connection to brainHat server {nextConnection.Key}.", LogLevel.INFO));
                                 HatConnectionChanged?.Invoke(this, new HatConnectionEventArgs(HatConnectionState.Lost, nextConnection.Key));
                                 
                                 DiscoveredServers.TryRemove(nextConnection.Key, out var discard);
@@ -319,7 +319,7 @@ namespace BrainHatServersMonitor
                     serverStatus.RawLatency = server.RawLatency;
                 }
 
-                Log?.Invoke(this, new LogEventArgs(this, "ProcessNetworkStatus", $"Network status offset time for host {hostName}: {timeOffset.TotalSeconds:F6} s", LogLevel.TRACE));
+                Log?.Invoke(this, new LogEventArgs(hostName, this, "ProcessNetworkStatus", $"Network status offset time for host {hostName}: {timeOffset.TotalSeconds:F6} s", LogLevel.TRACE));
 
                 SendConnectionStatusUpdateEvents(serverStatus);
             }
