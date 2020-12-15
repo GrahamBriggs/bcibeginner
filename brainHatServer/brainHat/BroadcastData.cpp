@@ -85,6 +85,9 @@ void BroadcastData::SetupLslForBoard()
 	SampleSize = 2 + numChannels + accelChannels + otherChannels + analogChannels;
 	
 	lsl::stream_info info(StreamName(BoardId), "BFSample", SampleSize, SampleRate, lsl::cf_double64, HostName);
+	
+	auto response = lsl_library_info();
+	cout << response;
 
 	// add some description fields
 	info.desc().append_child_value("manufacturer", "OpenBCI");

@@ -44,6 +44,22 @@ namespace BrainHatClient
             });
         }
 
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            var task = Task.Run(async () => await BrainHatServers.StopMonitorAsync());
+            task.Wait();
+
+            //  TODO - make this work
+            //foreach ( var nextProcessor in DataProcessors )
+            //{
+            //    task = Task.Run(async () => await nextProcessor.Value.StopDataProcessorAsync());
+            //    task.Wait();
+            //}
+
+            
+            base.OnFormClosing(e);
+        }
+
         //  Logging
         public static Logging Logger { get; protected set; }
 

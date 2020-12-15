@@ -127,7 +127,7 @@ void BoardDataSource::InspectDataStream(BFSample* data)
 		
 		averageTimeBetweenSamples /= DataInspecting.size();
 		
-		Logging.AddLog("BoardDataSource", "InspectDataStream", format("%s. Read %d samples. %d sps. Avg %.4lf s. Max %.4lf s. Min %.4lf s.", ReportSource().c_str(), DataInspecting.size(), DataInspecting.size() / 5, averageTimeBetweenSamples, sampleTimeHigh, sampleTimeLow), LogLevelTrace);
+		Logging.AddLog("BoardDataSource", "InspectDataStream", format("%s Read %d samples. %d sps. Avg %.4lf s. Max %.4lf s. Min %.4lf s.", ReportSource().c_str(), DataInspecting.size(), DataInspecting.size() / 5, averageTimeBetweenSamples, sampleTimeHigh, sampleTimeLow), LogLevelTrace);
 
 		for (auto it = DataInspecting.begin(); it != DataInspecting.end(); ++it)
 		{

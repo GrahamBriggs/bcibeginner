@@ -163,40 +163,86 @@ namespace BrainHatServersMonitor
         //  Read data port task
         Task ReadDataPortTask { get; set; }
 
-        
 
+
+        List<Tuple<long, long>> PullSampleTimes = new List<Tuple<long, long>>();
+        int SampleCounter = 0;
 
         /// <summary>
         /// Run function for reading data on LSL multicast data port
         /// </summary>
         protected async Task RunReadDataPortAsync(CancellationToken cancelToken)
         {
+            var sw = new System.Diagnostics.Stopwatch();
+            var sampleReportingTime = new System.Diagnostics.Stopwatch();
+            sampleReportingTime.Start();
+
             StreamInlet inlet = null;
             try
             {
                 await Task.Delay(100);
 
                 inlet = new StreamInlet(StreamInfo);
+               
                 //inlet.open_stream();
-                // Console.WriteLine(inlet.info().as_xml());
+
 
                 double[] rawSample = new double[SampleSize];
+
+                double[,] buffer = new double[512, SampleSize];
+                double[] timestamps = new double[512];
+                IBFSample nextSample = null;
 
                 //  spin until canceled
                 while (!cancelToken.IsCancellationRequested)
                 {
                     try
                     {
-                        inlet.pull_sample(rawSample, 2);
-                        var newSample = ParseSample(rawSample);
-                        RawDataReceived?.Invoke(this, new BFSampleEventArgs(newSample));
-                        LogRawDataProcessingPerformance(newSample);
+                      
+                        int num = inlet.pull_chunk(buffer, timestamps);
+                        for (int s = 0; s < num; s++)
+                        {
+                            nextSample = null;
+                            switch ( BoardId )
+                            {
+                                case 0:
+                                    nextSample = new BFCyton8Sample(buffer, s);
+                                    break;
+
+                                case 2:
+                                    nextSample = new BFCyton16Sample(buffer, s);
+                                    break;
+                            }
+
+                            RawDataReceived?.Invoke(this, new BFSampleEventArgs(nextSample));
+                            LogRawDataProcessingPerformance(nextSample);
+                        }
+                        await Task.Delay(1);
+
+
+                        //sw.Restart();
+                        //inlet.pull_sample(rawSample, 2);
+                        //var pullSampleTime = sw.ElapsedMilliseconds;
+                        //var newSample = ParseSample(rawSample);
+                        //RawDataReceived?.Invoke(this, new BFSampleEventArgs(newSample));
+                        //LogRawDataProcessingPerformance(newSample);
+                        //var totalTime = sw.ElapsedMilliseconds;
+                        //PullSampleTimes.Add(new Tuple<long, long>(pullSampleTime, totalTime));
+                        //SampleCounter++;
                     }
                     catch (Exception ex)
                     {
-                        Log?.Invoke(this, new LogEventArgs(this, "RunUdpMulticastReader", ex, LogLevel.WARN));
+                        Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadDataPortAsync", ex, LogLevel.WARN));
                         await Task.Delay(500);
                     }
+
+                    //if ( sampleReportingTime.ElapsedMilliseconds > 5000)
+                    //{
+                    //    sampleReportingTime.Restart();
+                    //    Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadDataPortAsync", $"LSL Sample: Pulled {SampleCounter} samples in 5 s. Pull { PullSampleTimes.Select(x => x.Item1).Average()} ms max {PullSampleTimes.Select(x => x.Item1).Max()} ms. Total {PullSampleTimes.Select(x => x.Item2).Average()} ms max {PullSampleTimes.Select(x => x.Item2).Max()} ms. ", LogLevel.DEBUG));
+                    //    PullSampleTimes.Clear();
+                    //    SampleCounter = 0;
+                    //}
                 }
             }
             catch (OperationCanceledException)

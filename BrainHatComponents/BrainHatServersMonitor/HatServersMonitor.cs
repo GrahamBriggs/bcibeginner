@@ -56,6 +56,11 @@ namespace BrainHatServersMonitor
                 if (UdpReaderRunTask != null)
                     await Task.WhenAll(UdpReaderRunTask, ConnectionMonitorRunTask, LslScannerRunTask, ReadLogPortTask);
 
+                foreach ( var nextServer in DiscoveredServers )
+                {
+                    await nextServer.Value.StopMonitorAsync();
+                }
+
                 MonitorCancelTokenSource = null;
                 UdpReaderRunTask = null;
                 ConnectionMonitorRunTask = null;
@@ -173,7 +178,7 @@ namespace BrainHatServersMonitor
                     {
                         
                         
-                        //System.Console.Write(nextStreamInfo.as_xml());
+                        
                         var doc = XDocument.Parse(nextStreamInfo.as_xml());
                         if (doc != null)
                         {
@@ -186,6 +191,7 @@ namespace BrainHatServersMonitor
                                 {
                                     DiscoveredLslStreams.TryAdd(hostName, nextStreamInfo);
                                     Log?.Invoke(this, new LogEventArgs(this, "RunLslScannerAsync", $"Discovered new LSL on host {hostName}." , LogLevel.INFO));
+                                    Log?.Invoke(this, new LogEventArgs(this, "RunLslScannerAsync", $"LSL Stream Info. {nextStreamInfo.as_xml()}", LogLevel.DEBUG));
                                 }
                             }
                         }
@@ -256,27 +262,21 @@ namespace BrainHatServersMonitor
         {
             try
             {
-                //  we are expecting to read something like "messageType?arg1=abc&arg2=def&arg3=ghi"
-                var parseReceived = Encoding.ASCII.GetString(receiveResult.Buffer).Split('?');
+                //  we are expecting to read something like "requestType?arg1=abc&arg2=def&arg3=ghi"
+                var argParser = new UriArgParser(Encoding.ASCII.GetString(receiveResult.Buffer));
 
                 //  verify correct numberr of arguments
-                if (parseReceived.Count() == 2)
+                switch (argParser.Request)
                 {
-                    switch (parseReceived[0])
-                    {
-                        case "networkstatus":
-                            await ProcessNetworkStatus(parseReceived[1]);
-                            break;
+                    case "networkstatus":
+                        await ProcessNetworkStatus(argParser);
+                        break;
 
-                        default:
-                            Log?.Invoke(this, new LogEventArgs(this, "ProcessReceivedResult", $"Unexpected data type {parseReceived[0]}.", LogLevel.WARN));
-                            break;
-                    }
+                    default:
+                        Log?.Invoke(this, new LogEventArgs(this, "ProcessReceivedResult", $"Unexpected data type {argParser.Request}.", LogLevel.WARN));
+                        break;
                 }
-                else
-                {
-                    Log?.Invoke(this, new LogEventArgs(this, "ProcessReceivedResult", $"Invalid message from server with {parseReceived.Count()} parameters.", LogLevel.ERROR));
-                }
+
             }
             catch (Exception e)
             {
@@ -288,40 +288,41 @@ namespace BrainHatServersMonitor
         /// <summary>
         /// Process network connection status message
         /// </summary>
-        protected async Task ProcessNetworkStatus(string argString)
+        protected async Task ProcessNetworkStatus(UriArgParser argParser)
         {
             try
             {
-                var args = HttpUtility.ParseQueryString(argString);
+                var hostName = argParser.GetArg("hostname");
+                var status = argParser.GetArg("status");
 
-                var hostName = args.Get("hostName");
-                var status = args.Get("status");
-
-                var serverStatus = JsonConvert.DeserializeObject<BrainHatServerStatus>(status);
-
-                var timeOffset = DateTimeOffset.UtcNow - serverStatus.TimeStamp;
-
-                //  check the list of discovered servers
-                if (!DiscoveredServers.ContainsKey(hostName))
+                if (hostName.Length > 0)
                 {
-                    await CreateNewHatServer(serverStatus);
+                    var serverStatus = JsonConvert.DeserializeObject<BrainHatServerStatus>(status);
+
+                    var timeOffset = DateTimeOffset.UtcNow - serverStatus.TimeStamp;
+
+                    //  check the list of discovered servers
+                    if (!DiscoveredServers.ContainsKey(hostName))
+                    {
+                        await CreateNewHatServer(serverStatus);
+                    }
+                    else
+                    {
+                        var server = DiscoveredServers[hostName];
+
+                        //  update server connection state
+                        await server.UpdateConnection(serverStatus);
+                        server.TimeStamp = serverStatus.TimeStamp;
+
+                        //  set raw data status for the event message
+                        serverStatus.ReceivingRaw = server.ReceivingRaw;
+                        serverStatus.RawLatency = server.RawLatency;
+                    }
+
+                    Log?.Invoke(this, new LogEventArgs(hostName, this, "ProcessNetworkStatus", $"Network status offset time for host {hostName}: {timeOffset.TotalSeconds:F6} s", LogLevel.TRACE));
+
+                    SendConnectionStatusUpdateEvents(serverStatus);
                 }
-                else
-                {
-                    var server = DiscoveredServers[hostName];
-
-                    //  update server connection state
-                    await server.UpdateConnection(serverStatus);
-                    server.TimeStamp = serverStatus.TimeStamp;
-
-                    //  set raw data status for the event message
-                    serverStatus.ReceivingRaw = server.ReceivingRaw;
-                    serverStatus.RawLatency = server.RawLatency;
-                }
-
-                Log?.Invoke(this, new LogEventArgs(hostName, this, "ProcessNetworkStatus", $"Network status offset time for host {hostName}: {timeOffset.TotalSeconds:F6} s", LogLevel.TRACE));
-
-                SendConnectionStatusUpdateEvents(serverStatus);
             }
             catch (Exception ex)
             {
@@ -421,18 +422,15 @@ namespace BrainHatServersMonitor
                             try
                             {
                                 //  wait for the next read, and then split it into the command and the arguments
-                                var parseReceived = Encoding.ASCII.GetString((await udpClient.ReceiveAsync()).Buffer).Split('?');
+                                UriArgParser argParser = new UriArgParser(Encoding.ASCII.GetString((await udpClient.ReceiveAsync()).Buffer));
 
-                                if (parseReceived.Count() == 2)
-                                {
+                               
                                     //  see if this is recognized command
-                                    switch (parseReceived[0])
+                                    switch (argParser.Request)
                                     {
-                                        case "log":
-                                            //  parse the arguments
-                                            var responseArgs = HttpUtility.ParseQueryString(parseReceived[1]);
-                                            var logString = responseArgs.Get("log");
-                                            var hostName = responseArgs.Get("hostname");
+                                        case "log":         
+                                            var logString = argParser.GetArg("log");
+                                            var hostName = argParser.GetArg("hostname");
                                             if (logString != null)
                                             {
                                                 var log = JsonConvert.DeserializeObject<RemoteLogEventArgs>(logString);
@@ -441,10 +439,10 @@ namespace BrainHatServersMonitor
                                             break;
 
                                         default:
-                                            Log?.Invoke(this, new LogEventArgs(this, "RunReadLogPortAsync", $"Received invalid remote log: {parseReceived}.", LogLevel.WARN));
+                                            Log?.Invoke(this, new LogEventArgs(this, "RunReadLogPortAsync", $"Received invalid remote log: {argParser.Request}.", LogLevel.WARN));
                                             break;
                                     }
-                                }
+                                
                             }
                             catch (Exception exc)
                             {

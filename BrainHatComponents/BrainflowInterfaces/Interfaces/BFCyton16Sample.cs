@@ -99,7 +99,7 @@ namespace BrainflowInterfaces
         /// </summary>
         public BFCyton16Sample(double[,] chunk, int column)
         {
-            var sample = chunk.GetColumn(column);
+            var sample = chunk.GetRow(column);
 
             InitializeFromSample(sample);
         }

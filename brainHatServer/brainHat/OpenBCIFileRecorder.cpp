@@ -225,12 +225,13 @@ void OpenBCIFileRecorder::WriteHeader(BFSample* firstSample)
 	{
 		LockMutex lockFile(RecordingFileMutex);
 		
-		//  header
+		//  metadata header
 		RecordingFile << "%OpenBCI Raw EEG Data" << endl;
 		RecordingFile << "%Number of channels = " << firstSample->GetNumberOfExgChannels() << endl;
 		RecordingFile << "%Sample Rate = " << SampleRate << " Hz" << endl;
 		RecordingFile << "%Board = " << FileBoardDescription(BoardId) << endl;
 		RecordingFile << "%Logger = brainHat" << endl;
+		//  data header
 		RecordingFile << "Sample Index";
 		
 		for (int i = 0; i < firstSample->GetNumberOfExgChannels(); i++)

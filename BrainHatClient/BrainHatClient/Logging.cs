@@ -200,8 +200,7 @@ namespace BrainHatClient
                                 logSystem.Debug(log.FormatLogForFile());
                             break;
                         case LogLevel.TRACE:
-                            if ( LogLevelDisplay == LogLevel.TRACE)
-                                logSystem.Debug(log.FormatLogForFile());
+                            logSystem.Debug(log.FormatLogForFile());
                             break;
                         case LogLevel.DEBUG:
                             logSystem.Debug(log.FormatLogForFile());
