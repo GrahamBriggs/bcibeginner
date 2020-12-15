@@ -123,7 +123,7 @@ namespace BrainHatServersMonitor
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1));
 
-                    var oldConnections = DiscoveredServers.Where(x => (DateTimeOffset.UtcNow - x.Value.TimeStamp) > TimeSpan.FromSeconds(1000));    //  TODO - connection timeout
+                    var oldConnections = DiscoveredServers.Where(x => (DateTimeOffset.UtcNow - x.Value.TimeStamp) > TimeSpan.FromSeconds(10));    
 
                     if (oldConnections.Any())
                     {
@@ -245,6 +245,8 @@ namespace BrainHatServersMonitor
                         }
                     }
                     catch (OperationCanceledException)
+                    { }
+                    catch (ObjectDisposedException)
                     { }
                 }
             }
@@ -424,26 +426,28 @@ namespace BrainHatServersMonitor
                                 //  wait for the next read, and then split it into the command and the arguments
                                 UriArgParser argParser = new UriArgParser(Encoding.ASCII.GetString((await udpClient.ReceiveAsync()).Buffer));
 
-                               
-                                    //  see if this is recognized command
-                                    switch (argParser.Request)
-                                    {
-                                        case "log":         
-                                            var logString = argParser.GetArg("log");
-                                            var hostName = argParser.GetArg("hostname");
-                                            if (logString != null)
-                                            {
-                                                var log = JsonConvert.DeserializeObject<RemoteLogEventArgs>(logString);
-                                                Log?.Invoke(this, new LogEventArgs(log));
-                                            }
-                                            break;
 
-                                        default:
-                                            Log?.Invoke(this, new LogEventArgs(this, "RunReadLogPortAsync", $"Received invalid remote log: {argParser.Request}.", LogLevel.WARN));
-                                            break;
-                                    }
-                                
+                                //  see if this is recognized command
+                                switch (argParser.Request)
+                                {
+                                    case "log":
+                                        var logString = argParser.GetArg("log");
+                                        var hostName = argParser.GetArg("hostname");
+                                        if (logString != null)
+                                        {
+                                            var log = JsonConvert.DeserializeObject<RemoteLogEventArgs>(logString);
+                                            Log?.Invoke(this, new LogEventArgs(log));
+                                        }
+                                        break;
+
+                                    default:
+                                        Log?.Invoke(this, new LogEventArgs(this, "RunReadLogPortAsync", $"Received invalid remote log: {argParser.Request}.", LogLevel.WARN));
+                                        break;
+                                }
+
                             }
+                            catch (ObjectDisposedException)
+                            { }
                             catch (Exception exc)
                             {
                                 Log?.Invoke(this, new LogEventArgs(this, "RunReadLogPortAsync", exc, LogLevel.ERROR));
