@@ -4,9 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.29519.87
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrainHatClient", "BrainHatClient\BrainHatClient.csproj", "{6D26485D-D8D5-4924-9406-833BE1AB2BE1}"
-	ProjectSection(ProjectDependencies) = postProject
-		{17964429-D199-4ACE-A3AB-9A965D33A312} = {17964429-D199-4ACE-A3AB-9A965D33A312}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "brainflow", "..\BrainHatComponents\brainflow\brainflow.csproj", "{19D4357F-B416-40D3-99CD-2FCAF56529F6}"
 EndProject
@@ -23,15 +20,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrainflowDataProcessingTests", "..\BrainHatComponents\BrainflowDataProcessingTests\BrainflowDataProcessingTests.csproj", "{B7DDAAFB-984B-41BA-BC8B-CD2FD7E88A4D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "liblsl", "..\BrainHatComponents\liblsl\liblsl.csproj", "{C157BF2D-9961-430D-991B-D74B80C2C64C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrainHatServersMonitor.Win", "..\BrainHatComponents\BrainHatServersMonitor\BrainHatServersMonitor.Win.csproj", "{17964429-D199-4ACE-A3AB-9A965D33A312}"
-	ProjectSection(ProjectDependencies) = postProject
-		{C157BF2D-9961-430D-991B-D74B80C2C64C} = {C157BF2D-9961-430D-991B-D74B80C2C64C}
-		{ACFFAB45-AA43-4959-8E2D-6CCAB67E005E} = {ACFFAB45-AA43-4959-8E2D-6CCAB67E005E}
-		{7BC8716D-6B6C-4617-A591-3A9D79357131} = {7BC8716D-6B6C-4617-A591-3A9D79357131}
-		{19D4357F-B416-40D3-99CD-2FCAF56529F6} = {19D4357F-B416-40D3-99CD-2FCAF56529F6}
-		{8FFE8E83-F51E-47F4-A32D-18A0E5196308} = {8FFE8E83-F51E-47F4-A32D-18A0E5196308}
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrainHatServersMonitor", "..\BrainHatComponents\BrainHatServersMonitor\BrainHatServersMonitor.csproj", "{8A1B8F57-DA23-49D7-939A-81703F70A301}"
 EndProject
@@ -153,18 +141,6 @@ Global
 		{C157BF2D-9961-430D-991B-D74B80C2C64C}.Release|x64.Build.0 = Release|Any CPU
 		{C157BF2D-9961-430D-991B-D74B80C2C64C}.Release|x86.ActiveCfg = Release|Any CPU
 		{C157BF2D-9961-430D-991B-D74B80C2C64C}.Release|x86.Build.0 = Release|Any CPU
-		{17964429-D199-4ACE-A3AB-9A965D33A312}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{17964429-D199-4ACE-A3AB-9A965D33A312}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{17964429-D199-4ACE-A3AB-9A965D33A312}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{17964429-D199-4ACE-A3AB-9A965D33A312}.Debug|x64.Build.0 = Debug|Any CPU
-		{17964429-D199-4ACE-A3AB-9A965D33A312}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{17964429-D199-4ACE-A3AB-9A965D33A312}.Debug|x86.Build.0 = Debug|Any CPU
-		{17964429-D199-4ACE-A3AB-9A965D33A312}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{17964429-D199-4ACE-A3AB-9A965D33A312}.Release|Any CPU.Build.0 = Release|Any CPU
-		{17964429-D199-4ACE-A3AB-9A965D33A312}.Release|x64.ActiveCfg = Release|Any CPU
-		{17964429-D199-4ACE-A3AB-9A965D33A312}.Release|x64.Build.0 = Release|Any CPU
-		{17964429-D199-4ACE-A3AB-9A965D33A312}.Release|x86.ActiveCfg = Release|Any CPU
-		{17964429-D199-4ACE-A3AB-9A965D33A312}.Release|x86.Build.0 = Release|Any CPU
 		{8A1B8F57-DA23-49D7-939A-81703F70A301}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8A1B8F57-DA23-49D7-939A-81703F70A301}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A1B8F57-DA23-49D7-939A-81703F70A301}.Debug|x64.ActiveCfg = Debug|Any CPU
