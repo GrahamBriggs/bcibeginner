@@ -53,9 +53,9 @@ namespace BrainflowDataProcessing
 
                 CancelTokenSource = null;
                 MonitorRunTask = null;
-            }
 
-            Log?.Invoke(this, new LogEventArgs(Name, this, "StopDataProcessor", $"Stopped Brainflow data processor.", LogLevel.INFO));
+                Log?.Invoke(this, new LogEventArgs(Name, this, "StopMonitorAsync", $"Stopped Brainflow data processor.", LogLevel.INFO));
+            }
         }
 
 

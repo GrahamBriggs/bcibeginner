@@ -12,6 +12,7 @@
 #include "BFSample.h"
 #include "BrainHatServerStatus.h"
 #include "NetworkExtensions.h"
+
 #include <lsl_cpp.h>
 
 using namespace std;
@@ -91,7 +92,7 @@ void BroadcastData::SetupLslForBoard()
 
 	// add some description fields
 	info.desc().append_child_value("manufacturer", "OpenBCI");
-	info.desc().append_child_value("boardId", format("%d",BoardId));
+	info.desc().append_child_value("boardId", format("%d", BoardId));
 	lsl::xml_element chns = info.desc().append_child("channels");
 	
 	chns.append_child("channel")
@@ -101,13 +102,13 @@ void BroadcastData::SetupLslForBoard()
 	
 	for (int k = 0; k < numChannels; k++)
 		chns.append_child("channel")
-		.append_child_value("label", format("ExgCh%d",k))
+		.append_child_value("label", format("ExgCh%d", k))
 		.append_child_value("unit", "uV")
 		.append_child_value("type", "EEG");
 	
 	for (int k = 0; k < accelChannels; k++)
 		chns.append_child("channel")
-		.append_child_value("label", format("AcelCh%d",k))
+		.append_child_value("label", format("AcelCh%d", k))
 		.append_child_value("unit", "1.0")
 		.append_child_value("type", "Accelerometer");
 	
@@ -147,7 +148,7 @@ void BroadcastData::RunFunction()
 {
 	while (ThreadRunning)
 	{		
-		Sleep(10);
+		Sleep(1);
 		BroadcastDataToLslOutlet();
 	}
 }
@@ -158,6 +159,10 @@ void BroadcastData::RunFunction()
 //
 void BroadcastData::BroadcastDataToLslOutlet()
 {
+	int queueCount = SamplesQueue.size();
+	if (queueCount == 0)
+		return;
+	
 	double rawSample[SampleSize];
 	
 	//  empty the queue and put the samples to send into a list
@@ -176,13 +181,19 @@ void BroadcastData::BroadcastDataToLslOutlet()
 	for(auto nextSample = samples.begin() ; nextSample != samples.end() ; ++nextSample)
 	{
 		//  LSL broadcast
-		if (LSLOutlet->have_consumers())
+		if(LSLOutlet->have_consumers())
 		{
 			(*nextSample)->AsRawSample(rawSample);
 			LSLOutlet->push_sample(rawSample);
 		}
 		
 		delete(*nextSample);
+	}
+	
+	//  monitor performance, generate warning any time the queue is backed up more than two reads (we are reading at 20 hz)
+	if(queueCount > SampleRate / 10)
+	{
+		Logging.AddLog("BroadcastData", "BroadcastDataToLslOutlet", format("Broadcast is more than two reads behind. Queue size %d", queueCount), LogLevelWarn);
 	}
 }
 

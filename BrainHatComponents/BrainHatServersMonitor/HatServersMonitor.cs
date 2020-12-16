@@ -40,6 +40,8 @@ namespace BrainHatServersMonitor
             ConnectionMonitorRunTask = RunConnectionStatusMonitorAsync(MonitorCancelTokenSource.Token);
             ReadLogPortTask = RunReadLogPortAsync(MonitorCancelTokenSource.Token);
             LslScannerRunTask = RunLslScannerAsync(MonitorCancelTokenSource.Token);
+
+            ReportNetworkTimeInterval.Start();
         }
 
         
@@ -176,9 +178,6 @@ namespace BrainHatServersMonitor
                     List<string> discoveredStreams = new List<string>();
                     foreach (var nextStreamInfo in results)
                     {
-                        
-                        
-                        
                         var doc = XDocument.Parse(nextStreamInfo.as_xml());
                         if (doc != null)
                         {
@@ -228,31 +227,26 @@ namespace BrainHatServersMonitor
                     udpClient.JoinMulticastGroup(IPAddress.Parse(BrainHatNetworkAddresses.MulticastGroupAddress));
                     cancelToken.Register(() => udpClient.Close());
 
-                    try
+                    //  spin until canceled
+                    while (!cancelToken.IsCancellationRequested)
                     {
-                        //  spin until canceled
-                        while (!cancelToken.IsCancellationRequested)
+                        try
                         {
-                            try
-                            {
-                                //  read from multi cast server and process the result
-                                await ProcessReceivedResult(await udpClient.ReceiveAsync());
-                            }
-                            catch (Exception ex)
-                            {
-                                Log?.Invoke(this, new LogEventArgs(this, "RunUdpMulticastReader", ex, LogLevel.ERROR));
-                            }
+                            //  read from multi cast server and process the result
+                            await ProcessReceivedResult(await udpClient.ReceiveAsync());
+                        }
+                        catch (ObjectDisposedException)
+                        { }
+                        catch (Exception ex)
+                        {
+                            Log?.Invoke(this, new LogEventArgs(this, "RunUdpMulticastReaderAsync", ex, LogLevel.ERROR));
                         }
                     }
-                    catch (OperationCanceledException)
-                    { }
-                    catch (ObjectDisposedException)
-                    { }
                 }
             }
             catch (Exception e)
             {
-                Log?.Invoke(this, new LogEventArgs(this, "RunUdpMulticastReader", e, LogLevel.FATAL));
+                Log?.Invoke(this, new LogEventArgs(this, "RunUdpMulticastReaderAsync", e, LogLevel.FATAL));
             }
         }
 
@@ -286,6 +280,7 @@ namespace BrainHatServersMonitor
             }
         }
 
+        System.Diagnostics.Stopwatch ReportNetworkTimeInterval = new System.Diagnostics.Stopwatch();
 
         /// <summary>
         /// Process network connection status message
@@ -300,8 +295,6 @@ namespace BrainHatServersMonitor
                 if (hostName.Length > 0)
                 {
                     var serverStatus = JsonConvert.DeserializeObject<BrainHatServerStatus>(status);
-
-                    var timeOffset = DateTimeOffset.UtcNow - serverStatus.TimeStamp;
 
                     //  check the list of discovered servers
                     if (!DiscoveredServers.ContainsKey(hostName))
@@ -320,8 +313,6 @@ namespace BrainHatServersMonitor
                         serverStatus.ReceivingRaw = server.ReceivingRaw;
                         serverStatus.RawLatency = server.RawLatency;
                     }
-
-                    Log?.Invoke(this, new LogEventArgs(hostName, this, "ProcessNetworkStatus", $"Network status offset time for host {hostName}: {timeOffset.TotalSeconds:F6} s", LogLevel.TRACE));
 
                     SendConnectionStatusUpdateEvents(serverStatus);
                 }
@@ -357,27 +348,27 @@ namespace BrainHatServersMonitor
         /// <summary>
         /// Send connection status update event
         /// </summary>
-        private async void SendConnectionStatusUpdateEvents(BrainHatServerStatus status)
+        private  void SendConnectionStatusUpdateEvents(BrainHatServerStatus status)
         {
             try
             {
                 var pingSpeed = TimeSpan.FromSeconds(-1);
-                try
-                {
-                    var server = GetServer(status.HostName);
-                    if (server != null)
-                    {
-                        var sw = new System.Diagnostics.Stopwatch();
-                        sw.Start();
-                        var response = await Tcpip.GetTcpResponseAsync(server.IpAddress, BrainHatNetworkAddresses.ServerPort, "ping\n", 5000, 5000);
-                        sw.Stop();
-                        pingSpeed = sw.Elapsed;
-                    }
-                }
-                catch (Exception e)
-                {
-                    Log?.Invoke(this, new LogEventArgs(this, "SendConnectionStatusChangedEvents", e, LogLevel.WARN));
-                }
+                //try
+                //{
+                //    var server = GetServer(status.HostName);
+                //    if (server != null)
+                //    {
+                //        var sw = new System.Diagnostics.Stopwatch();
+                //        sw.Start();
+                //        var response = await Tcpip.GetTcpResponseAsync(server.IpAddress, BrainHatNetworkAddresses.ServerPort, "ping\n", 5000, 5000);
+                //        sw.Stop();
+                //        pingSpeed = sw.Elapsed;
+                //    }
+                //}
+                //catch (Exception e)
+                //{
+                //    Log?.Invoke(this, new LogEventArgs(this, "SendConnectionStatusChangedEvents", e, LogLevel.WARN));
+                //}
 
                 if ( DiscoveredLslStreams.ContainsKey(status.HostName) )
                 {
@@ -392,11 +383,15 @@ namespace BrainHatServersMonitor
                     }
                 }
 
-
-                status.PingSpeed = pingSpeed;
-
-
+                var timeOffset = DateTimeOffset.UtcNow - status.TimeStamp;
+                status.PingSpeed = timeOffset;
                 HatConnectionStatusUpdate?.Invoke(this, new BrainHatStatusEventArgs(status));
+
+                if (ReportNetworkTimeInterval.ElapsedMilliseconds > 30000)
+                {
+                    ReportNetworkTimeInterval.Restart();
+                    Log?.Invoke(this, new LogEventArgs(status.HostName, this, "ProcessNetworkStatus", $"Network status for {status.HostName}: Offset time {timeOffset.TotalSeconds:F4} s.  Ping speed {pingSpeed.TotalSeconds:F4} s.", LogLevel.TRACE));
+                }
             }
             catch (Exception e)
             {
@@ -426,7 +421,6 @@ namespace BrainHatServersMonitor
                                 //  wait for the next read, and then split it into the command and the arguments
                                 UriArgParser argParser = new UriArgParser(Encoding.ASCII.GetString((await udpClient.ReceiveAsync()).Buffer));
 
-
                                 //  see if this is recognized command
                                 switch (argParser.Request)
                                 {
@@ -454,8 +448,6 @@ namespace BrainHatServersMonitor
                             }
                         }
                     }
-                    catch (OperationCanceledException)
-                    { }
                     catch (Exception ex)
                     {
                         Log?.Invoke(this, new LogEventArgs(this, "RunReadLogPortAsync", ex, LogLevel.FATAL));

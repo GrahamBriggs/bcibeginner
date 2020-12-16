@@ -18,10 +18,13 @@ namespace BrainHatClient
     public partial class MainForm : Form
     {
         public MainForm()
-        {  
+        {
             Logger = new Logging();
-
+           
             InitializeComponent();
+
+            Logger.LogToFile = true;
+            checkBoxLogging.Checked = true;
 
             SetupDevicesList();
 
@@ -275,6 +278,12 @@ namespace BrainHatClient
             Logger.AddLog(e);
         }
 
-
+        private async void checkBoxLogging_CheckedChanged(object sender, EventArgs e)
+        {
+            Logger.LogToFile = true;
+            Logger.AddLog(new LogEventArgs(this, "checkBoxLogging_CheckChanged", $"Logging to file {(checkBoxLogging.Checked ? "enabled" : "disabled")}.", LogLevel.INFO));
+            await Task.Delay(1000);
+            Logger.LogToFile = checkBoxLogging.Checked;
+        }
     }
 }

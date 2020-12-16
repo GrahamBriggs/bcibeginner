@@ -16,6 +16,7 @@ using BrainHatNetwork;
 using LSL;
 using static LSL.liblsl;
 using System.Xml.Linq;
+using static BrainflowInterfaces.CollectionExtensionMethods;
 
 namespace BrainHatServersMonitor
 {
@@ -87,6 +88,8 @@ namespace BrainHatServersMonitor
             MonitorCancelTokenSource = new CancellationTokenSource();
             ReadDataPortTask = RunReadDataPortAsync(MonitorCancelTokenSource.Token);
             CountRecordsTimer.Start();
+
+            Log?.Invoke(this, new LogEventArgs(HostName, this, "StartMonitorAsync", $"Started HatServer for {HostName}.", LogLevel.INFO));
         }
 
 
@@ -103,6 +106,8 @@ namespace BrainHatServersMonitor
 
                 MonitorCancelTokenSource = null;
                 ReadDataPortTask = null;
+
+                Log?.Invoke(this, new LogEventArgs(HostName, this, "StopMonitorAsync", $"Stopped HatServer for {HostName}.", LogLevel.INFO));
             }
         }
 
@@ -164,9 +169,9 @@ namespace BrainHatServersMonitor
         Task ReadDataPortTask { get; set; }
 
 
-
-        List<Tuple<long, long>> PullSampleTimes = new List<Tuple<long, long>>();
-        int SampleCounter = 0;
+        System.Diagnostics.Stopwatch SampleTimer = new System.Diagnostics.Stopwatch();
+        List<Tuple<long,  long, long>> PullSampleTimes = new List<Tuple<long,  long, long>>();
+        List<long> PullSampleCount = new List<long>();
 
         /// <summary>
         /// Run function for reading data on LSL multicast data port
@@ -180,30 +185,33 @@ namespace BrainHatServersMonitor
             StreamInlet inlet = null;
             try
             {
-                await Task.Delay(100);
-
                 inlet = new StreamInlet(StreamInfo);
-               
-                //inlet.open_stream();
+                cancelToken.Register(() => inlet.close_stream());
+                inlet.open_stream();
 
-
-                double[] rawSample = new double[SampleSize];
-
+                Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadDataPortAsync", $"Create stream: {inlet.info().as_xml()}.", LogLevel.INFO));
+             
                 double[,] buffer = new double[512, SampleSize];
                 double[] timestamps = new double[512];
                 IBFSample nextSample = null;
 
+                sw.Restart();
+
                 //  spin until canceled
                 while (!cancelToken.IsCancellationRequested)
                 {
+                    var timeBetweenReads = sw.ElapsedMilliseconds;
+
                     try
                     {
-                      
+                        sw.Restart();
                         int num = inlet.pull_chunk(buffer, timestamps);
+                        var pullTime = sw.ElapsedMilliseconds;
+                        PullSampleCount.Add(num);
                         for (int s = 0; s < num; s++)
                         {
                             nextSample = null;
-                            switch ( BoardId )
+                            switch (BoardId)
                             {
                                 case 0:
                                     nextSample = new BFCyton8Sample(buffer, s);
@@ -217,32 +225,28 @@ namespace BrainHatServersMonitor
                             RawDataReceived?.Invoke(this, new BFSampleEventArgs(nextSample));
                             LogRawDataProcessingPerformance(nextSample);
                         }
-                        await Task.Delay(1);
 
-
-                        //sw.Restart();
-                        //inlet.pull_sample(rawSample, 2);
-                        //var pullSampleTime = sw.ElapsedMilliseconds;
-                        //var newSample = ParseSample(rawSample);
-                        //RawDataReceived?.Invoke(this, new BFSampleEventArgs(newSample));
-                        //LogRawDataProcessingPerformance(newSample);
-                        //var totalTime = sw.ElapsedMilliseconds;
-                        //PullSampleTimes.Add(new Tuple<long, long>(pullSampleTime, totalTime));
-                        //SampleCounter++;
+                        var processTime = sw.ElapsedMilliseconds;
+                        PullSampleTimes.Add(new Tuple<long, long,long>(pullTime, processTime, timeBetweenReads));
                     }
+                    catch (ObjectDisposedException)
+                    { }
                     catch (Exception ex)
                     {
                         Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadDataPortAsync", ex, LogLevel.WARN));
                         await Task.Delay(500);
                     }
+                    sw.Restart();
 
-                    //if ( sampleReportingTime.ElapsedMilliseconds > 5000)
-                    //{
-                    //    sampleReportingTime.Restart();
-                    //    Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadDataPortAsync", $"LSL Sample: Pulled {SampleCounter} samples in 5 s. Pull { PullSampleTimes.Select(x => x.Item1).Average()} ms max {PullSampleTimes.Select(x => x.Item1).Max()} ms. Total {PullSampleTimes.Select(x => x.Item2).Average()} ms max {PullSampleTimes.Select(x => x.Item2).Max()} ms. ", LogLevel.DEBUG));
-                    //    PullSampleTimes.Clear();
-                    //    SampleCounter = 0;
-                    //}
+                   await Task.Delay(1);
+
+                    if (sampleReportingTime.ElapsedMilliseconds > 5000)
+                    {
+                        Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadDataPortAsync", $"LSL Sample: Pulled {PullSampleCount.Sum()} samples in 5 s {(int)(PullSampleCount.Sum()/sampleReportingTime.Elapsed.TotalSeconds)} sps . Per chunk: median = {PullSampleCount.Median()} max = {PullSampleCount.Max()} min = {PullSampleCount.Min()}.  Time per chunk median = { PullSampleTimes.Select(x => x.Item1).Median()} ms max = {PullSampleTimes.Select(x => x.Item1).Max()} ms. Total time median = {PullSampleTimes.Select(x => x.Item2).Median()} ms max =  {PullSampleTimes.Select(x => x.Item2).Max()} ms.  Time per chunk median = { PullSampleTimes.Select(x => x.Item1).Median()} ms max = {PullSampleTimes.Select(x => x.Item1).Max()} ms. Time Between median = {PullSampleTimes.Select(x => x.Item3).Median()} ms max =  {PullSampleTimes.Select(x => x.Item3).Max()} ms.  ", LogLevel.TRACE));
+                        sampleReportingTime.Restart();
+                        PullSampleTimes.Clear();
+                        PullSampleCount.Clear();
+                    }
                 }
             }
             catch (OperationCanceledException)
@@ -302,7 +306,7 @@ namespace BrainHatServersMonitor
 
             if (CountRecordsTimer.ElapsedMilliseconds > 5000)
             {
-                Log?.Invoke(this, new LogEventArgs(this, "LogRawDataProcessingPerformance", $"{HostName} Logged {(int)(RecordsCount / CountRecordsTimer.Elapsed.TotalSeconds)} records per second. Offset time {RawDataOffsetTime.ToString("F6")} s.", LogLevel.TRACE));
+                Log?.Invoke(this, new LogEventArgs(HostName, this, "LogRawDataProcessingPerformance", $"{HostName} Logged {(int)(RecordsCount / CountRecordsTimer.Elapsed.TotalSeconds)} records per second. Offset time {RawDataOffsetTime.ToString("F6")} s.", LogLevel.TRACE));
                 CountRecordsTimer.Restart();
                 RawDataOffsetTime = 0.0;
                 RecordsCount = 0;

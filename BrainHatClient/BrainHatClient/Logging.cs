@@ -7,7 +7,7 @@ using LoggingInterfaces;
 
 namespace BrainHatClient
 {
-   
+
     /// <summary>
     /// Logging Handler Class
     /// Implements a queue so when program object logs, it happens instantly
@@ -20,6 +20,8 @@ namespace BrainHatClient
 
         //  Set the desired log level
         public LogLevel LogLevelDisplay { get; set; }
+
+        public bool LogToFile { get; set; }
 
         /// <summary>
         /// Start the logging queue
@@ -39,7 +41,7 @@ namespace BrainHatClient
         /// Stop the logging queue
         /// </summary>
         public async Task StopLoggingAsync()
-        { 
+        {
             if (RunFunctionCancelTokenSource != null)
             {
                 RunFunctionCancelTokenSource.Cancel();
@@ -95,7 +97,7 @@ namespace BrainHatClient
         //  Queue
         protected SemaphoreSlim NotifyAddedLog { get; set; }
         protected ConcurrentQueue<LogEventArgs> LogsQueue { get; set; }
-        
+
         /// <summary>
         /// Handler for component logging
         /// </summary>
@@ -135,8 +137,8 @@ namespace BrainHatClient
                     }
 
                     LoggedEvents?.Invoke(this, allEvents);
-                    
-                    await (LogToLog4(allEvents));
+
+                    LogToLog4(allEvents);
                 }
             }
             catch (OperationCanceledException)
@@ -187,9 +189,9 @@ namespace BrainHatClient
         /// <summary>
         /// Log to the Log4 Framework
         /// </summary>
-        private async Task LogToLog4(IEnumerable<LogEventArgs> logs)
+        private void LogToLog4(IEnumerable<LogEventArgs> logs)
         {
-            await Task.Run(() =>
+            if (LogToFile)
             {
                 foreach (var log in logs)
                 {
@@ -223,14 +225,10 @@ namespace BrainHatClient
                             logSystem.Fatal(log.FormatLogForFile());
                             break;
                     }
-
-                    
                 }
             }
-                );
-
         }
     }
 
-   
+
 }

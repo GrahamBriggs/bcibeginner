@@ -123,8 +123,28 @@ namespace BrainflowInterfaces
             {
                 median = sortedNumbers.ElementAt(halfIndex);
             }
+            return median;
+        }
 
 
+        /// <summary>
+        /// Median function for an enumerable of longs
+        /// </summary>
+        public static double Median(this IEnumerable<long> value)
+        {
+            // thanks https://blogs.msmvps.com/deborahk/linq-mean-median-and-mode/ 
+            int numberCount = value.Count();
+            int halfIndex = value.Count() / 2;
+            var sortedNumbers = value.OrderBy(n => n);
+            long median;
+            if ((numberCount % 2) == 0)
+            {
+                median = (sortedNumbers.ElementAt(halfIndex) + sortedNumbers.ElementAt(halfIndex - 1)) / 2;
+            }
+            else
+            {
+                median = sortedNumbers.ElementAt(halfIndex);
+            }
             return median;
         }
 

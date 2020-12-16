@@ -14,7 +14,7 @@
 #include "BFCyton16.h"
 
 
-#define SENSOR_SLEEP (100)
+#define SENSOR_SLEEP (50)
 
 using namespace std;
 using namespace chrono;
