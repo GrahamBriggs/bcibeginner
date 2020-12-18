@@ -46,6 +46,8 @@ namespace BrainflowInterfaces
 
         }
 
+       
+
         
         /// <summary>
         /// Copy constructor
@@ -83,9 +85,14 @@ namespace BrainflowInterfaces
         /// </summary>
         public BFCyton8Sample(double[,] chunk, int column)
         {
-            var sample = chunk.GetRow(column);
+            var sample = chunk.GetColumn(column);
 
             InitializeFromSample(sample);
+        }
+
+        public static BFCyton8Sample FromChunkRow(double[,] chunk, int row)
+        {
+            return new BFCyton8Sample(chunk.GetRow(row));
         }
 
         public BFCyton8Sample(double[] sample)

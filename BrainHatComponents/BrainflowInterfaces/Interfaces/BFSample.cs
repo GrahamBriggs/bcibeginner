@@ -8,7 +8,7 @@ namespace BrainflowInterfaces
     {
         double SampleIndex { get; }
 
-        double TimeStamp { get; }
+        double TimeStamp { get; set; }
 
         DateTime ObservationTime { get; }
 

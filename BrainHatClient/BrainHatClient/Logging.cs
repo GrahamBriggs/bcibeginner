@@ -87,6 +87,7 @@ namespace BrainHatClient
         {
             NotifyAddedLog = new SemaphoreSlim(0);
             LogsQueue = new ConcurrentQueue<LogEventArgs>();
+            LogLevelDisplay = LogLevel.INFO;
         }
 
 
@@ -202,7 +203,8 @@ namespace BrainHatClient
                                 logSystem.Debug(log.FormatLogForFile());
                             break;
                         case LogLevel.TRACE:
-                            logSystem.Debug(log.FormatLogForFile());
+                            if (LogLevelDisplay >= LogLevel.TRACE)
+                                logSystem.Debug(log.FormatLogForFile());
                             break;
                         case LogLevel.DEBUG:
                             logSystem.Debug(log.FormatLogForFile());

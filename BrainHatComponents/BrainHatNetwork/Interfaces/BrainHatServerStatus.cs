@@ -70,7 +70,7 @@ namespace BrainHatNetwork
 
         public long UnixTimeMillis { get; set; }
 
-        public TimeSpan PingSpeed { get; set; }
+        public TimeSpan OffsetTime { get; set; }
 
         public bool ReceivingRaw { get; set; }
         public double RawLatency { get; set; }

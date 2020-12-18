@@ -29,5 +29,5 @@ namespace BrainflowInterfaces
     public delegate IBFSample GetBFSampleDelegate();
 
     //  Get Band Power Delegate
-    public delegate IBFSample GetBandPowerDelegate(int band);
+    public delegate IBFSample GetBandPowerDelegate(double band);
 }

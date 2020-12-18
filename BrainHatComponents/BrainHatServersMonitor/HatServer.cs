@@ -65,7 +65,6 @@ namespace BrainHatServersMonitor
 
         public double RawLatency => RawDataOffsetTime;
 
-
         public string IpAddress
         {
             get
@@ -79,14 +78,14 @@ namespace BrainHatServersMonitor
 
 
         /// <summary>
-        /// Start monitor
+        /// Start reading from the LSL data stream
         /// </summary>
-        public async Task StartMonitorAsync()
+        public async Task StartReadingFromLslAsync()
         {
-            await StopMonitorAsync();
+            await StopReadingFromLslAsync();
 
-            MonitorCancelTokenSource = new CancellationTokenSource();
-            ReadDataPortTask = RunReadDataPortAsync(MonitorCancelTokenSource.Token);
+            RunTaskCancelTokenSource = new CancellationTokenSource();
+            ReadDataPortTask = RunReadDataPortAsync(RunTaskCancelTokenSource.Token);
             CountRecordsTimer.Start();
 
             Log?.Invoke(this, new LogEventArgs(HostName, this, "StartMonitorAsync", $"Started HatServer for {HostName}.", LogLevel.INFO));
@@ -94,22 +93,23 @@ namespace BrainHatServersMonitor
 
 
         /// <summary>
-        ///  Stop monitor
+        ///  Stop reading from the LSL data stream
         /// </summary>
-        public async Task StopMonitorAsync()
+        public async Task StopReadingFromLslAsync()
         {
-            if (MonitorCancelTokenSource != null)
+            if (RunTaskCancelTokenSource != null)
             {
-                MonitorCancelTokenSource.Cancel();
+                RunTaskCancelTokenSource.Cancel();
                 if (ReadDataPortTask != null)
                     await ReadDataPortTask;
 
-                MonitorCancelTokenSource = null;
+                RunTaskCancelTokenSource = null;
                 ReadDataPortTask = null;
 
                 Log?.Invoke(this, new LogEventArgs(HostName, this, "StopMonitorAsync", $"Stopped HatServer for {HostName}.", LogLevel.INFO));
             }
         }
+
 
         /// <summary>
         /// Update the connection information
@@ -124,12 +124,12 @@ namespace BrainHatServersMonitor
             {
                 Log?.Invoke(this, new LogEventArgs(this, "RunUdpMulticastReader", $"Host connection changed, restarting server monitor.", LogLevel.WARN));
 
-                await StopMonitorAsync();
+                await StopReadingFromLslAsync();
 
                 DataPort = connection.DataPort;
                 LogPort = connection.LogPort;
 
-                await StartMonitorAsync();
+                await StartReadingFromLslAsync();
             }
         }
 
@@ -151,8 +151,9 @@ namespace BrainHatServersMonitor
             StreamInfo = streamInfo;
 
             var doc = XDocument.Parse(streamInfo.as_xml());
-            int.TryParse(doc.Element("info")?.Element("channel_count").Value, out SampleSize);
 
+            int.TryParse(doc.Element("info")?.Element("channel_count").Value, out var sampleSize);
+            SampleSize = sampleSize;
 
             CountRecordsTimer = new System.Diagnostics.Stopwatch();
             RawDataProcessedLast = new System.Diagnostics.Stopwatch();
@@ -160,18 +161,18 @@ namespace BrainHatServersMonitor
             TimeStamp = DateTimeOffset.UtcNow;
         }
 
-        StreamInfo StreamInfo;
-        int SampleSize;
+        private StreamInfo StreamInfo { get; set; }
+        public int SampleSize { get; protected set; }
 
         //  Cancel Token for background tasks
-        CancellationTokenSource MonitorCancelTokenSource { get; set; }
+        CancellationTokenSource RunTaskCancelTokenSource { get; set; }
         //  Read data port task
         Task ReadDataPortTask { get; set; }
 
-
-        System.Diagnostics.Stopwatch SampleTimer = new System.Diagnostics.Stopwatch();
+        //  read disgnostics
         List<Tuple<long,  long, long>> PullSampleTimes = new List<Tuple<long,  long, long>>();
         List<long> PullSampleCount = new List<long>();
+
 
         /// <summary>
         /// Run function for reading data on LSL multicast data port
@@ -189,7 +190,7 @@ namespace BrainHatServersMonitor
                 cancelToken.Register(() => inlet.close_stream());
                 inlet.open_stream();
 
-                Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadDataPortAsync", $"Create stream: {inlet.info().as_xml()}.", LogLevel.INFO));
+                Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadDataPortAsync", $"Create LSL stream: {inlet.info().as_xml()}.", LogLevel.DEBUG));
              
                 double[,] buffer = new double[512, SampleSize];
                 double[] timestamps = new double[512];
@@ -206,28 +207,14 @@ namespace BrainHatServersMonitor
                     {
                         sw.Restart();
                         int num = inlet.pull_chunk(buffer, timestamps);
+                        
                         var pullTime = sw.ElapsedMilliseconds;
                         PullSampleCount.Add(num);
-                        for (int s = 0; s < num; s++)
-                        {
-                            nextSample = null;
-                            switch (BoardId)
-                            {
-                                case 0:
-                                    nextSample = new BFCyton8Sample(buffer, s);
-                                    break;
-
-                                case 2:
-                                    nextSample = new BFCyton16Sample(buffer, s);
-                                    break;
-                            }
-
-                            RawDataReceived?.Invoke(this, new BFSampleEventArgs(nextSample));
-                            LogRawDataProcessingPerformance(nextSample);
-                        }
+                       
+                        ProcessChunk(buffer, num);
 
                         var processTime = sw.ElapsedMilliseconds;
-                        PullSampleTimes.Add(new Tuple<long, long,long>(pullTime, processTime, timeBetweenReads));
+                        PullSampleTimes.Add(new Tuple<long, long, long>(pullTime, processTime, timeBetweenReads));
                     }
                     catch (ObjectDisposedException)
                     { }
@@ -262,25 +249,28 @@ namespace BrainHatServersMonitor
             }
         }
 
-
-        /// <summary>
-        /// Parse the sample into a known data type
-        /// Currently only Cyton and Cyton+Daisy are supported
-        /// </summary>
-        private IBFSample ParseSample(double[] sample)
+        private void ProcessChunk(double[,] buffer,  int num)
         {
-
-            switch ( BoardId )
+            for (int s = 0; s < num; s++)
             {
-                case 0:
-                    return new BFCyton8Sample(sample);
+                IBFSample nextSample = null;
+                switch (BoardId)
+                {
+                    case 0:
+                        nextSample = BFCyton8Sample.FromChunkRow(buffer, s);
+                        break;
 
-                case 2:
-                    return new BFCyton16Sample(sample);
+                    case 2:
+                        nextSample = BFCyton16Sample.FromChunkRow(buffer, s);
+                        break;
 
+                    default:
+                        return;  //  TODO ganglion
+                }
+
+                RawDataReceived?.Invoke(this, new BFSampleEventArgs(nextSample));
+                LogRawDataProcessingPerformance(nextSample);
             }
-
-            return null;
         }
 
 
@@ -291,8 +281,6 @@ namespace BrainHatServersMonitor
         double RawDataOffsetTime;
         System.Diagnostics.Stopwatch RawDataProcessedLast;
 
-        double LastTimeStamp;
-
         /// <summary>
         /// Log raw data processing performance
         /// </summary>
@@ -302,8 +290,7 @@ namespace BrainHatServersMonitor
             RawDataProcessedLast.Restart();
             RawDataOffsetTime = Math.Max(Math.Abs(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000 - data.TimeStamp), RawDataOffsetTime);
 
-            LastTimeStamp = data.TimeStamp;
-
+       
             if (CountRecordsTimer.ElapsedMilliseconds > 5000)
             {
                 Log?.Invoke(this, new LogEventArgs(HostName, this, "LogRawDataProcessingPerformance", $"{HostName} Logged {(int)(RecordsCount / CountRecordsTimer.Elapsed.TotalSeconds)} records per second. Offset time {RawDataOffsetTime.ToString("F6")} s.", LogLevel.TRACE));

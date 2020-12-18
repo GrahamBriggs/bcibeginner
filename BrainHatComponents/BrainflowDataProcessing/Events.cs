@@ -45,6 +45,9 @@ namespace BrainflowDataProcessing
         public IBFSample CurrentBandPower08 { get; set; }
         public IBFSample CurrentBandPower10 { get; set; }
         public IBFSample CurrentBandPower12 { get; set; }
+        public IBFSample CurrentBandPower18 { get; set; }
+        public IBFSample CurrentBandPower20 { get; set; }
+        public IBFSample CurrentBandPower22 { get; set; }
 
         public bool ValidData { get; set; }
        

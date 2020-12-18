@@ -17,7 +17,7 @@ namespace BrainflowDataProcessing
         public event LogEventDelegate Log;
 
         //  Delegates
-        public GetBFChunkDelegate GetData;
+        public GetBFChunkDelegate GetUnfilteredData;
 
         //  Properties
         public int PeriodMilliseconds { get; set; }
@@ -25,6 +25,70 @@ namespace BrainflowDataProcessing
 
         //  Public Methods
         #region PublicMethods
+
+
+        /// <summary>
+        /// Create a band power range list for 8,10,12 and 18,20,22 
+        /// </summary>
+        public void CreateSampleBandPowerRangeList()
+        {
+            //  create a list of tuples for your band power ranges
+            var rangeList = new List<Tuple<double, double>>() {
+                    new Tuple<double, double>(7.0,9.0),
+                    new Tuple<double, double>(9.0,11.0),
+                    new Tuple<double, double>(11.0,13.0),
+
+                    new Tuple<double, double>(17.0,19.0),
+                    new Tuple<double, double>(19.0,21.0),
+                    new Tuple<double, double>(21.0,23.0),
+                };
+
+            SetBandPowerRangeList(rangeList);
+        }
+
+
+        /// <summary>
+        /// Create a band power range list for 1-60
+        /// </summary>
+        public void CreateFullBandPowerRangeList()
+        {
+            var rangeList = new List<Tuple<double, double>>();
+
+
+            for (int i = 1; i <= 60; i++)
+            {
+                rangeList.Add(new Tuple<double, double>(i - 1, i + 1));
+            }
+
+            SetBandPowerRangeList(rangeList);
+        }
+
+        /// <summary>
+        /// Set the collection of band power ranges you wish to calculate
+        /// must be unique to 0.1 (for example 7.7 and 7.75 are not allowed in the same list)
+        /// </summary>
+        /// <param name="rangeList"></param>
+        public void SetBandPowerRangeList(List<Tuple<double, double>> rangeList)
+        {
+            BandPowerCalcRangeList = rangeList;
+
+            //  create a matching array so we can process multiple frequencies sequentially
+            BandPowers = new IBFSample[BandPowerCalcRangeList.Count];
+            for (int i = 0; i < BandPowerCalcRangeList.Count; i++)
+            {
+                BandPowers[i] = new BFSampleImplementation(BoardId);
+            }
+
+            //  create a dictionary for the results of the band power calculation
+            //  must match the number of frequency ranges list above
+            BandPowersCollection = new ConcurrentDictionary<string, IBFSample>();
+            for (int j = 0; j < BandPowerCalcRangeList.Count; j++)
+            {
+                var key = MakeKey(BandPowerCalcRangeList[j].Item1 + (BandPowerCalcRangeList[j].Item2 - BandPowerCalcRangeList[j].Item1) / 2);
+                BandPowersCollection.TryAdd(key, BandPowers[j]);
+            }
+        }
+
 
         /// <summary>
         /// Start async task to run data processing
@@ -37,7 +101,7 @@ namespace BrainflowDataProcessing
             CancelTokenSource = new CancellationTokenSource();
             MonitorRunTask = RunBadPowerMonitorAsync(CancelTokenSource.Token);
 
-            Log?.Invoke(this, new LogEventArgs(Name, this, "StartMonitorAsync", $"Starting band power monnitor.", LogLevel.INFO));
+            Log?.Invoke(this, new LogEventArgs(Name, this, "StartMonitorAsync", $"Starting band power monnitor for {Name}.", LogLevel.INFO));
         }
 
 
@@ -54,7 +118,7 @@ namespace BrainflowDataProcessing
                 CancelTokenSource = null;
                 MonitorRunTask = null;
 
-                Log?.Invoke(this, new LogEventArgs(Name, this, "StopMonitorAsync", $"Stopped Brainflow data processor.", LogLevel.INFO));
+                Log?.Invoke(this, new LogEventArgs(Name, this, "StopMonitorAsync", $"Stopped band power monitor for {Name}.", LogLevel.INFO));
             }
         }
 
@@ -62,10 +126,10 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Get the current band power for all channels at the specified band
         /// </summary>
-        public IBFSample GetBandPower(int band)
+        public IBFSample GetBandPower(double band)
         {
-            if (BandPowersCollection.ContainsKey(band))
-                return BandPowersCollection[band];
+            if (BandPowersCollection.ContainsKey(MakeKey(band)))
+                return BandPowersCollection[MakeKey(band)];
 
             return null;
         }
@@ -91,7 +155,7 @@ namespace BrainflowDataProcessing
             CreateFullBandPowerRangeList();
             PeriodMilliseconds = 200;   //  default 5 Hz
 
-            ProcessingTimesBandPower = new ConcurrentQueue<double>();
+            ProcessingTimes = new ConcurrentQueue<double>();
 
 
         }
@@ -103,62 +167,22 @@ namespace BrainflowDataProcessing
         public int SampleRate { get; protected set; }
         public string Name { get; protected set; }
 
+        //  Band Power Collection
+        private ConcurrentDictionary<string, IBFSample> BandPowersCollection { get; set; }
+        private string MakeKey(double band)
+        {
+            return $"{band:N1}";
+        }
 
-        private ConcurrentDictionary<int, IBFSample> BandPowersCollection { get; set; }
         private IBFSample[] BandPowers { get; set; }
         List<Tuple<double, double>> BandPowerCalcRangeList { get; set; }
 
-        ConcurrentQueue<double> ProcessingTimesBandPower { get; set; }
-
-
-
         protected CancellationTokenSource CancelTokenSource { get; set; }
         protected Task MonitorRunTask { get; set; }
+        ConcurrentQueue<double> ProcessingTimes { get; set; }
 
 
-        void CreateSampleBandPowerRangeList()
-        {
-            //  create a list of tuples for your band power ranges
-            BandPowerCalcRangeList = new List<Tuple<double, double>>() {
-                    new Tuple<double, double>(7.0,9.0),
-                    new Tuple<double, double>(9.0,11.0),
-                    new Tuple<double, double>(11.0,13.0),
 
-                    new Tuple<double, double>(17,19.0),
-                    new Tuple<double, double>(19.0,21.0),
-                    new Tuple<double, double>(21.0,23.0),
-                };
-
-            //  create a matching array so we can process multiple frequencies sequentially
-            BandPowers = new IBFSample[BandPowerCalcRangeList.Count];
-            for (int i = 0; i < BandPowerCalcRangeList.Count; i++)
-            {
-                BandPowers[i] = new BFSampleImplementation(BoardId);
-            }
-
-            //  create a dictionary for the results of the band power calculation
-            //  must match the number of frequency ranges list above
-            BandPowersCollection = new ConcurrentDictionary<int, IBFSample>();
-            for (int j = 0; j < BandPowerCalcRangeList.Count; j++)
-            {
-                int key = (int)(BandPowerCalcRangeList[j].Item1 + (BandPowerCalcRangeList[j].Item2 - BandPowerCalcRangeList[j].Item1) / 2);
-                BandPowersCollection.TryAdd(key, BandPowers[j]);
-            }
-        }
-
-        void CreateFullBandPowerRangeList()
-        {
-            BandPowerCalcRangeList = new List<Tuple<double, double>>();
-            BandPowers = new IBFSample[60];
-            BandPowersCollection = new ConcurrentDictionary<int, IBFSample>();
-
-            for (int i = 1; i <= 60; i++)
-            {
-                BandPowerCalcRangeList.Add(new Tuple<double, double>(i - 1, i + 1));
-                BandPowers[i - 1] = new BFSampleImplementation(BoardId);
-                BandPowersCollection.TryAdd(i, BandPowers[i - 1]);
-            }
-        }
 
 
 
@@ -181,26 +205,15 @@ namespace BrainflowDataProcessing
                     {
                         swDetect.Restart();
                         DetectBandPowers();
-                        //if (IsReadyToDetectBandPowers())
-                        //{
-                        //    DetectingBandPowersTask = DetectBandPowersAsync();
-                        //}
-                        //else
-                        //{
-                        //    Log?.Invoke(this, new LogEventArgs(Name,this, "RunBandPowerMonitor", $"Not ready to detect band powers.", LogLevel.ERROR));
-                        //}
+                        
                     }
 
-                    if (swReport.ElapsedMilliseconds >= 5000)
+                    if (swReport.Elapsed >= TimeSpan.FromSeconds(30))
                     {
-                        if (ProcessingTimesBandPower.Count > 0)
+                        if (ProcessingTimes.Count > 0)
                         {
-                            Log?.Invoke(this, new LogEventArgs(Name, this, "RunBadPowerMonitorAsync", $"{Name} band power processing {BandPowerCalcRangeList.Count} ranges {(ProcessingTimesBandPower.Count / swReport.Elapsed.TotalSeconds).ToString("F0")} times per second: Av {ProcessingTimesBandPower.Average().ToString("F4")} s | Max {ProcessingTimesBandPower.Max().ToString("F4")} s.", LogLevel.TRACE));
-                            ProcessingTimesBandPower.RemoveAll();
-                        }
-                        else
-                        {
-                            Log?.Invoke(this, new LogEventArgs(Name, this, "RunBadPowerMonitorAsync", $"{Name} not processing band powers ?", LogLevel.TRACE));
+                            Log?.Invoke(this, new LogEventArgs(Name, this, "RunBadPowerMonitorAsync", $"{Name} band power processing {BandPowerCalcRangeList.Count} ranges {(ProcessingTimes.Count / swReport.Elapsed.TotalSeconds).ToString("F0")} times per second: med {ProcessingTimes.Median().ToString("F4")} s | max {ProcessingTimes.Max().ToString("F4")} s.", LogLevel.TRACE));
+                            ProcessingTimes.RemoveAll();
                         }
                         swReport.Restart();
                     }
@@ -215,38 +228,7 @@ namespace BrainflowDataProcessing
         }
 
 
-        ///// <summary>
-        ///// This might take longer than frequency updates on the timer
-        ///// experient with doing calcs in background task launched from the periodic timer
-        ///// </summary>
-        //private Task DetectingBandPowersTask { get; set; }
-        //bool IsReadyToDetectBandPowers()
-        //{
-        //    if (DetectingBandPowersTask == null)
-        //    {
-        //        return true;
-        //    }
-        //    else if (DetectingBandPowersTask.IsCompleted)
-        //    {
-        //        DetectingBandPowersTask = null;
-        //        return true;
-        //    }
-
-        //    return false;
-        //}
-
-
-        ///// <summary>
-        ///// Detect band powers async (experimenting with task and performance monitoring)
-        ///// </summary>
-        //private async Task DetectBandPowersAsync()
-        //{
-        //    await Task.Run(() =>
-        //    {
-        //        DetectBandPowers();
-
-        //    });
-        //}
+      
 
 
         /// <summary>
@@ -260,7 +242,7 @@ namespace BrainflowDataProcessing
                 var sw = new System.Diagnostics.Stopwatch();
                 sw.Start();
 
-                var data = GetData(5.0);
+                var data = GetUnfilteredData(5.0);
 
                 if (data == null || data.Count() == 0)
                     return;
@@ -277,7 +259,7 @@ namespace BrainflowDataProcessing
                 }
 
                 sw.Stop();
-                ProcessingTimesBandPower.Enqueue(sw.Elapsed.TotalSeconds);
+                ProcessingTimes.Enqueue(sw.Elapsed.TotalSeconds);
             }
             catch (Exception e)
             {

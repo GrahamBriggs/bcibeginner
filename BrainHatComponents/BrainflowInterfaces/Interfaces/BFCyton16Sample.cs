@@ -95,13 +95,21 @@ namespace BrainflowInterfaces
 
 
         /// <summary>
-        /// Construct from a column of a raw data chunk
+        /// Construct from a column of a raw data chunk (brainflow paradigm)
         /// </summary>
         public BFCyton16Sample(double[,] chunk, int column)
         {
-            var sample = chunk.GetRow(column);
+            var sample = chunk.GetColumn(column);
 
             InitializeFromSample(sample);
+        }
+
+        /// <summary>
+        /// Construct from a row of raw data chunk (LSL paradigm)
+        /// </summary>
+        public static BFCyton16Sample FromChunkRow(double[,] chunk, int row)
+        {
+            return new BFCyton16Sample(chunk.GetRow(row));
         }
 
 

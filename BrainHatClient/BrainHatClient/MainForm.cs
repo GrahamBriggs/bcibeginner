@@ -35,9 +35,6 @@ namespace BrainHatClient
             BrainHatServers.HatConnectionStatusUpdate += OnHatStatusUpdate;
             BrainHatServers.HatConnectionChanged += OnHatConnectionChanged;
 
-            DataProcessors = new ConcurrentDictionary<string, BrainflowDataProcessor>();
-            BlinkDetectors = new ConcurrentDictionary<string, BlinkDetector>();
-
             OpenForms = new ConcurrentDictionary<string, Form1>();
 
             //  start the brainHat servers mointor off the UI thread
@@ -51,15 +48,7 @@ namespace BrainHatClient
         {
             var task = Task.Run(async () => await BrainHatServers.StopMonitorAsync());
             task.Wait();
-
-            //  TODO - make this work
-            //foreach ( var nextProcessor in DataProcessors )
-            //{
-            //    task = Task.Run(async () => await nextProcessor.Value.StopDataProcessorAsync());
-            //    task.Wait();
-            //}
-
-            
+ 
             base.OnFormClosing(e);
         }
 
@@ -69,9 +58,6 @@ namespace BrainHatClient
         //  Servers Monitor
         public static HatServersMonitor BrainHatServers { get; protected set; }
 
-        //  Brainflow Data Processing
-        public static ConcurrentDictionary<string, BrainflowDataProcessor> DataProcessors { get; protected set; }
-        public static ConcurrentDictionary<string, BlinkDetector> BlinkDetectors { get; protected set; }
 
         //  Collection of open server forms
         protected ConcurrentDictionary<string, Form1> OpenForms { get; set; }
@@ -111,7 +97,7 @@ namespace BrainHatClient
                 var server = BrainHatServers.ConnectedServers.Where(x => x.HostName == hostName).FirstOrDefault();
                 if (server != null)
                 {
-                    var newForm = new Form1(server.HostName, server.IpAddress, server.BoardId, server.SampleRate);
+                    var newForm = new Form1(server);
                     newForm.Text = $"brainHat {server.HostName}";
                     newForm.FormClosing += NewForm_FormClosing;
                     newForm.Show();
@@ -128,26 +114,50 @@ namespace BrainHatClient
         /// <summary>
         /// Remove the form from collection when it closes
         /// </summary>
-        private void NewForm_FormClosing(object sender, FormClosingEventArgs e)
+        private async void NewForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             var form = (Form1)sender;
-            OpenForms.TryRemove(form.HostName, out var discard);
+            var server = BrainHatServers.GetServer(form.Server.HostName);
+            if (server != null)
+            {
+                await server.StopReadingFromLslAsync();
+            }
+            OpenForms.TryRemove(form.Server.HostName, out var discard);
+        }
+        
+
+
+        bool DevicesListContainsServer(string hostName)
+        {
+            return (bool)listViewDevices.Invoke(new Func<bool>(() =>
+            {
+                foreach (var nextItem in listViewDevices.Items)
+                {
+                    if (nextItem is ListViewItem listViewItem)
+                    {
+                        if ((string)listViewItem.Tag == hostName)
+                            return true;
+                    }
+                }
+                return false;
+            }));
+
+            
         }
 
 
         /// <summary>
         /// Hat servers connection state changed
         /// </summary>
-        private async void OnHatConnectionChanged(object sender, HatConnectionEventArgs e)
+        private  void OnHatConnectionChanged(object sender, HatConnectionEventArgs e)
         {
             switch (e.State)
             {
                 case HatConnectionState.Discovered:
                     {
-                        if (!DataProcessors.ContainsKey(e.HostName))
+                        if (!DevicesListContainsServer(e.HostName) )
                         {
-                            CreateDataObjectsForNewServer(BrainHatServers.GetServer(e.HostName));
-
+              
                             var newListViewItem = new ListViewItem(new string[4] { e.HostName, e.IpAddress, e.BoardId.ToString(), e.SampleRate.ToString() });
                             newListViewItem.Tag = e.HostName;
                             Invoke(new Action(() => listViewDevices.Items.Add(newListViewItem)));
@@ -177,7 +187,7 @@ namespace BrainHatClient
                                 }
                             }));
 
-                            await ShutDownDataObjectsForServer(server);
+                            
                         }
                         else
                         {
@@ -206,59 +216,9 @@ namespace BrainHatClient
         }
 
 
-        /// <summary>
-        /// We discovered a new server, create data processor objects to receive data
-        /// </summary>
-        private async void CreateDataObjectsForNewServer(HatServer server)
-        {
-            try
-            {
-                var dataProcessor = new BrainflowDataProcessor(server.HostName, server.BoardId, server.SampleRate);
-                dataProcessor.Log += OnLog;
-                server.RawDataReceived += dataProcessor.AddDataToProcessor;
-                DataProcessors.TryAdd(server.HostName, dataProcessor);
+     
 
-                var blinkDetector = new BlinkDetector();
-                blinkDetector.Log += OnLog;
-                dataProcessor.NewSample += blinkDetector.OnNewSample;
-                blinkDetector.GetData = dataProcessor.GetRawData;
-                blinkDetector.GetStdDevMedians = dataProcessor.GetStdDevianMedians;
-                BlinkDetectors.TryAdd(server.HostName, blinkDetector);
-
-                await dataProcessor.StartDataProcessorAsync();
-            }
-            catch (Exception ex)
-            {
-                Logger.AddLog(new LogEventArgs(this, "CreateDataObjectsForNewServer", ex, LogLevel.ERROR));
-            }
-        }
-
-
-        /// <summary>
-        /// We lost connection to a server, shut down the objects connected to this server
-        /// </summary>
-        private async Task ShutDownDataObjectsForServer(HatServer server)
-        {
-            try
-            {
-                if (!DataProcessors.ContainsKey(server.HostName) && !BlinkDetectors.ContainsKey(server.HostName))
-                    return;
-
-                DataProcessors.TryRemove(server.HostName, out var removedProcessor);
-                await removedProcessor.StopDataProcessorAsync();
-                removedProcessor.Log -= OnLog;
-                server.RawDataReceived -= removedProcessor.AddDataToProcessor;
-
-                BlinkDetectors.TryRemove(server.HostName, out var removedDetector);
-                removedDetector.Log -= OnLog;
-                removedProcessor.NewSample -= removedDetector.OnNewSample;
-            }
-            catch (Exception ex)
-            {
-                Logger.AddLog(new LogEventArgs(this, "ShutDownDataObjectsForServer", ex, LogLevel.ERROR));
-            }
-        }
-
+      
 
 
         /// <summary>

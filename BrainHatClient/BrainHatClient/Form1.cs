@@ -9,52 +9,129 @@ using BrainflowInterfaces;
 using BrainHatServersMonitor;
 using BrainHatNetwork;
 using System.Collections.Concurrent;
+using System.Media;
 
 namespace BrainHatClient
 {
     public partial class Form1 : Form
     {
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public Form1(string hostName, string ipAddress, int boardId, int sampleRate)
-        {
-            InitializeComponent();
-
-            HostName = hostName;
-            BoardId = boardId;
-            SampleRate = sampleRate;
-            IpAddress = ipAddress;
-
-            BlinkLeftCount = 0;
-            BlinkRightCount = 0;
-
-            //  create a file writer to record raw data
-            FileWriter = new OpenBCIGuiFormatRawFileWriter();
-
-            //  init UI begin state
-            SetupFormUi();
-
-            //  hook up the events to UI
-            ConnectCurrentServerToUiEvents();
-        }
-
         //  brainHat server info
-        public string HostName { get; protected set; }
-        int BoardId;
-        int SampleRate;
-        string IpAddress;
+        public HatServer Server { get; protected set; }
+
+        BrainflowDataProcessor DataProcessor;
+        BlinkDetector BlinkDetector;
+        AlphaWaveDetector AlphaDetector;
+
 
         //  File writer
         OpenBCIGuiFormatRawFileWriter FileWriter;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public Form1(HatServer server)
+        {
+            InitializeComponent();
+
+            //  reference to the server we are connecting to
+            Server = server;
+
+            //  create the data processor
+            DataProcessor = new BrainflowDataProcessor(server.HostName, server.BoardId, server.SampleRate);
+            DataProcessor.Log += OnLog;
+            server.RawDataReceived += DataProcessor.AddDataToProcessor;
+          
+            //  create the blink detector
+            BlinkDetector = new BlinkDetector();
+            BlinkDetector.Log += OnLog;
+            DataProcessor.NewSample += BlinkDetector.OnNewSample;
+            BlinkDetector.GetData = DataProcessor.GetRawData;
+            BlinkDetector.GetStdDevMedians = DataProcessor.GetStdDevianMedians;
+       
+            //  create the alpha wave detector
+            AlphaDetector = new AlphaWaveDetector();
+            AlphaDetector.GetBandPower = DataProcessor.GetBandPower;
+            AlphaDetector.Log += OnLog;
+            AlphaDetector.DetectedBrainWave += OnAlphaDetectorDetectedBrainWave;
+
+            //  create a file writer to record raw data
+            FileWriter = new OpenBCIGuiFormatRawFileWriter();
+
+            //  init the blink counter
+            BlinkLeftCount = 0;
+            BlinkRightCount = 0;
+
+            //  init UI begin state
+            SetupFormUi();
+
+            //  start processes
+            Start();
+        }
+
 
         /// <summary>
-        /// Form closing event
+        /// Start the data processors and begin reading data from the server
         /// </summary>
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        private async void Start()
         {
-            DisconnectCurrentServerFromUiEvents();
+            await DataProcessor.StartDataProcessorAsync();
+            await AlphaDetector.StartDetectorAsync();
+            await Server.StartReadingFromLslAsync();
+
+            ConnectToUiEvents();
+        }
+
+
+        /// <summary>
+        /// Form closing
+        /// Stop the data processors and stop the server data stream
+        /// </summary>
+        protected override async void OnFormClosing(FormClosingEventArgs e)
+        {
+            //  can not close when we are logging
+            if ( FileWriter.IsLogging )
+            {
+                MessageBox.Show("You must end recording to the file before you can close this window.", "brainHat", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                e.Cancel = true;
+                return;
+            }
+
+            DisconnectFromUiEvents();
+
+            await DataProcessor.StopDataProcessorAsync();
+            await AlphaDetector.StopDetectorAsync();
+            await Server.StopReadingFromLslAsync();
+            await StopBeep();
+
+            base.OnFormClosing(e);
+        }
+
+
+        /// <summary>
+        /// Connect a server to UI events
+        /// </summary>
+        private void ConnectToUiEvents()
+        {
+            DataProcessor.NewSample += FileWriter.AddData;
+            DataProcessor.CurrentDataStateReported += OnHatDataProcessorCurrentState;
+            BlinkDetector.DetectedBlink += OnBlinkDetected;
+
+            MainForm.BrainHatServers.HatConnectionStatusUpdate += OnHatConnectionStatusUpdate;
+            MainForm.Logger.LoggedEvents += OnLoggedEvents;
+        }
+
+
+        /// <summary>
+        /// Disconnect a server from the UI events
+        /// </summary>
+        private void DisconnectFromUiEvents()
+        {
+            DataProcessor.NewSample -= FileWriter.AddData;
+            DataProcessor.CurrentDataStateReported -= OnHatDataProcessorCurrentState;
+            BlinkDetector.DetectedBlink -= OnBlinkDetected;
+
+            MainForm.BrainHatServers.HatConnectionStatusUpdate += OnHatConnectionStatusUpdate;
+            MainForm.Logger.LoggedEvents -= OnLoggedEvents;
         }
 
 
@@ -68,6 +145,8 @@ namespace BrainHatClient
             labelRecordingDuration.Text = "";
             labelAcelData.Text = "No data.";
             labelExgData.Text = "No data.";
+            labelOtherData.Text = "No data.";
+            labelDataProcessing.Text = "No data.";
 
             labelBlinkDetector.Text = $"Left: {BlinkLeftCount}\nRight: {BlinkRightCount}";
 
@@ -82,7 +161,9 @@ namespace BrainHatClient
         private void OnHatDataProcessorCurrentState(object sender, BrainflowDataProcessing.ProcessorCurrentStateReportEventArgs e)
         {
             UpdateExgDataLabel(e);
+            UpdateDataProcessingLabel(e);
             UpdateAccelerometerLabel(e);
+            UpdateOtherPropertiesLabel(e);
         }
 
 
@@ -99,16 +180,79 @@ namespace BrainHatClient
                     label = "";
                     label += $"Time stamp: {e.CurrentSample.TimeStamp.ToString("N6")}\n";
                     label += $"Observation time: {DateTimeOffset.FromUnixTimeMilliseconds((long)(e.CurrentSample.TimeStamp * 1000.0)).ToLocalTime().ToString("HH:mm:ss.fff")}\n\n";
-                    label += $"            {string.Format("{0,9}", "Read mV")}    {string.Format("{0,9}", "Dev uV")}      {string.Format("{0,9}", "Noise uV")}      {string.Format("{0,9}", "Pwr 10Hz")}   {string.Format("{0,9}", "10/8")}      {string.Format("{0,9}", "10/12")}\n";
-                    label += $"            {string.Format("{0,9}", "-------")}     {string.Format("{0,9}", "-------")}     {string.Format("{0,9}", "-------")}     {string.Format("{0,9}", "-------")}     {string.Format("{0,9}", "-------")}      {string.Format("{0,9}", "-------")}\n";
+                    label += $"     {string.Format("{0,14}", "Read mV")}{string.Format("{0,14}", "Dev uV")}{string.Format("{0,14}", "Noise uV")}\n";
+                    label += $"     {string.Format("{0,14}", "-------")}{string.Format("{0,14}", "-------")}{string.Format("{0,14}", "-------")}\n";
 
                     for (int i = 0; i < e.CurrentSample.NumberExgChannels; i++)
                     {
-                        label += $"Channel {i:D2}: {string.Format("{0,9}", (e.CurrentSample.GetExgDataForChannel(i) / 1000.0).ToString("N3"))}     {string.Format("{0,9}", e.CurrentDeviation.GetExgDataForChannel(i).ToString("N3"))}     {string.Format("{0,9}", e.CurrentDevMedian.GetExgDataForChannel(i).ToString("N3"))}     {string.Format("{0,9}", e.CurrentBandPower10.GetExgDataForChannel(i).ToString("N3"))}     {string.Format("{0,9}", (e.CurrentBandPower10.GetExgDataForChannel(i) / e.CurrentBandPower08.GetExgDataForChannel(i)).ToString("N3"))}      {string.Format("{0,9}", (e.CurrentBandPower10.GetExgDataForChannel(i) / e.CurrentBandPower12.GetExgDataForChannel(i)).ToString("N3"))}\n";
+                        label += $"Exg {i:D2}: {(e.CurrentSample.GetExgDataForChannel(i) / 1000.0),11:N3}{e.CurrentDeviation.GetExgDataForChannel(i),14:N3}{e.CurrentDevMedian.GetExgDataForChannel(i),14:N3}\n";
                     }
                 }
 
                 labelExgData.Invoke(new Action(() => { labelExgData.Text = label; }));
+            }
+            catch (Exception)
+            { }
+        }
+
+
+        /// <summary>
+        /// Update the data processing label
+        /// </summary>
+        private void UpdateDataProcessingLabel(ProcessorCurrentStateReportEventArgs e)
+        {
+            try
+            {
+                string label = "Not receiving data from the sensor.";
+                if (e.ValidData)
+                {
+                    label = "";
+                    label += $"Network offset time: {LatestOffsetTime.TotalSeconds:N4} s.\n";
+                    label += $"Raw data latency: {LatestRawLatency:N4}\n";
+                    label += "\n";
+                    
+                    label += $"Band Power{string.Format("{0,9}", "8Hz")}{string.Format("{0,9}", "10Hz")}{string.Format("{0,9}", "12Hz")}{string.Format("{0,9}", "18Hz")}{string.Format("{0,9}", "20Hz")}{string.Format("{0,9}", "22Hz")}\n";
+                    label += $"             {string.Format("{0,9}", "-------")}{string.Format("{0,9}", "-------")}{string.Format("{0,9}", "-------")}{string.Format("{0,9}", "-------")}{string.Format("{0,9}", "-------")}{string.Format("{0,9}", "-------")}\n";
+
+                    for (int i = 0; i < e.CurrentSample.NumberExgChannels; i++)
+                    {
+                        label += $"Channel {i:D2}:{e.CurrentBandPower08.GetExgDataForChannel(i),9:N3}{e.CurrentBandPower10.GetExgDataForChannel(i),9:N3}{e.CurrentBandPower12.GetExgDataForChannel(i),9:N3}{e.CurrentBandPower18.GetExgDataForChannel(i),9:N3}{e.CurrentBandPower20.GetExgDataForChannel(i),9:N3}{e.CurrentBandPower22.GetExgDataForChannel(i),9:N3}\n";
+                    }
+                }
+
+                labelDataProcessing.Invoke(new Action(() => { labelDataProcessing.Text = label; }));
+            }
+            catch (Exception)
+            { }
+        }
+
+
+        /// <summary>
+        /// Update the other properties label
+        /// </summary>
+        private void UpdateOtherPropertiesLabel(ProcessorCurrentStateReportEventArgs e)
+        {
+            try
+            {
+                string label = "Not receiving data from the sensor.";
+                if (e.ValidData)
+                {
+                    label = "";
+                    for ( int i = 0; i < e.CurrentSample.NumberOtherChannels; i++)
+                    {
+                        label += $"Other {i:D2}:  {e.CurrentSample.GetOtherDataForChannel(i):N1}\n";
+                    }
+
+                    label += "\n";
+
+                    for (int i = 0; i < e.CurrentSample.NumberAnalogChannels; i++)
+                    {
+                        label += $"Anlg {i:D2}:   {e.CurrentSample.GetAnalogDataForChannel(i):N1}\n";
+                    }
+
+                }
+
+                labelOtherData.Invoke(new Action(() => { labelOtherData.Text = label; }));
             }
             catch (Exception)
             { }
@@ -138,33 +282,20 @@ namespace BrainHatClient
         }
 
 
+
+        private TimeSpan LatestOffsetTime = TimeSpan.FromSeconds(-1);
+        private double LatestRawLatency = -1.0;
         /// <summary>
-        /// Connect a server to UI events
+        /// Connection status handler
         /// </summary>
-        private void ConnectCurrentServerToUiEvents()
+        private void OnHatConnectionStatusUpdate(object sender, BrainHatStatusEventArgs e)
         {
-            MainForm.DataProcessors[HostName].NewSample += FileWriter.AddData;
-            MainForm.DataProcessors[HostName].CurrentDataStateReported += OnHatDataProcessorCurrentState;
-
-            MainForm.BlinkDetectors[HostName].DetectedBlink += OnBlinkDetected;
-
-            MainForm.Logger.LoggedEvents += OnLoggedEvents;
+            if ( e.Status.HostName == Server.HostName )
+            {
+                LatestOffsetTime = e.Status.OffsetTime;
+                LatestRawLatency = e.Status.RawLatency;
+            }
         }
-
-
-        /// <summary>
-        /// Disconnect a server from the UI events
-        /// </summary>
-        private void DisconnectCurrentServerFromUiEvents()
-        {
-            MainForm.DataProcessors[HostName].NewSample -= FileWriter.AddData;
-            MainForm.DataProcessors[HostName].CurrentDataStateReported -= OnHatDataProcessorCurrentState;
-
-            MainForm.BlinkDetectors[HostName].DetectedBlink -= OnBlinkDetected;
-
-            MainForm.Logger.LoggedEvents -= OnLoggedEvents;
-        }
-
 
 
         //  Blink Detection
@@ -177,25 +308,30 @@ namespace BrainHatClient
         /// </summary>
         private void OnBlinkDetected(object sender, DetectedBlinkEventArgs e)
         {
-            switch (e.State)
+            try
             {
-                case WinkState.Wink:
-                    {
-                        switch (e.Eye)
+                switch (e.State)
+                {
+                    case WinkState.Wink:
                         {
-                            case Eyes.Left:
-                                BlinkLeftCount++;
-                                break;
+                            switch (e.Eye)
+                            {
+                                case Eyes.Left:
+                                    BlinkLeftCount++;
+                                    break;
 
-                            case Eyes.Right:
-                                BlinkRightCount++;
-                                break;
+                                case Eyes.Right:
+                                    BlinkRightCount++;
+                                    break;
+                            }
                         }
-                    }
-                    break;
-            }
+                        break;
+                }
 
-            labelBlinkDetector.Invoke(new Action(() => { labelBlinkDetector.Text = $"Left: {BlinkLeftCount}\nRight: {BlinkRightCount}"; }));
+                labelBlinkDetector.Invoke(new Action(() => { labelBlinkDetector.Text = $"Blink Left: {BlinkLeftCount}\nBlink Right: {BlinkRightCount}"; }));
+            }
+            catch (Exception)
+            { }
         }
 
 
@@ -208,16 +344,91 @@ namespace BrainHatClient
             BlinkLeftCount = 0;
             BlinkRightCount = 0;
 
-            labelBlinkDetector.Invoke(new Action(() => { labelBlinkDetector.Text = $"Left: {BlinkLeftCount}\nRight: {BlinkRightCount}"; }));
+            labelBlinkDetector.Text = $"Left: {BlinkLeftCount}\nRight: {BlinkRightCount}";
+        }
+
+
+        /// <summary>
+        /// Alpha wave detector handling
+        /// </summary>
+        private async void OnAlphaDetectorDetectedBrainWave(object sender, DetectedBrainWaveEventArgs e)
+        {
+            try
+            {
+                switch (e.Type)
+                {
+                    case BrainWave.Alpha:
+                        labelAlpha.Invoke(new Action(() => labelAlpha.Text = "Alpha wave detected."));
+                        StartBeep();
+                        break;
+
+                    case BrainWave.None:
+                        labelAlpha.Invoke(new Action(() => labelAlpha.Text = "Seeking alpha ..."));
+                        await StopBeep();
+                        break;
+                }
+            }
+            catch (Exception)
+            { }
+        }
+
+
+        CancellationTokenSource BeepCancel;
+        Task BeepFunction;
+        /// <summary>
+        /// Start beep for alpha wave
+        /// </summary>
+        void StartBeep()
+        {
+            if ( BeepCancel == null )
+            {
+                BeepCancel = new CancellationTokenSource();
+                BeepFunction = RunBeep(BeepCancel.Token);
+            }
+        }
+
+
+        /// <summary>
+        /// Stop beep for alpha 
+        /// </summary>
+        /// <returns></returns>
+        async Task StopBeep()
+        {
+            if ( BeepCancel != null)
+            {
+                BeepCancel.Cancel();
+                await BeepFunction;
+                BeepCancel = null;
+                BeepFunction = null;
+            }
+        }
+
+
+        /// <summary>
+        /// Run beep
+        /// </summary>
+        private async Task RunBeep(CancellationToken token)
+        {
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    SystemSounds.Asterisk.Play();
+                    await Task.Delay(1500);
+                }
+            }
+            catch (OperationCanceledException)
+            { }
+            
         }
 
 
         //  Recording data to a file
         //
-
         DateTimeOffset? RecordingStartTime { get; set; }
         Task UpdateUiTask { get; set; }
         CancellationTokenSource UpdateUiCancelToken;
+
 
         /// <summary>
         /// Start / Stop recording button handler
@@ -234,7 +445,7 @@ namespace BrainHatClient
             }
             else
             {
-                await FileWriter.StartWritingToFileAsync(textBoxRecordingName.Text, BoardId, SampleRate);
+                await FileWriter.StartWritingToFileAsync(textBoxRecordingName.Text, Server.BoardId, Server.SampleRate);
                 buttonStartRecording.Text = "Stop Recording";
                 RecordingStartTime = DateTimeOffset.UtcNow;
             }
@@ -266,6 +477,9 @@ namespace BrainHatClient
         }
 
 
-
+        private void OnLog(object sender, LogEventArgs e)
+        {
+            MainForm.Logger.AddLog(e);
+        }
     }
 }

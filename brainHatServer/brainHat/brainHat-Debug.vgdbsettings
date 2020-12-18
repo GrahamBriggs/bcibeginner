@@ -8,7 +8,7 @@
     </CustomSourceDirectories>
     <AutoProgramSPIFFSPartition>true</AutoProgramSPIFFSPartition>
     <BuildHost>
-      <HostName>brainHelmet</HostName>
+      <HostName>brainHat1</HostName>
       <Transport>SSH</Transport>
       <UserName>pi</UserName>
     </BuildHost>
@@ -144,7 +144,7 @@
     <LaunchGDBSettings xsi:type="GDBLaunchParametersNewInstance">
       <DebuggedProgram>$(TargetPath)</DebuggedProgram>
       <GDBServerPort>2000</GDBServerPort>
-      <ProgramArguments>--board-id 2</ProgramArguments>
+      <ProgramArguments>--board-id 0 --serial-port /dev/ttyUSB0 --serial-number abc</ProgramArguments>
       <ArgumentEscapingMode>Auto</ArgumentEscapingMode>
     </LaunchGDBSettings>
     <GenerateCtrlBreakInsteadOfCtrlC>false</GenerateCtrlBreakInsteadOfCtrlC>

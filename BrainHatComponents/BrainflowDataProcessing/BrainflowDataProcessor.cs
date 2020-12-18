@@ -42,6 +42,7 @@ namespace BrainflowDataProcessing
             DataMonitorTask = RunDataMonitorAsync(CancelTokenSource.Token);
 
             await BandPowers.StartMonitorAsync();
+            await SignalFilter.StartSignalFilteringAsync();
 
             TimeTagFirstSample = -1;
 
@@ -58,7 +59,9 @@ namespace BrainflowDataProcessing
 
             if (CancelTokenSource != null)
             {
+                await SignalFilter.StopSignalFilteringAsync();
                 await BandPowers.StopMonitorAsync();
+               
 
                 CancelTokenSource.Cancel();
                 await Task.WhenAll(RawDataQueueProcessorTask, DataMonitorTask, PeriodicProcessorTask);
@@ -128,9 +131,19 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Get current band powers at specified frequency band (in Hz)
         /// </summary>
-        public IBFSample GetBandPower(int band)
+        public IBFSample GetBandPower(double band)
         {
             return BandPowers.GetBandPower(band);
+        }
+
+
+        /// <summary>
+        /// Get 
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<IBFSample> GetFilteredData(double seconds)
+        {
+            return SignalFilter.GetFilteredData(seconds);
         }
 
 
@@ -152,13 +165,17 @@ namespace BrainflowDataProcessing
 
             CreateChannelStdDevRunningCollection();
 
-            Data = new List<IBFSample>();
+            UnfilteredData = new List<IBFSample>();
             DataToProcess = new ConcurrentQueue<IBFSample>();
             NotifyAddedData = new SemaphoreSlim(0);
 
             BandPowers = new BandPowerMonitor(Name, BoardId, SampleRate);
-            BandPowers.GetData = GetUnfilteredData;
+            BandPowers.GetUnfilteredData = GetUnfilteredData;
             BandPowers.Log += OnComponentLog;
+
+            SignalFilter = new SignalFiltering(name, boardId, sampleRate);
+            SignalFilter.GetUnfilteredData = GetUnfilteredData;
+            SignalFilter.Log += OnComponentLog;
 
             TimeTagFirstSample = -1;
 
@@ -192,7 +209,7 @@ namespace BrainflowDataProcessing
         protected bool FlushQueue;
 
         //  Collection of sensor observations that have been processed
-        List<IBFSample> Data;
+        List<IBFSample> UnfilteredData;
 
         //  Running collection of observation standard deviation
         List<ConcurrentQueue<double>> ChannelSdtDevRunningCollection;
@@ -202,6 +219,7 @@ namespace BrainflowDataProcessing
 
         //  Band power monitor
         protected BandPowerMonitor BandPowers { get; private set; }
+        protected SignalFiltering SignalFilter { get; private set; }
 
         double TimeTagFirstSample { get; set; }
 
@@ -247,8 +265,8 @@ namespace BrainflowDataProcessing
         private void InitializeProcessor()
         {
             //  clean out our collections
-            lock (Data)
-                Data.Clear();
+            lock (UnfilteredData)
+                UnfilteredData.Clear();
 
             DataToProcess.RemoveAll();
             ClearStdDevRunningCollection();
@@ -322,15 +340,18 @@ namespace BrainflowDataProcessing
         {
             ProcessorCurrentStateReportEventArgs report = new ProcessorCurrentStateReportEventArgs();
 
-            if (Data.Count > 0 /*&& DateTimeOffset.UtcNow.ToUnixTimeInDoubleSeconds() - Data.First().TimeStamp < 5*/)
+            if (UnfilteredData.Count > 0 /*&& DateTimeOffset.UtcNow.ToUnixTimeInDoubleSeconds() - Data.First().TimeStamp < 5*/)
             {
 
-                report.CurrentSample = Data.First();
+                report.CurrentSample = UnfilteredData.First();
                 report.CurrentDeviation = GenerateDeviationReport(.25);
                 report.CurrentDevMedian = StdDevMedians;
                 report.CurrentBandPower08 = BandPowers.GetBandPower(8);
                 report.CurrentBandPower10 = BandPowers.GetBandPower(10);
                 report.CurrentBandPower12 = BandPowers.GetBandPower(12);
+                report.CurrentBandPower18 = BandPowers.GetBandPower(18);
+                report.CurrentBandPower20 = BandPowers.GetBandPower(20);
+                report.CurrentBandPower22 = BandPowers.GetBandPower(22);
             }
             else
             {
@@ -350,9 +371,9 @@ namespace BrainflowDataProcessing
             if (ProcessingTimesFilter.Count > 0 || ProcessingTimesQueue.Count > 0)
             {
                 IBFSample first;
-                lock (Data)
+                lock (UnfilteredData)
                 {
-                    first = Data.First();
+                    first = UnfilteredData.First();
                 }
 
                 var processor = "Not processing !";
@@ -438,12 +459,15 @@ namespace BrainflowDataProcessing
         /// </summary>
         private void ProcessDataQueue(IBFSample sample)
         {
-            lock (Data)
-                Data.Insert(0, sample);
+            if (sample != null)
+            {
+                lock (UnfilteredData)
+                    UnfilteredData.Insert(0, sample);
 
-            InspectSampleIndex(sample);
+                InspectSampleIndex(sample);
 
-            NewSample?.Invoke(this, new BFSampleEventArgs(sample));
+                NewSample?.Invoke(this, new BFSampleEventArgs(sample));
+            }
         }
 
         int SampleIndexDifference(int nextIndex)
@@ -634,14 +658,14 @@ namespace BrainflowDataProcessing
         /// </summary>
         private IEnumerable<IBFSample> GetUnfilteredData(double seconds)
         {
-            if (Data.Count < 1)
+            if (UnfilteredData.Count < 1)
                 return null;
 
             var data = new List<IBFSample>();
-            lock (Data)
+            lock (UnfilteredData)
             {
-                var firstTimeStamp = Data.First().TimeStamp;
-                foreach (var nextData in Data)
+                var firstTimeStamp = UnfilteredData.First().TimeStamp;
+                foreach (var nextData in UnfilteredData)
                 {
                     if (firstTimeStamp - nextData.TimeStamp < seconds)
                     {
@@ -664,10 +688,10 @@ namespace BrainflowDataProcessing
         private IEnumerable<IBFSample> GetUnfilteredData(double from, double to)
         {
             var data = new List<IBFSample>();
-            lock (Data)
+            lock (UnfilteredData)
             {
-                var firstTimeStamp = Data.First().TimeStamp;
-                foreach (var nextData in Data)
+                var firstTimeStamp = UnfilteredData.First().TimeStamp;
+                foreach (var nextData in UnfilteredData)
                 {
                     if (firstTimeStamp - nextData.TimeStamp < from)
                         continue;
@@ -692,11 +716,11 @@ namespace BrainflowDataProcessing
         /// </summary>
         private void FlushOldData(double seconds)
         {
-            lock (Data)
+            lock (UnfilteredData)
             {
                 //  keep only 30 seconds of data
-                while (Data.Count > 0 && ((Data.First().TimeStamp - Data.Last().TimeStamp) > seconds))
-                    Data.RemoveAt(Data.Count - 1);
+                while (UnfilteredData.Count > 0 && ((UnfilteredData.First().TimeStamp - UnfilteredData.Last().TimeStamp) > seconds))
+                    UnfilteredData.RemoveAt(UnfilteredData.Count - 1);
             }
 
         }
