@@ -14,6 +14,13 @@ For more detailed information, see the published document here:
 For a quick overview of what the system can do, see the video here:
 **[brainHat Beta One Video](https://youtu.be/rwSlOQfDRk4)**
 
+### brainHat Server
+See brainHatServer/brainHat for the C++ server program for the raspberry Pi.
+
+### brainHat Client
+See BrainHatClient for the C# Windows Forms client program.
+See BrainHatComponents for the shared components used by the C# code projects.
+
 
 ### License
 MIT
