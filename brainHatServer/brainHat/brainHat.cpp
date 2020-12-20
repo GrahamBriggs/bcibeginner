@@ -317,7 +317,7 @@ bool ParseArguments(int argc, char *argv[])
 		}	
 		
 		//  default serial port if it was not specified
-		if(LiveData() && BrainflowBoardParams.serial_number.size() == 0)
+		if(LiveData() && BrainflowBoardParams.serial_port.size() == 0)
 			BrainflowBoardParams.serial_port = "/dev/ttyUSB0";
 	}
 	else

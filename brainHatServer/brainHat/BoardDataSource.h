@@ -56,7 +56,6 @@ protected:
 	int BoardId;
 	int SampleRate;
 	int DataRows;
-	int TimeStampIndex;
 	//
 	bool BoardOn;
 	

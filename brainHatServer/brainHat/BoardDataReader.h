@@ -40,9 +40,11 @@ protected:
 	int	 InitializeBoard();
 	void ReleaseBoard();
 	void ReconnectToBoard();
+	void DiscardFirstChunk();
 	
 	//  Count invalid points for reconnection trigger
 	int InvalidSampleCounter;
+	bool IsConnected;
 	
 	//  Process the chunk read from the board
 	void ProcessData(double **data_buf, int sampleCount);

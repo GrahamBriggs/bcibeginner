@@ -100,9 +100,6 @@ void Thread::Cancel()
 		while ( ! ThreadStopped )
 		{
 			Sleep(50);
-#ifdef DEBUG
-			printf("Thread::Cancel - Waiting for thread to stop... \n");
-#endif
 		}
 
 		//  join to the thread to ensure that thread shuts down before exit

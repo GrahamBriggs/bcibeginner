@@ -74,9 +74,12 @@ namespace BrainHatClient
         /// </summary>
         private async void Start()
         {
-            await DataProcessor.StartDataProcessorAsync();
-            await AlphaDetector.StartDetectorAsync();
-            await Server.StartReadingFromLslAsync();
+            await Task.Run(async () =>
+           {
+               await DataProcessor.StartDataProcessorAsync();
+               await AlphaDetector.StartDetectorAsync();
+               await Server.StartReadingFromLslAsync();
+           });
 
             ConnectToUiEvents();
         }
@@ -216,7 +219,7 @@ namespace BrainHatClient
 
                     for (int i = 0; i < e.CurrentSample.NumberExgChannels; i++)
                     {
-                        label += $"Channel {i:D2}:{e.CurrentBandPower08.GetExgDataForChannel(i),9:N3}{e.CurrentBandPower10.GetExgDataForChannel(i),9:N3}{e.CurrentBandPower12.GetExgDataForChannel(i),9:N3}{e.CurrentBandPower18.GetExgDataForChannel(i),9:N3}{e.CurrentBandPower20.GetExgDataForChannel(i),9:N3}{e.CurrentBandPower22.GetExgDataForChannel(i),9:N3}\n";
+                        label += $"Channel {i:D2}:{Math.Log10(e.CurrentBandPower08.GetExgDataForChannel(i)),9:N3}{Math.Log10(e.CurrentBandPower10.GetExgDataForChannel(i)),9:N3}{Math.Log10(e.CurrentBandPower12.GetExgDataForChannel(i)),9:N3}{Math.Log10(e.CurrentBandPower18.GetExgDataForChannel(i)),9:N3}{Math.Log10(e.CurrentBandPower20.GetExgDataForChannel(i)),9:N3}{Math.Log10(e.CurrentBandPower22.GetExgDataForChannel(i)),9:N3}\n";
                     }
                 }
 

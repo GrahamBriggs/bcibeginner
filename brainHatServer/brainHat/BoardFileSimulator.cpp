@@ -93,7 +93,6 @@ void BoardFileSimulator::RunFunction()
 				break;
 			
 			//  make new BCI data from the original
-			//  TODO - this is hard coded expecting cyton 8 samples
 			BFSample* nextSample = (*it)->Copy();
 			
 			//  set the demo time = start time of simulator + delta time in test + number of times looped * duration

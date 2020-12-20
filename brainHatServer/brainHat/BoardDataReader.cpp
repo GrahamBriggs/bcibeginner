@@ -28,7 +28,7 @@ using namespace chrono;
 BoardDataReader::BoardDataReader(ConnectionChangedCallbackFn connectionChangedFn, NewSampleCallbackFn newSampleFn)
 {
 	Init();
-	BoardOn = true;
+
 	ConnectionChangedCallback = connectionChangedFn;
 	NewSampleCallback = newSampleFn;
 }
@@ -48,6 +48,7 @@ void BoardDataReader::Init()
 {
 	Board = NULL;
 	BoardOn = true;
+	IsConnected = false;
 	ConnectionChangedCallback  = NULL;
 	ConnectionChangedDelegate = NULL;
 	InvalidSampleCounter = 0;
@@ -107,6 +108,8 @@ void BoardDataReader::ReleaseBoard()
 		InvalidSampleCounter = 0;
 		ConnectionChanged(Disconnected, BoardId, SampleRate);
 	}
+	
+	IsConnected = false;
 }
 
 
@@ -139,20 +142,19 @@ int BoardDataReader::InitializeBoard()
 		LastSampleIndex = -1;
 		LastTimeStampSync = -1;
 		ReadTimer.Start();
-		usleep(7 * USLEEP_SEC);
+		usleep(3 * USLEEP_SEC);
 		DataRows = BoardShim::get_num_rows(BoardId);
 		SampleRate = BoardShim::get_sampling_rate(BoardId);
-		TimeStampIndex = BoardShim::get_timestamp_channel(BoardId);
-		int channels;
-		auto channelsArray = BoardShim::get_exg_channels(BoardId, &channels);
-		
+			
 		InspectDataStreamLogTimer.Start(); 
 		ConnectionChanged(newConnection ? New : Connected ,BoardId, SampleRate);
+		DiscardFirstChunk();
+		IsConnected = true;
+		Logging.AddLog("BoardDataReader", "InitializeBoard", format("Connected to board %d. Sample rate %d", BoardId, SampleRate), LogLevelInfo);
 	}
 	catch (const BrainFlowException &err)
 	{
-		Logging.AddLog("BoardDataReader", "InitializeBoard", format("Failed to connect to board. Error %d.", err.exit_code), LogLevelError);
-		Logging.AddLog("BoardDataReader", "InitializeBoard", string(err.what()), LogLevelWarn);
+		Logging.AddLog("BoardDataReader", "InitializeBoard", format("Failed to connect to board. Error %d %s.", err.exit_code, err.what()), IsConnected ?  LogLevelError : LogLevelDebug);
 		res = err.exit_code;
 		if (Board->is_prepared())
 		{
@@ -163,19 +165,34 @@ int BoardDataReader::InitializeBoard()
 	return res;
 }
 
+void BoardDataReader::DiscardFirstChunk()
+{
+	int sampleCount = 0;
+	auto chunk = Board->get_board_data(&sampleCount);
+					
+	if (chunk != NULL)
+	{
+		for (int i = 0; i < DataRows; i++)
+		{
+			delete[] chunk[i];
+		}
+	}
+	delete[] chunk;
+}
+
 
 //  Reconnect to Board
 //  tries to restart board streaming
 void BoardDataReader::ReconnectToBoard()
 {
-	Logging.AddLog("BoardDataReader", "ReconnectToBoard", "Lost connection to the board. Attempting to reconnect", LogLevelWarn);
-
+	if ( IsConnected )
+		Logging.AddLog("BoardDataReader", "ReconnectToBoard", "Lost connection to the board. Attempting to reconnect", LogLevelError);
+	
 	ReleaseBoard();
 	
 	if (InitializeBoard() != 0)
 	{
 		Sleep(3000);
-		Logging.AddLog("BoardDataReader", "ReconnectToBoard", "Faled to reconnect to the board.", LogLevelWarn);
 	}
 }
 	

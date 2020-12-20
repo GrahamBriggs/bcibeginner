@@ -36,7 +36,6 @@ BroadcastData::BroadcastData()
 //
 BroadcastData::~BroadcastData()
 {
-	//  TODO - other LSL close?
 	if(LSLOutlet != NULL)
 		delete LSLOutlet;
 }

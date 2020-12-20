@@ -89,7 +89,7 @@ void GpioManager::SetupGpio()
 
 		PinPowerSwitch = 40;
 	}
-	else if (HostName.compare("brainHat") == 0)
+	else if (HostName.compare("brainHat0") == 0)
 	{
 		PinLeftRising = 40;
 		PinLeftFalling = 38;
@@ -199,7 +199,7 @@ void GpioManager::StartThreadForHost()
 	HostName = string(host);
 	
 	//  only do something if this is a device with pins hooked up
-	if(HostName.compare("brainHat") == 0 || HostName.compare("brainHelmet") == 0)
+	if(HostName.compare("brainHat0") == 0 || HostName.compare("brainHelmet") == 0)
 	{
 		SetupGpio();
 	

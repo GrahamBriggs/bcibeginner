@@ -43,7 +43,7 @@ LoggerLog::LoggerLog(std::string sender, std::string function, std::string data,
 {
 	gettimeofday(&Time, NULL);
 	Level = level;
-	Thread = 0;	//  TODO
+	Thread = 0;	
 	Sender = sender;
 	Function = function;
 	Data = data;
@@ -165,7 +165,6 @@ void Logger::ResumeDisplayOutput()
 {
 	DisplayOutputEnabled = true;
 	Display.InitDimensions();
-	//  TODO
 }
 
 bool Logger::IsDisplayOutputEnabled()

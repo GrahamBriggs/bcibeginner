@@ -102,7 +102,7 @@ namespace BrainflowDataProcessing
             SampleRate = sampleRate;
             Name = name;
 
-            PeriodMilliseconds = 200;   //  default 5 Hz
+            PeriodMilliseconds = 100;   //  default 10 Hz
 
             FilterBufferLength = 5;
 

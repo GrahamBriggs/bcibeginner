@@ -98,7 +98,7 @@ namespace BrainHatClient
                 if (server != null)
                 {
                     var newForm = new Form1(server);
-                    newForm.Text = $"brainHat {server.HostName}";
+                    newForm.Text = $"{server.HostName}";
                     newForm.FormClosing += NewForm_FormClosing;
                     newForm.Show();
                     OpenForms.TryAdd(hostName, newForm);

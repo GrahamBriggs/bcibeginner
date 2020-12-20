@@ -37,7 +37,6 @@ void BoardDataSource::Init()
 	BoardId = -99;
 	SampleRate = -1;
 	DataRows = 0;
-	TimeStampIndex = -1;	
 	
 	LastSampleIndex = -1;
 	LastTimeStampSync = 0;
