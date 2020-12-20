@@ -1,7 +1,7 @@
 ﻿using Accord.Math;
 using brainflow;
 using LoggingInterfaces;
-using OpenBCIInterfaces;
+using BrainflowInterfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,12 +14,14 @@ namespace BrainHatSharp
     //  Connect / Disconnect
     public class ConnectToBoardEventArgs : EventArgs
     {
-        public ConnectToBoardEventArgs(int boardId)
+        public ConnectToBoardEventArgs(int boardId, int sampleRate)
         {
             BoardId = boardId;
+            SampleRate = sampleRate;
         }
 
         public int BoardId { get; set; }
+        public int SampleRate { get; set; }
     }
     public delegate void ConnectBoBoardEventDelegate(object sender, ConnectToBoardEventArgs e);
 
@@ -35,7 +37,7 @@ namespace BrainHatSharp
     {
         public event LogEventDelegate Log;
         public event ConnectBoBoardEventDelegate ConnectToBoard;
-        public event OpenBciCyton8DataEventDelegate BoardReadData;
+        public event BFChunkEventDelegate BoardReadData;
 
         //  Properties
         public int BoardReadDelayMilliseconds { get; set; }
@@ -99,6 +101,7 @@ namespace BrainHatSharp
         //  The board shim
         BoardShim TheBoard { get; set; }
         public int BoardId { get; private set; }
+        public int SampleRate { get; private set; }
         protected BrainFlowInputParams InputParams { get; private set; }
         private int InvalidReadCounter { get; set; }
 
@@ -133,8 +136,8 @@ namespace BrainHatSharp
                         continue;
                     }
 
-                    List<OpenBciCyton8Reading> data = ReadDataFromBoard();
-                    BoardReadData?.Invoke(this, new OpenBciCyton8DataEventArgs(data));
+                    List<IBFSample> data = ReadDataFromBoard();
+                    BoardReadData?.Invoke(this, new BFChunkEventArgs(data));
 
                     await Task.Delay(BoardReadDelayMilliseconds);
                 }
@@ -151,9 +154,9 @@ namespace BrainHatSharp
         /// <summary>
         /// Read data from the board, and return collection of data
         /// </summary>
-        private List<OpenBciCyton8Reading> ReadDataFromBoard()
+        private List<IBFSample> ReadDataFromBoard()
         {
-            var data = new List<OpenBciCyton8Reading>();
+            var data = new List<IBFSample>();
 
             try
             {
@@ -184,9 +187,22 @@ namespace BrainHatSharp
 
                     for (int i = 0; i < rawData.Columns(); i++)
                     {
-                        var nextReading = new OpenBciCyton8Reading(rawData, i);
-                        nextReading.TimeStamp = oldestReadingTime + ((i + 1) * period);
-                        data.Add(nextReading);
+                        IBFSample nextSample = null;
+                        switch (BoardId)
+                        {
+                            case 0:
+                                nextSample = new BFCyton8Sample(rawData, i);
+                                break;
+                            case 2:
+                                nextSample = new BFCyton16Sample(rawData, i);
+                                break;
+                            default:
+                                //  TODO ganglion
+                                break;
+                        }
+                       
+                        nextSample.TimeStamp = oldestReadingTime + ((i + 1) * period);
+                        data.Add(nextSample);
                     }
 
 
@@ -281,6 +297,7 @@ namespace BrainHatSharp
                 ReleaseBoard();
 
                 TheBoard = new BoardShim(BoardId, InputParams);
+                SampleRate = BoardShim.get_sampling_rate(BoardId);
                 TheBoard.prepare_session();
                 TheBoard.start_stream();
 
@@ -293,7 +310,7 @@ namespace BrainHatSharp
 
                 await Task.Delay(TimeSpan.FromSeconds(7));
 
-                ConnectToBoard?.Invoke(this, new ConnectToBoardEventArgs(BoardId));
+                ConnectToBoard?.Invoke(this, new ConnectToBoardEventArgs(BoardId, SampleRate));
             }
             catch (Exception e)
             {

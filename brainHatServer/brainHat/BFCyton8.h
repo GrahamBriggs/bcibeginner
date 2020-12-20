@@ -10,7 +10,7 @@ public:
 	
 	//  Cyton 8 Channel Sample, based on OpenBCI_GUI (v4) .txt file logging format
 	
-	//double SampleIndex;
+	//double SampleIndex; base class
 	double ExgCh0;
 	double ExgCh1;
 	double ExgCh2;
@@ -32,7 +32,7 @@ public:
 	double AngCh0;
 	double AngCh1;
 	double AngCh2;
-	//double TimeStamp;
+	//double TimeStamp; base class
 	
 	void Init()
 	{

@@ -93,7 +93,7 @@ namespace BrainHatSharp
                                 {
                                     StringsToBroadcast.TryDequeue(out var broadcastString);
                                     var sendBytes = Encoding.UTF8.GetBytes(broadcastString);
-                                    await udpClient.SendAsync(sendBytes, sendBytes.Length, BrainHatNetworkAddresses.MulticastGroupAddress, BrainHatNetworkAddresses.DataPort);
+                                    await udpClient.SendAsync(sendBytes, sendBytes.Length, BrainHatNetworkAddresses.MulticastGroupAddress, BrainHatNetworkAddresses.StatusPort);
                                 }
                                 catch (Exception ex)
                                 {

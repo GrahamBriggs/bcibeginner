@@ -38,6 +38,8 @@ namespace BrainflowInterfaces
         public double AngCh2 { get; set; }
         public double TimeStamp { get; set; }
 
+        public int SampleSize => 23;
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -388,6 +390,42 @@ namespace BrainflowInterfaces
                     return BrainflowConstants.MissingValue;
             }
         }
+
+
+        /// <summary>
+        /// Return the sample as a double array
+        /// </summary>
+        public double[] AsRawSample()
+        {
+            var sample = new double[SampleSize];
+            sample[0] = SampleIndex;
+            sample[1] = ExgCh0;
+            sample[2] = ExgCh1;
+            sample[3] = ExgCh2;
+            sample[4] = ExgCh3;
+            sample[5] = ExgCh4;
+            sample[6] = ExgCh5;
+            sample[7] = ExgCh6;
+            sample[8] = ExgCh7;
+            sample[9] = AcelCh0;
+            sample[10] = AcelCh1;
+            sample[11] = AcelCh2;
+            sample[12] = Other0;
+            sample[13] = Other1;
+            sample[14] = Other2;
+            sample[15] = Other3;
+            sample[16] = Other4;
+            sample[17] = Other5;
+            sample[18] = Other6;
+            sample[19] = AngCh0;
+            sample[20] = AngCh1;
+            sample[21] = AngCh2;
+            sample[22] = TimeStamp;
+
+            return sample;
+        }
+
+
     }
 }
     

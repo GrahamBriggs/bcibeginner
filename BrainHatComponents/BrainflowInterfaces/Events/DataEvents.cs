@@ -9,7 +9,7 @@ namespace BrainflowInterfaces
   
 
 
-    //  Open BCI Reading from Cyton 8 channel board Event
+    //  Brainflow sample read event
     public class BFSampleEventArgs : EventArgs
     {
         public BFSampleEventArgs(IBFSample sample)
@@ -20,6 +20,20 @@ namespace BrainflowInterfaces
         public IBFSample Sample;
     }
     public delegate void BFSampleEventDelegate(object sender, BFSampleEventArgs e);
+
+
+    //  Brainflow chunk read event
+    public class BFChunkEventArgs : EventArgs
+    {
+        public BFChunkEventArgs(IEnumerable<IBFSample> chunk)
+        {
+            Chunk = chunk;
+        }
+
+        public IEnumerable<IBFSample> Chunk;
+    }
+    public delegate void BFChunkEventDelegate(object sender, BFChunkEventArgs e);
+
 
 
     //  Get an enumerable of samples for the last number of seconds

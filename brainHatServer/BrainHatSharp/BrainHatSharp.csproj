@@ -45,11 +45,10 @@
   <ItemGroup>
     <Compile Include="BoardDataReader.cs" />
     <Compile Include="DataBroadcastServer.cs" />
-    <Compile Include="FileDataReader.cs" />
     <Compile Include="Logging.cs" />
+    <Compile Include="LSLDataBroadcast.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReadOpenBciGuiFile.cs" />
     <Compile Include="StatusMonitor.cs" />
     <Compile Include="TcpipCommandServer.cs" />
   </ItemGroup>
@@ -57,31 +56,31 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BrainflowDataProcessing\BrainflowDataProcessing.csproj">
+    <ProjectReference Include="..\..\BrainHatComponents\BrainflowDataProcessing\BrainflowDataProcessing.csproj">
       <Project>{391fa534-d9be-464b-aa3a-cbc7840ff9d5}</Project>
       <Name>BrainflowDataProcessing</Name>
     </ProjectReference>
-    <ProjectReference Include="..\brainflow\brainflow.csproj">
+    <ProjectReference Include="..\..\BrainHatComponents\brainflow\brainflow.csproj">
       <Project>{c6c57e16-755b-42ff-a072-6d0a35098503}</Project>
       <Name>brainflow</Name>
     </ProjectReference>
-    <ProjectReference Include="..\BrainHatNetwork\BrainHatNetwork.csproj">
+    <ProjectReference Include="..\..\BrainHatComponents\BrainHatNetwork\BrainHatNetwork.csproj">
       <Project>{7799cb08-3f80-430d-b8e7-8abf83bc71d2}</Project>
       <Name>BrainHatNetwork</Name>
     </ProjectReference>
-    <ProjectReference Include="..\LoggingInterfaces\LoggingInterfaces.csproj">
+    <ProjectReference Include="..\..\BrainHatComponents\liblsl\liblsl.csproj">
+      <Project>{4721756b-3baf-423a-8c35-15696d07a51f}</Project>
+      <Name>liblsl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BrainHatComponents\LoggingInterfaces\LoggingInterfaces.csproj">
       <Project>{974ad5ad-919d-4045-b30c-027a51ac4f91}</Project>
       <Name>LoggingInterfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\OpenBciInterfaces\OpenBCIInterfaces.csproj">
+    <ProjectReference Include="..\..\BrainHatComponents\BrainflowInterfaces\BrainflowInterfaces.csproj">
       <Project>{340d4bb3-3ee2-4d12-8862-b34d37f5ac68}</Project>
       <Name>OpenBCIInterfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PlatformHelper\PlatformHelper.csproj">
-      <Project>{6ebdeeaa-e09e-44de-b9e1-93c90e78da13}</Project>
-      <Name>PlatformHelper</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\WiringPiWrapper\WiringPiWrapper.csproj">
+    <ProjectReference Include="..\..\BrainHatComponents\WiringPiWrapper\WiringPiWrapper.csproj">
       <Project>{44164c3f-b228-4488-b027-ea9717e7e6e1}</Project>
       <Name>WiringPiWrapper</Name>
     </ProjectReference>
@@ -103,11 +102,13 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent Condition=" '$(OS)' != 'Unix' ">
-	echo $(Platform)
-if $(Platform) == Win32 xcopy $(ProjectDir)..\brainflowLibs\x86\*.dll $(ProjectDir)$(OutDir) /y
-if $(Platform) == AnyCPU xcopy $(ProjectDir)..\brainflowLibs\x86\*.dll $(ProjectDir)$(OutDir) /y
-if $(Platform) == x64 xcopy $(ProjectDir)..\brainflowLibs\x86\*.dll $(ProjectDir)$(OutDir) /y
-
+	echo Copying libraries for $(Platform)
+if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\lib\brainflow\x86\*.dll $(ProjectDir)$(OutDir) /y
+if $(Platform) == Win32 xcopy $(ProjectDir)..\..\lib\brainflow\x86\*.dll $(ProjectDir)$(OutDir) /y
+if $(Platform) == x64 xcopy $(ProjectDir)..\..\lib\brainflow\x64\*.dll $(ProjectDir)$(OutDir) /y
+if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\lib\lsl\x86\bin\lsl* $(ProjectDir)$(OutDir) /y
+if $(Platform) == Win32 xcopy $(ProjectDir)..\..\lib\lsl\x86\bin\lsl* $(ProjectDir)$(OutDir) /y
+if $(Platform) == x64 xcopy $(ProjectDir)..\..\lib\lsl\x64\bin\lsl* $(ProjectDir)$(OutDir) /y
 </PostBuildEvent>
   </PropertyGroup>
 </Project>

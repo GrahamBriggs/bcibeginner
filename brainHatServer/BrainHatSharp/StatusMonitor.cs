@@ -10,20 +10,14 @@ using System.Net.NetworkInformation;
 
 namespace BrainHatSharp
 {
-    public class StatusEventArgs : EventArgs
-    {
-        public string HostName { get; set; }
-        public string Eth0Address { get; set; }
-        public string WlanAddress { get; set; }
-    }
-    public delegate void StatusEventDelegate(object sender, StatusEventArgs e);
+   
 
 
     class StatusMonitor
     {
         public event LogEventDelegate Log;
 
-        public event StatusEventDelegate StatusUpdate;
+        public event HatConnectionStatusUpdateDelegate StatusUpdate;
 
         //  Public Interface
         #region PublicInterface
@@ -83,8 +77,16 @@ namespace BrainHatSharp
                     string eth0, wlan0;
                     GetNetworkAddresses(out eth0, out wlan0);
                     var hostName = NetworkUtilities.GetHostName();
+                    BrainHatServerStatus status = new BrainHatServerStatus()
+                    {
+                        HostName = hostName,
+                        Eth0Address = eth0,
+                        Wlan0Address = wlan0,
+                        LogPort = BrainHatNetworkAddresses.LogPort,
+                        
+                    };
 
-                    StatusUpdate?.Invoke(this, new StatusEventArgs() { HostName = hostName, Eth0Address = eth0, WlanAddress = wlan0 });
+                    StatusUpdate?.Invoke(this, new BrainHatStatusEventArgs(status) );
 
                     await Task.Delay(10000);
                 }

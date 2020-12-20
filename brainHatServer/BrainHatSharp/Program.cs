@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using LoggingInterfaces;
 using BrainflowDataProcessing;
 using brainflow;
-using OpenBCIInterfaces;
+using BrainflowInterfaces;
 using BrainHatNetwork;
 using Newtonsoft.Json;
 using System.Web;
@@ -18,8 +18,9 @@ namespace BrainHatSharp
         //  Program components
         static Logging Logger;
         static BoardDataReader BrainflowBoard;
-        static FileDataReader DemoFile;
+
         static DataBroadcastServer BroadcastData;
+        static LSLDataBroadcast LslBroadcast;
         static TcpipCommandServer CommandServer;
         static StatusMonitor MonitorStatus;
 
@@ -74,12 +75,12 @@ namespace BrainHatSharp
                 MonitorStatus.StopStatusMonitorAsync(),
                 CommandServer.StopCommandServerAsync(),
                 BroadcastData.StopDataBroadcastServerAsync(),
-                Logger.StopLogging());
+                LslBroadcast.StopLslBroadcastAsync(),
+                Logger.StopLogging()); ;
 
             if (BrainflowBoard != null)
                 await BrainflowBoard.StopBoardDataReaderAsync();
-            if (DemoFile != null)
-                await DemoFile.StopFileDataReaderAsync();
+           
         }
 
         /// <summary>
@@ -107,6 +108,8 @@ namespace BrainHatSharp
             BroadcastData.Log += OnProgramComponentLog;
             await BroadcastData.StartDataBroadcastServerAsync();
 
+          
+
             //  create the TCPIP command server
             CommandServer = new TcpipCommandServer();
             CommandServer.Log += OnProgramComponentLog;
@@ -126,22 +129,24 @@ namespace BrainHatSharp
             {
                 //  create data reader
                 BrainflowBoard = new BoardDataReader();
+                BrainflowBoard.ConnectToBoard += OnConnectToBoard;
                 BrainflowBoard.Log += OnProgramComponentLog;
-                BrainflowBoard.BoardReadData += OnBrainflowBoardReadData;
                 await BrainflowBoard.StartBoardDataReaderAsync(board_id, input_params);
             }
-            else
-            {
-                DemoFile = new FileDataReader();
-                DemoFile.Log += OnProgramComponentLog;
-                DemoFile.BoardReadData += OnBrainflowBoardReadData;
-                if (!await DemoFile.StartFileDataReaderAsync(demoFileName))
-                {
-                    return false;
-                }
-            }
+            
 
             return true;
+        }
+
+        private static async void OnConnectToBoard(object sender, ConnectToBoardEventArgs e)
+        {
+            if ( LslBroadcast == null )
+            {
+                LslBroadcast = new LSLDataBroadcast();
+                LslBroadcast.Log += OnProgramComponentLog;
+                await LslBroadcast.StartLslBroadcastAsyc(e.BoardId, e.SampleRate);
+                BrainflowBoard.BoardReadData += OnBrainflowBoardReadData;
+            }
         }
 
         /// <summary>
@@ -185,32 +190,21 @@ namespace BrainHatSharp
         /// <summary>
         /// Data was read from the board, do something with it
         /// </summary>
-        private static void OnBrainflowBoardReadData(object sender, OpenBciCyton8DataEventArgs e)
+        private static void OnBrainflowBoardReadData(object sender, BFChunkEventArgs e)
         {
-            foreach (var nextData in e.Data)
-            {
-                try
-                {
-                    if (BroadcastData != null)
-                        BroadcastData.QueueStringToBroadcast($"rawData?hostname={NetworkUtilities.GetHostName()}&data={JsonConvert.SerializeObject(nextData)}\n");
-                }
-                catch (Exception ex)
-                {
-                    Logger.AddLog(new LogEventArgs(main, "OnBrainflowBoardReadData", ex, LogLevel.ERROR));
-                }
-            }
+            LslBroadcast.AddData(e.Chunk);          
         }
 
 
         /// <summary>
         /// Status update, broadcast it to the multicast if it is running
         /// </summary>
-        private static void OnStatusUpdate(object sender, StatusEventArgs e)
+        private static void OnStatusUpdate(object sender, BrainHatStatusEventArgs e)
         {
             try
             {
                 if (BroadcastData != null)
-                    BroadcastData.QueueStringToBroadcast($"networkstatus?hostname={e.HostName}&eth0={e.Eth0Address}&wlan0={e.WlanAddress}&wlanmode=Managed&time={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}\n");
+                    BroadcastData.QueueStringToBroadcast($"networkstatus?hostname={e.Status.HostName}&status={JsonConvert.SerializeObject(e.Status)}\n");
             }
             catch (Exception ex)
             {
@@ -277,14 +271,15 @@ namespace BrainHatSharp
 
         private static void SetDefaultSerialPort(BrainFlowInputParams input_params)
         {
-            if (PlatformHelper.PlatformHelper.Windows)
-            {
-                input_params.serial_port = "COM3";
-            }
-            else
+            if (PlatformHelper.GetLibraryEnvironment() == LibraryEnvironment.Linux)
             {
                 input_params.serial_port = "/dev/ttyUSB0";
             }
+            else
+            {
+                input_params.serial_port = "COM4";
+            }
+
         }
 
 
