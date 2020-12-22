@@ -58,6 +58,9 @@ namespace BrainHatClient
             BlinkLeftCount = 0;
             BlinkRightCount = 0;
 
+            checkBoxMuteBeeper.Checked = false;
+            checkBoxMuteBeeper.Visible = false;
+
             //  init UI begin state
             SetupFormUi();
 
@@ -74,6 +77,8 @@ namespace BrainHatClient
             await Task.Run(async () =>
            {
                await DataProcessor.StartDataProcessorAsync();
+               await DataProcessor.StartBandPowerMonitorAsync();
+               await DataProcessor.StartSignalFilteringAsync();
                await AlphaDetector.StartDetectorAsync();
                await ConnectedServer.StartReadingFromLslAsync();
            });
@@ -101,7 +106,7 @@ namespace BrainHatClient
             await DataProcessor.StopDataProcessorAsync();
             await AlphaDetector.StopDetectorAsync();
             await ConnectedServer.StopReadingFromLslAsync();
-            await StopBeep();
+            await StopSeekingAlphaUi();
 
             base.OnFormClosing(e);
         }
@@ -216,7 +221,7 @@ namespace BrainHatClient
 
                     for (int i = 0; i < e.CurrentSample.NumberExgChannels; i++)
                     {
-                        label += $"Channel {i:D2}:{Math.Log10(e.CurrentBandPower08.GetExgDataForChannel(i)),9:N3}{Math.Log10(e.CurrentBandPower10.GetExgDataForChannel(i)),9:N3}{Math.Log10(e.CurrentBandPower12.GetExgDataForChannel(i)),9:N3}{Math.Log10(e.CurrentBandPower18.GetExgDataForChannel(i)),9:N3}{Math.Log10(e.CurrentBandPower20.GetExgDataForChannel(i)),9:N3}{Math.Log10(e.CurrentBandPower22.GetExgDataForChannel(i)),9:N3}\n";
+                        label += $"Channel {i:D2}:{Math.Log10(e.GetBandPower(8).GetExgDataForChannel(i)),9:N3}{Math.Log10(e.GetBandPower(10).GetExgDataForChannel(i)),9:N3}{Math.Log10(e.GetBandPower(12).GetExgDataForChannel(i)),9:N3}{Math.Log10(e.GetBandPower(18).GetExgDataForChannel(i)),9:N3}{Math.Log10(e.GetBandPower(20).GetExgDataForChannel(i)),9:N3}{Math.Log10(e.GetBandPower(22).GetExgDataForChannel(i)),9:N3}\n";
                     }
                 }
 
@@ -358,13 +363,11 @@ namespace BrainHatClient
                 switch (e.Type)
                 {
                     case BrainWave.Alpha:
-                        labelAlpha.Invoke(new Action(() => labelAlpha.Text = "Alpha wave detected."));
-                        StartBeep();
+                        labelAlpha.Invoke(new Action(() => StartSeekingAlphaUi()));
                         break;
 
                     case BrainWave.None:
-                        labelAlpha.Invoke(new Action(() => labelAlpha.Text = "Seeking alpha ..."));
-                        await StopBeep();
+                        await StopSeekingAlphaUi();
                         break;
                 }
             }
@@ -373,17 +376,17 @@ namespace BrainHatClient
         }
 
 
-        CancellationTokenSource BeepCancel;
-        Task BeepFunction;
+        CancellationTokenSource SeekingALphaCancel;
+        Task SeekingAlphaRunTask;
         /// <summary>
         /// Start beep for alpha wave
         /// </summary>
-        void StartBeep()
+        void StartSeekingAlphaUi()
         {
-            if ( BeepCancel == null )
+            if ( SeekingALphaCancel == null )
             {
-                BeepCancel = new CancellationTokenSource();
-                BeepFunction = RunBeep(BeepCancel.Token);
+                SeekingALphaCancel = new CancellationTokenSource();
+                SeekingAlphaRunTask = RunSeekingAlphaUi(SeekingALphaCancel.Token);
             }
         }
 
@@ -391,14 +394,14 @@ namespace BrainHatClient
         /// <summary>
         /// Stop beep for alpha 
         /// </summary>
-        async Task StopBeep()
+        async Task StopSeekingAlphaUi()
         {
-            if ( BeepCancel != null)
+            if ( SeekingALphaCancel != null)
             {
-                BeepCancel.Cancel();
-                await BeepFunction;
-                BeepCancel = null;
-                BeepFunction = null;
+                SeekingALphaCancel.Cancel();
+                await SeekingAlphaRunTask;
+                SeekingALphaCancel = null;
+                SeekingAlphaRunTask = null;
             }
         }
 
@@ -406,18 +409,27 @@ namespace BrainHatClient
         /// <summary>
         /// Run beep
         /// </summary>
-        private async Task RunBeep(CancellationToken token)
+        private async Task RunSeekingAlphaUi(CancellationToken token)
         {
             try
             {
+                labelAlpha.Text = "Alpha wave detected.";
+                checkBoxMuteBeeper.Visible = true;
+
                 while (!token.IsCancellationRequested)
                 {
-                    SystemSounds.Asterisk.Play();
+                    if ( ! checkBoxMuteBeeper.Checked )
+                        SystemSounds.Asterisk.Play();
                     await Task.Delay(1500);
                 }
             }
             catch (OperationCanceledException)
             { }
+            finally
+            {
+                labelAlpha.Text = "Seeking alpha ...";
+                checkBoxMuteBeeper.Visible = false;
+            }
             
         }
 

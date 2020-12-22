@@ -84,7 +84,7 @@ namespace BrainflowDataProcessing
             BandPowersCollection = new ConcurrentDictionary<string, IBFSample>();
             for (int j = 0; j < BandPowerCalcRangeList.Count; j++)
             {
-                var key = MakeKey(BandPowerCalcRangeList[j].Item1 + (BandPowerCalcRangeList[j].Item2 - BandPowerCalcRangeList[j].Item1) / 2);
+                var key = (BandPowerCalcRangeList[j].Item1 + (BandPowerCalcRangeList[j].Item2 - BandPowerCalcRangeList[j].Item1) / 2).BandPowerKey();
                 BandPowersCollection.TryAdd(key, BandPowers[j]);
             }
         }
@@ -128,10 +128,20 @@ namespace BrainflowDataProcessing
         /// </summary>
         public IBFSample GetBandPower(double band)
         {
-            if (BandPowersCollection.ContainsKey(MakeKey(band)))
-                return BandPowersCollection[MakeKey(band)];
+            if (BandPowersCollection.ContainsKey(band.BandPowerKey()))
+                return BandPowersCollection[band.BandPowerKey()];
 
             return null;
+        }
+
+
+        /// <summary>
+        /// Get enumerable of the band powers we are calculating
+        /// </summary>
+        public IEnumerable<KeyValuePair<string,IBFSample>> GetBandPowers()
+        {
+            foreach (var nextBandPower in BandPowersCollection)
+                yield return nextBandPower;
         }
 
 
@@ -169,11 +179,7 @@ namespace BrainflowDataProcessing
 
         //  Band Power Collection
         private ConcurrentDictionary<string, IBFSample> BandPowersCollection { get; set; }
-        private string MakeKey(double band)
-        {
-            return $"{band:N1}";
-        }
-
+       
         private IBFSample[] BandPowers { get; set; }
         List<Tuple<double, double>> BandPowerCalcRangeList { get; set; }
 

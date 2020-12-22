@@ -392,12 +392,10 @@ namespace BrainflowDataProcessing
                 report.CurrentSample = UnfilteredData.First();
                 report.CurrentDeviation = GenerateDeviationReport(.25);
                 report.CurrentDevMedian = StdDevMedians;
-                report.CurrentBandPower08 = BandPowers.GetBandPower(8);
-                report.CurrentBandPower10 = BandPowers.GetBandPower(10);
-                report.CurrentBandPower12 = BandPowers.GetBandPower(12);
-                report.CurrentBandPower18 = BandPowers.GetBandPower(18);
-                report.CurrentBandPower20 = BandPowers.GetBandPower(20);
-                report.CurrentBandPower22 = BandPowers.GetBandPower(22);
+                foreach (var nextBandPower in BandPowers.GetBandPowers())
+                {
+                    report.BandPowers.Add(nextBandPower.Key, nextBandPower.Value);
+                }
             }
             else
             {

@@ -36,22 +36,28 @@ namespace BrainflowDataProcessing
         public ProcessorCurrentStateReportEventArgs()
         {
             ValidData = true;
+
+            BandPowers = new Dictionary<string, IBFSample>();
             
         }
 
         public IBFSample CurrentSample { get; set; }
         public IBFSample CurrentDeviation { get; set; }
         public IBFSample CurrentDevMedian { get; set; }
-        public IBFSample CurrentBandPower08 { get; set; }
-        public IBFSample CurrentBandPower10 { get; set; }
-        public IBFSample CurrentBandPower12 { get; set; }
-        public IBFSample CurrentBandPower18 { get; set; }
-        public IBFSample CurrentBandPower20 { get; set; }
-        public IBFSample CurrentBandPower22 { get; set; }
+
+        public IBFSample GetBandPower(double band)
+        {
+            if (BandPowers.ContainsKey(band.BandPowerKey()))
+                return BandPowers[band.BandPowerKey()];
+
+            return null;
+        }
 
         public bool ValidData { get; set; }
        
         public string Details { get; set; }
+
+        public Dictionary<string, IBFSample> BandPowers { get; set; }
     }
     //
     public delegate void ProcessorCurrentStateReportDelegate(object sender, ProcessorCurrentStateReportEventArgs e);
