@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace BrainHatSharp
 {
-    public class DataBroadcastServer
+    public class StatusBroadcastServer
     {
         public event LogEventDelegate Log;
 
@@ -58,7 +58,7 @@ namespace BrainHatSharp
         // Implementation
         #region Implementation
 
-        public DataBroadcastServer()
+        public StatusBroadcastServer()
         {
             NotifyDataToBroadcast = new SemaphoreSlim(0);
             StringsToBroadcast = new ConcurrentQueue<string>();

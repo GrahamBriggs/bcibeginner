@@ -102,6 +102,7 @@ namespace BrainHatSharp
         BoardShim TheBoard { get; set; }
         public int BoardId { get; private set; }
         public int SampleRate { get; private set; }
+        protected int TimeStampIndex { get; set; }
         protected BrainFlowInputParams InputParams { get; private set; }
         private int InvalidReadCounter { get; set; }
 
@@ -212,7 +213,7 @@ namespace BrainHatSharp
 
                     ReadCounter += data.Count;
                     var since = (DateTimeOffset.UtcNow - LastReportTime);
-                    if (since.TotalMilliseconds > 1000)
+                    if (since.TotalMilliseconds > 5000)
                     {
                         Log?.Invoke(this, new LogEventArgs(this, "ReadDataFromBoard", $"Read {ReadCounter - ReadCounterLastReport} in {since.TotalSeconds.ToString("F3")} s. Read time {timeReadData.ToString("F4")} Parse Time {timeParseData.ToString("F4")}.", LogLevel.TRACE));
                         LastReportTime = DateTimeOffset.UtcNow;
@@ -251,8 +252,8 @@ namespace BrainHatSharp
         /// </summary>
         private void CalculateReadingPeriod(double[,] rawData, out double oldestReadingTime, out double period)
         {
-            double newestReadingTime = rawData[22, 0];
-            oldestReadingTime = rawData[22, rawData.Columns() - 1];
+            double newestReadingTime = rawData[TimeStampIndex, 0];
+            oldestReadingTime = rawData[TimeStampIndex, rawData.Columns() - 1];
             if (LastReadingTimestamp > 0)
             {
                 oldestReadingTime = LastReadingTimestamp;
@@ -298,6 +299,7 @@ namespace BrainHatSharp
 
                 TheBoard = new BoardShim(BoardId, InputParams);
                 SampleRate = BoardShim.get_sampling_rate(BoardId);
+                TimeStampIndex = BoardShim.get_timestamp_channel(BoardId);
                 TheBoard.prepare_session();
                 TheBoard.start_stream();
 

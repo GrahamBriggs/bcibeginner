@@ -18,8 +18,7 @@ namespace BrainHatSharp
         //  Program components
         static Logging Logger;
         static BoardDataReader BrainflowBoard;
-
-        static DataBroadcastServer BroadcastData;
+        static StatusBroadcastServer BroadcastStatus;
         static LSLDataBroadcast LslBroadcast;
         static TcpipCommandServer CommandServer;
         static StatusMonitor MonitorStatus;
@@ -74,14 +73,14 @@ namespace BrainHatSharp
             await Task.WhenAll(
                 MonitorStatus.StopStatusMonitorAsync(),
                 CommandServer.StopCommandServerAsync(),
-                BroadcastData.StopDataBroadcastServerAsync(),
+                BroadcastStatus.StopDataBroadcastServerAsync(),
                 LslBroadcast.StopLslBroadcastAsync(),
                 Logger.StopLogging()); ;
 
             if (BrainflowBoard != null)
                 await BrainflowBoard.StopBoardDataReaderAsync();
-           
         }
+
 
         /// <summary>
         /// Setup the logging
@@ -104,11 +103,9 @@ namespace BrainHatSharp
         {
 
             //  create udp multicast broadcaster
-            BroadcastData = new DataBroadcastServer();
-            BroadcastData.Log += OnProgramComponentLog;
-            await BroadcastData.StartDataBroadcastServerAsync();
-
-          
+            BroadcastStatus = new StatusBroadcastServer();
+            BroadcastStatus.Log += OnProgramComponentLog;
+            await BroadcastStatus.StartDataBroadcastServerAsync();
 
             //  create the TCPIP command server
             CommandServer = new TcpipCommandServer();
@@ -122,8 +119,6 @@ namespace BrainHatSharp
             MonitorStatus.StatusUpdate += OnStatusUpdate;
             await MonitorStatus.StartStatusMonitorAsync();
 
-
-
             //  create a board reader or a file reader depending on command line args
             if (board_id >= -1)
             {
@@ -133,9 +128,13 @@ namespace BrainHatSharp
                 BrainflowBoard.Log += OnProgramComponentLog;
                 await BrainflowBoard.StartBoardDataReaderAsync(board_id, input_params);
             }
-            
 
             return true;
+        }
+
+        private static void OnReadSample(object sender, BFSampleEventArgs e)
+        {
+            LslBroadcast.AddData(e.Sample);
         }
 
         private static async void OnConnectToBoard(object sender, ConnectToBoardEventArgs e)
@@ -145,9 +144,15 @@ namespace BrainHatSharp
                 LslBroadcast = new LSLDataBroadcast();
                 LslBroadcast.Log += OnProgramComponentLog;
                 await LslBroadcast.StartLslBroadcastAsyc(e.BoardId, e.SampleRate);
-                BrainflowBoard.BoardReadData += OnBrainflowBoardReadData;
+
+                if ( BrainflowBoard != null )
+                {
+                    BrainflowBoard.BoardReadData += OnBrainflowBoardReadData;
+                }
+                
             }
         }
+
 
         /// <summary>
         /// Process a request received on the TCPIP server thread
@@ -203,8 +208,13 @@ namespace BrainHatSharp
         {
             try
             {
-                if (BroadcastData != null)
-                    BroadcastData.QueueStringToBroadcast($"networkstatus?hostname={e.Status.HostName}&status={JsonConvert.SerializeObject(e.Status)}\n");
+                if (BroadcastStatus != null && BrainflowBoard != null)
+                {
+                    e.Status.SampleRate = BrainflowBoard.SampleRate;
+                    e.Status.BoardId = BrainflowBoard.BoardId;
+
+                    BroadcastStatus.QueueStringToBroadcast($"networkstatus?hostname={e.Status.HostName}&status={JsonConvert.SerializeObject(e.Status)}\n");
+                }
             }
             catch (Exception ex)
             {
@@ -269,6 +279,11 @@ namespace BrainHatSharp
             }
         }
 
+
+        /// <summary>
+        /// Set default serial port for the platform
+        /// </summary>
+        /// <param name="input_params"></param>
         private static void SetDefaultSerialPort(BrainFlowInputParams input_params)
         {
             if (PlatformHelper.GetLibraryEnvironment() == LibraryEnvironment.Linux)
@@ -277,11 +292,9 @@ namespace BrainHatSharp
             }
             else
             {
-                input_params.serial_port = "COM4";
+                input_params.serial_port = "COM3";
             }
-
         }
-
 
 
         /// <summary>
@@ -335,7 +348,7 @@ namespace BrainHatSharp
                 {
                     input_params.file = args[i + 1];
                 }
-                if (args[i].Equals("--file-name"))
+                if (args[i].Equals("--demo-file"))
                 {
                     demoFileName = args[i + 1];
                 }
@@ -343,15 +356,8 @@ namespace BrainHatSharp
             return board_id;
         }
 
-
         //  Object for program main function logging purposes
         static MainFunction main;
-
-
-
-
-
-
     }
 
 

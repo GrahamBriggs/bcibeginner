@@ -83,7 +83,7 @@ namespace BrainHatSharp
                         Eth0Address = eth0,
                         Wlan0Address = wlan0,
                         LogPort = BrainHatNetworkAddresses.LogPort,
-                        
+                        TimeStamp = DateTimeOffset.UtcNow,
                     };
 
                     StatusUpdate?.Invoke(this, new BrainHatStatusEventArgs(status) );
