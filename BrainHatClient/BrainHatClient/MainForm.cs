@@ -1,15 +1,9 @@
-﻿using BrainflowDataProcessing;
-using BrainHatNetwork;
-using BrainHatServersMonitor;
+﻿using BrainHatNetwork;
 using LoggingInterfaces;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -117,12 +111,12 @@ namespace BrainHatClient
         private async void NewForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             var form = (Form1)sender;
-            var server = BrainHatServers.GetServer(form.Server.HostName);
+            var server = BrainHatServers.GetServer(form.ConnectedServer.HostName);
             if (server != null)
             {
                 await server.StopReadingFromLslAsync();
             }
-            OpenForms.TryRemove(form.Server.HostName, out var discard);
+            OpenForms.TryRemove(form.ConnectedServer.HostName, out var discard);
         }
         
 
@@ -185,9 +179,7 @@ namespace BrainHatClient
                                         break;
                                     }
                                 }
-                            }));
-
-                            
+                            })); 
                         }
                         else
                         {
