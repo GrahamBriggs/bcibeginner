@@ -8,7 +8,7 @@
     </CustomSourceDirectories>
     <AutoProgramSPIFFSPartition>true</AutoProgramSPIFFSPartition>
     <BuildHost>
-      <HostName>brainHelmet</HostName>
+      <HostName>brainHat1</HostName>
       <Transport>SSH</Transport>
       <UserName>pi</UserName>
     </BuildHost>

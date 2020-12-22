@@ -82,7 +82,6 @@
     <ClInclude Include="FileExtensions.h" />
     <ClInclude Include="OpenBCIFileRecorder.h" />
     <ClInclude Include="json.hpp" />
-    <ClInclude Include="GpioPinManager.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="NetworkAddresses.h" />
     <ClInclude Include="NetworkExtensions.h" />
@@ -109,7 +108,6 @@
     <ClCompile Include="BoardFileSimulator.cpp" />
     <ClCompile Include="brainHat.cpp" />
     <ClCompile Include="OpenBCIFileRecorder.cpp" />
-    <ClCompile Include="GpioPinManager.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="NetworkExtensions.cpp" />
     <ClCompile Include="Parser.cpp" />

@@ -12,7 +12,6 @@
 #include "CommandServer.h"
 #include "OpenBciDataFile.h"
 #include "BoardFileSimulator.h"
-#include "GpioPinManager.h"
 #include "TimeExtensions.h"
 #include "Parser.h"
 #include "UriParser.h"
@@ -31,8 +30,6 @@ Logger Logging;
 BroadcastData DataBroadcaster;
 BroadcastStatus StatusBroadcaster;
 CommandServer ComServer(HandleServerRequest);
-GpioManager PinManager;
-
 
 //  Data Source is either board or demo file reader
 BoardDataSource* DataSource = NULL;
@@ -55,7 +52,6 @@ bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int
 void RunBoardData();
 void RunFileData();
 bool ProcessKeyboardInput(string input); 
-void StartLights();
 bool LiveData() { return Board_Id >= 0; }
 
 
@@ -70,7 +66,6 @@ int main(int argc, char *argv[])
 		
 	//  start program threads
 	Logging.Start();
-	StartLights();
 	ComServer.Start();
 	StatusBroadcaster.Start();
 	//  DataBroadcaster thread is started in BoardConnectionStateChanged( ) when the new board parameters are discovered
@@ -90,7 +85,6 @@ int main(int argc, char *argv[])
 	StatusBroadcaster.Cancel();
 	ComServer.Cancel();
 	Logging.Cancel();
-	PinManager.Cancel();
 	
 	return 0;
 }
@@ -100,8 +94,6 @@ int main(int argc, char *argv[])
 //
 void RunBoardData()
 {	
-	PinManager.PowerToBoard(true);
-	
 	BoardReader.Start(Board_Id, BrainflowBoardParams);
 	
 	Logging.AddLog("main", "RunBoardData", "Starting board data. Enter Q to quit.", LogLevelInfo);
@@ -173,37 +165,29 @@ void BoardConnectionStateChanged(BoardConnectionStates state, int boardId, int s
 	{
 	case New:
 		{
-			PinManager.Mode = LightsSequence;
 			DataBroadcaster.SetBoard(boardId, sampleRate);
 		}
 		break;
 		
 	case PowerOff:	//  power On board
 		{
-			PinManager.AllOff();
 		}
 		break;
 		
 	case PowerOn:	//  power on board
 		{
-			if (LiveData())
-			{
-				PinManager.PowerToBoard(true);
-				Sleep(2000);
-			}
-			PinManager.Mode = LightsFlash;
 		}
 		break;
 		
 	case Connected:	//  board connected
 		{
-			PinManager.Mode = LightsSequence;
+
 		}
 		break;
 		
 	case Disconnected: //  board disconnected	
 		{
-			PinManager.Mode = LightsFlash;
+
 		}
 		break;
 	}
@@ -260,22 +244,6 @@ bool ProcessKeyboardInput(string input)
 	else if (input.compare("S") == 0)
 	{
 		Logging.ResetDisplay();
-	}
-	else if (input.compare("0") == 0)
-	{
-		PinManager.Mode = LightsOff;
-	}
-	else if (input.compare("1") == 0)
-	{
-		PinManager.Mode = LightsOn;
-	}
-	else if (input.compare("2") == 0)
-	{
-		PinManager.Mode = LightsFlash;
-	}
-	else if (input.compare("3") == 0)
-	{
-		PinManager.Mode = LightsSequence;
 	}
 	else if (input.compare("b") == 0)
 	{
@@ -484,11 +452,3 @@ bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int
 }
 
 
-//  GPIO manager function kickoff
-//
-void StartLights()
-{
-	PinManager.Mode = LightsSequence;
-	PinManager.StartThreadForHost();
-	
-}
