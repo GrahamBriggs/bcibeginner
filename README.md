@@ -14,12 +14,26 @@ For more detailed information, see the published document here:
 For a quick overview of what the system can do, see the video here:
 **[brainHat Beta One Video](https://youtu.be/rwSlOQfDRk4)**
 
-### brainHat Server
-See brainHatServer/brainHat for the C++ server program for the raspberry Pi.
+### brainHat Servers
+See brainHatServer/brainHat for the C++ server program for the Raspberry Pi (stable beta).
 
-### brainHat Client
-See BrainHatClient for the C# Windows Forms client program.
-See BrainHatComponents for the shared components used by the C# code projects.
+See brainHatServer/brainHatSharp for a C# implementation of the server for Windows and Raspberry Pi (experimental alpha).
+
+### brainHat Clients
+See BrainHatClient for the C# GUI client program for Windows and Raspberry Pi (stable beta).
+
+See brainHatLit for a demo program to light up pins on the Raspberry Pi in response to brainflow data processing events.
+
+###  brainHat Components
+See BrainHatComponents for the shared component assemblies used by  the C# server and client programs.
+
+##  Attribution
+The brainHat software system uses:
+
+**[Lab Streaming Layer](https://github.com/sccn/labstreaminglayer/blob/master/LICENSE)**
+
+**[brainflow](https://github.com/brainflow-dev/brainflow/blob/master/LICENSE)**
+
 
 
 ### License
