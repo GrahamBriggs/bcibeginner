@@ -263,7 +263,7 @@ namespace BrainflowDataProcessing
             }
             catch (Exception e)
             {
-                Log?.Invoke(this, new LogEventArgs(Name, this, "DetectBandPowers", e, LogLevel.ERROR));
+                //Log?.Invoke(this, new LogEventArgs(Name, this, "DetectBandPowers", e, LogLevel.ERROR));
             }
         }
 

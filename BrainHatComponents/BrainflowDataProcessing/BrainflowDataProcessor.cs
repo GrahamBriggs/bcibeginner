@@ -41,9 +41,6 @@ namespace BrainflowDataProcessing
             PeriodicProcessorTask = RunPeriodicProcessorAsync(CancelTokenSource.Token);
             DataMonitorTask = RunDataMonitorAsync(CancelTokenSource.Token);
 
-            await BandPowers.StartMonitorAsync();
-            await SignalFilter.StartSignalFilteringAsync();
-
             TimeTagFirstSample = -1;
 
             Log?.Invoke(this, new LogEventArgs(Name, this, "StartDataProcessor", $"Starting Brainflow data processor for {Name}.", LogLevel.INFO));
@@ -51,7 +48,7 @@ namespace BrainflowDataProcessing
 
 
         /// <summary>
-        /// Stop the data processor async task
+        /// Stop the data processor async task, and all component processor tasks
         /// </summary>
         public async Task StopDataProcessorAsync(bool flush = false)
         {
@@ -61,7 +58,6 @@ namespace BrainflowDataProcessing
             {
                 await SignalFilter.StopSignalFilteringAsync();
                 await BandPowers.StopMonitorAsync();
-               
 
                 CancelTokenSource.Cancel();
                 await Task.WhenAll(RawDataQueueProcessorTask, DataMonitorTask, PeriodicProcessorTask);
@@ -76,7 +72,57 @@ namespace BrainflowDataProcessing
         }
 
 
+        /// <summary>
+        /// Start the signal filtering task
+        /// </summary>
+        public async Task StartSignalFilteringAsync()
+        {
+            if ( CancelTokenSource == null )
+            {
+                Log?.Invoke(this, new LogEventArgs(Name, this, "StartSignalFiltering", $"You must start the processor first.", LogLevel.ERROR));
+                return;
+            }
 
+            await SignalFilter.StartSignalFilteringAsync();
+        }
+
+
+        /// <summary>
+        /// Stop signal filtering task
+        /// </summary>
+        public async Task StopSignalFilteringAsync()
+        {
+            await SignalFilter.StopSignalFilteringAsync();
+        }
+
+
+        /// <summary>
+        /// Start band power monitor task
+        /// </summary>
+        public async Task StartBandPowerMonitorAsync()
+        {
+            if (CancelTokenSource == null)
+            {
+                Log?.Invoke(this, new LogEventArgs(Name, this, "StartSignalFiltering", $"You must start the processor first.", LogLevel.ERROR));
+                return;
+            }
+
+            await BandPowers.StartMonitorAsync();
+        }
+
+
+        /// <summary>
+        /// Stop band power monitor task
+        /// </summary>
+        public async Task StopBandPowerMonitorAsync()
+        {
+            await BandPowers.StopMonitorAsync();
+        }
+
+        public void SetBandPowerRangeList(List<Tuple<double,double>> rangeList)
+        {
+            BandPowers.SetBandPowerRangeList(rangeList);
+        }
 
 
         /// <summary>

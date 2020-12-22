@@ -9,4 +9,5 @@ CodeDB
 !lib/lsl/x64/bin
 !lib/lsl/x86/bin
 brainHatServer/brainHat/Debug
+brainHatServer/brainHat/Release
 BrainHatClient/BrainHatClient/Installer/Output

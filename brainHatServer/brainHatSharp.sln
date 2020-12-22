@@ -5,19 +5,21 @@ VisualStudioVersion = 16.0.30711.63
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrainHatSharp", "BrainHatSharp\BrainHatSharp.csproj", "{FD05CF5D-A9F7-4C94-A77B-17FFE518D6C3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrainflowDataProcessing", "BrainflowDataProcessing\BrainflowDataProcessing.csproj", "{391FA534-D9BE-464B-AA3A-CBC7840FF9D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrainflowDataProcessing", "..\BrainHatComponents\BrainflowDataProcessing\BrainflowDataProcessing.csproj", "{391FA534-D9BE-464B-AA3A-CBC7840FF9D5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoggingInterfaces", "LoggingInterfaces\LoggingInterfaces.csproj", "{974AD5AD-919D-4045-B30C-027A51AC4F91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LoggingInterfaces", "..\BrainHatComponents\LoggingInterfaces\LoggingInterfaces.csproj", "{974AD5AD-919D-4045-B30C-027A51AC4F91}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrainflowInterfaces", "BrainflowInterfaces\OpenBCIInterfaces.csproj", "{340D4BB3-3EE2-4D12-8862-B34D37F5AC68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrainflowInterfaces", "..\BrainHatComponents\BrainflowInterfaces\BrainflowInterfaces.csproj", "{340D4BB3-3EE2-4D12-8862-B34D37F5AC68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlatformHelper", "PlatformHelper\PlatformHelper.csproj", "{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WiringPiWrapper", "..\BrainHatComponents\WiringPiWrapper\WiringPiWrapper.csproj", "{44164C3F-B228-4488-B027-EA9717E7E6E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WiringPiWrapper", "WiringPiWrapper\WiringPiWrapper.csproj", "{44164C3F-B228-4488-B027-EA9717E7E6E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrainHatNetwork", "..\BrainHatComponents\BrainHatNetwork\BrainHatNetwork.csproj", "{7799CB08-3F80-430D-B8E7-8ABF83BC71D2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrainHatNetwork", "BrainHatNetwork\BrainHatNetwork.csproj", "{7799CB08-3F80-430D-B8E7-8ABF83BC71D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "brainflow", "..\BrainHatComponents\brainflow\brainflow.csproj", "{C6C57E16-755B-42FF-A072-6D0A35098503}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "brainflow", "brainflow\brainflow.csproj", "{C6C57E16-755B-42FF-A072-6D0A35098503}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlatformHelper", "..\BrainHatComponents\PlatformHelper\PlatformHelper.csproj", "{0EFA34B4-9F21-4FF5-8A77-35B2E55A66DA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "liblsl", "..\BrainHatComponents\liblsl\liblsl.csproj", "{4721756B-3BAF-423A-8C35-15696D07A51F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,18 +79,6 @@ Global
 		{340D4BB3-3EE2-4D12-8862-B34D37F5AC68}.Release|x64.Build.0 = Release|Any CPU
 		{340D4BB3-3EE2-4D12-8862-B34D37F5AC68}.Release|x86.ActiveCfg = Release|Any CPU
 		{340D4BB3-3EE2-4D12-8862-B34D37F5AC68}.Release|x86.Build.0 = Release|Any CPU
-		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Debug|x64.ActiveCfg = Debug|x64
-		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Debug|x64.Build.0 = Debug|x64
-		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Debug|x86.ActiveCfg = Debug|x86
-		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Debug|x86.Build.0 = Debug|x86
-		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Release|x64.ActiveCfg = Release|x64
-		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Release|x64.Build.0 = Release|x64
-		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Release|x86.ActiveCfg = Release|x86
-		{6EBDEEAA-E09E-44DE-B9E1-93C90E78DA13}.Release|x86.Build.0 = Release|x86
 		{44164C3F-B228-4488-B027-EA9717E7E6E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{44164C3F-B228-4488-B027-EA9717E7E6E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{44164C3F-B228-4488-B027-EA9717E7E6E1}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -125,6 +115,30 @@ Global
 		{C6C57E16-755B-42FF-A072-6D0A35098503}.Release|x64.Build.0 = Release|Any CPU
 		{C6C57E16-755B-42FF-A072-6D0A35098503}.Release|x86.ActiveCfg = Release|Any CPU
 		{C6C57E16-755B-42FF-A072-6D0A35098503}.Release|x86.Build.0 = Release|Any CPU
+		{0EFA34B4-9F21-4FF5-8A77-35B2E55A66DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EFA34B4-9F21-4FF5-8A77-35B2E55A66DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EFA34B4-9F21-4FF5-8A77-35B2E55A66DA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0EFA34B4-9F21-4FF5-8A77-35B2E55A66DA}.Debug|x64.Build.0 = Debug|Any CPU
+		{0EFA34B4-9F21-4FF5-8A77-35B2E55A66DA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0EFA34B4-9F21-4FF5-8A77-35B2E55A66DA}.Debug|x86.Build.0 = Debug|Any CPU
+		{0EFA34B4-9F21-4FF5-8A77-35B2E55A66DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EFA34B4-9F21-4FF5-8A77-35B2E55A66DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EFA34B4-9F21-4FF5-8A77-35B2E55A66DA}.Release|x64.ActiveCfg = Release|Any CPU
+		{0EFA34B4-9F21-4FF5-8A77-35B2E55A66DA}.Release|x64.Build.0 = Release|Any CPU
+		{0EFA34B4-9F21-4FF5-8A77-35B2E55A66DA}.Release|x86.ActiveCfg = Release|Any CPU
+		{0EFA34B4-9F21-4FF5-8A77-35B2E55A66DA}.Release|x86.Build.0 = Release|Any CPU
+		{4721756B-3BAF-423A-8C35-15696D07A51F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4721756B-3BAF-423A-8C35-15696D07A51F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4721756B-3BAF-423A-8C35-15696D07A51F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4721756B-3BAF-423A-8C35-15696D07A51F}.Debug|x64.Build.0 = Debug|Any CPU
+		{4721756B-3BAF-423A-8C35-15696D07A51F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4721756B-3BAF-423A-8C35-15696D07A51F}.Debug|x86.Build.0 = Debug|Any CPU
+		{4721756B-3BAF-423A-8C35-15696D07A51F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4721756B-3BAF-423A-8C35-15696D07A51F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4721756B-3BAF-423A-8C35-15696D07A51F}.Release|x64.ActiveCfg = Release|Any CPU
+		{4721756B-3BAF-423A-8C35-15696D07A51F}.Release|x64.Build.0 = Release|Any CPU
+		{4721756B-3BAF-423A-8C35-15696D07A51F}.Release|x86.ActiveCfg = Release|Any CPU
+		{4721756B-3BAF-423A-8C35-15696D07A51F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

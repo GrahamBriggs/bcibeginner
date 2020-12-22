@@ -1,29 +1,19 @@
-﻿using LoggingInterfaces;
+﻿using BrainflowInterfaces;
+using LoggingInterfaces;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
-using BrainflowInterfaces;
-using static BrainHatNetwork.Tcpip;
-using Newtonsoft.Json;
-using BrainHatNetwork;
-using LSL;
-using static LSL.liblsl;
 using System.Xml.Linq;
-using static BrainflowInterfaces.CollectionExtensionMethods;
+using static LSL.liblsl;
 
-namespace BrainHatServersMonitor
+namespace BrainHatNetwork
 {
     /// <summary>
     /// Monitor communications from all servers on the network
     /// </summary>
-    public class HatServer : IBrainHatServerConnection, IBrainHatServerStatus
+    public class HatClient : IBrainHatServerConnection, IBrainHatServerStatus
     {
         //  Events
         public event LogEventDelegate Log;
@@ -137,7 +127,7 @@ namespace BrainHatServersMonitor
         /// <summary>
         /// Constructor
         /// </summary>
-        public HatServer(BrainHatServerStatus connection, StreamInfo streamInfo)
+        public HatClient(BrainHatServerStatus connection, StreamInfo streamInfo)
         {
             HostName = connection.HostName;
             DataPort = connection.DataPort;
@@ -170,7 +160,7 @@ namespace BrainHatServersMonitor
         Task ReadDataPortTask { get; set; }
 
         //  read disgnostics
-        List<Tuple<long,  long, long>> PullSampleTimes = new List<Tuple<long,  long, long>>();
+        List<Tuple<long, long, long>> PullSampleTimes = new List<Tuple<long, long, long>>();
         List<long> PullSampleCount = new List<long>();
 
 
@@ -191,7 +181,7 @@ namespace BrainHatServersMonitor
                 inlet.open_stream();
 
                 Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadDataPortAsync", $"Create LSL stream: {inlet.info().as_xml()}.", LogLevel.DEBUG));
-             
+
                 double[,] buffer = new double[512, SampleSize];
                 double[] timestamps = new double[512];
                 IBFSample nextSample = null;
@@ -207,10 +197,10 @@ namespace BrainHatServersMonitor
                     {
                         sw.Restart();
                         int num = inlet.pull_chunk(buffer, timestamps);
-                        
+
                         var pullTime = sw.ElapsedMilliseconds;
                         PullSampleCount.Add(num);
-                       
+
                         ProcessChunk(buffer, num);
 
                         var processTime = sw.ElapsedMilliseconds;
@@ -225,7 +215,7 @@ namespace BrainHatServersMonitor
                     }
                     sw.Restart();
 
-                   await Task.Delay(1);
+                    await Task.Delay(1);
 
                     if (sampleReportingTime.ElapsedMilliseconds > 5000)
                     {
@@ -244,12 +234,12 @@ namespace BrainHatServersMonitor
             }
             finally
             {
-                if ( inlet != null )
+                if (inlet != null)
                     inlet.close_stream();
             }
         }
 
-        private void ProcessChunk(double[,] buffer,  int num)
+        private void ProcessChunk(double[,] buffer, int num)
         {
             for (int s = 0; s < num; s++)
             {
@@ -290,7 +280,7 @@ namespace BrainHatServersMonitor
             RawDataProcessedLast.Restart();
             RawDataOffsetTime = Math.Max(Math.Abs(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000 - data.TimeStamp), RawDataOffsetTime);
 
-       
+
             if (CountRecordsTimer.ElapsedMilliseconds > 5000)
             {
                 Log?.Invoke(this, new LogEventArgs(HostName, this, "LogRawDataProcessingPerformance", $"{HostName} Logged {(int)(RecordsCount / CountRecordsTimer.Elapsed.TotalSeconds)} records per second. Offset time {RawDataOffsetTime.ToString("F6")} s.", LogLevel.TRACE));

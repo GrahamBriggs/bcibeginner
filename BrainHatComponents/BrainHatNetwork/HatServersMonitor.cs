@@ -1,4 +1,5 @@
 ﻿using LoggingInterfaces;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,13 +9,10 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
-using Newtonsoft.Json;
-using BrainHatNetwork;
 using System.Xml.Linq;
 using static LSL.liblsl;
 
-namespace BrainHatServersMonitor
+namespace BrainHatNetwork
 {
     /// <summary>
     /// Monitor communications from all servers on the network
@@ -44,7 +42,7 @@ namespace BrainHatServersMonitor
             ReportNetworkTimeInterval.Start();
         }
 
-        
+
 
 
         /// <summary>
@@ -58,7 +56,7 @@ namespace BrainHatServersMonitor
                 if (UdpReaderRunTask != null)
                     await Task.WhenAll(UdpReaderRunTask, ConnectionMonitorRunTask, LslScannerRunTask, ReadLogPortTask);
 
-                foreach ( var nextServer in DiscoveredServers )
+                foreach (var nextServer in DiscoveredServers)
                 {
                     await nextServer.Value.StopReadingFromLslAsync();
                 }
@@ -71,11 +69,11 @@ namespace BrainHatServersMonitor
         }
 
 
-        public IEnumerable<HatServer> ConnectedServers
+        public IEnumerable<HatClient> ConnectedServers
         {
             get
             {
-                return new List<HatServer>(DiscoveredServers.Values);
+                return new List<HatClient>(DiscoveredServers.Values);
             }
         }
 
@@ -85,17 +83,17 @@ namespace BrainHatServersMonitor
         /// </summary>
         public HatServersMonitor()
         {
-            DiscoveredServers = new ConcurrentDictionary<string, HatServer>();
+            DiscoveredServers = new ConcurrentDictionary<string, HatClient>();
             DiscoveredLslStreams = new ConcurrentDictionary<string, StreamInfo>();
 
         }
 
-        protected ConcurrentDictionary<string, HatServer> DiscoveredServers;
-       
+        protected ConcurrentDictionary<string, HatClient> DiscoveredServers;
 
-        public HatServer GetServer(string hostName)
+
+        public HatClient GetServer(string hostName)
         {
-            if ( DiscoveredServers.ContainsKey(hostName) )
+            if (DiscoveredServers.ContainsKey(hostName))
             {
                 return DiscoveredServers[hostName];
             }
@@ -127,7 +125,7 @@ namespace BrainHatServersMonitor
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1));
 
-                    var oldConnections = DiscoveredServers.Where(x => (DateTimeOffset.UtcNow - x.Value.TimeStamp) > TimeSpan.FromMinutes(LSL_CLIENT_TIMEOUT));    
+                    var oldConnections = DiscoveredServers.Where(x => (DateTimeOffset.UtcNow - x.Value.TimeStamp) > TimeSpan.FromMinutes(LSL_CLIENT_TIMEOUT));
 
                     if (oldConnections.Any())
                     {
@@ -137,7 +135,7 @@ namespace BrainHatServersMonitor
                             {
                                 Log?.Invoke(this, new LogEventArgs(nextConnection.Key, this, "RunConnectionStatusMonitor", $"Lost connection to brainHat server {nextConnection.Key}.", LogLevel.INFO));
                                 HatConnectionChanged?.Invoke(this, new HatConnectionEventArgs(HatConnectionState.Lost, nextConnection.Key));
-                                
+
                                 DiscoveredServers.TryRemove(nextConnection.Key, out var discard);
                                 await discard.StopReadingFromLslAsync();
                                 discard.Log -= OnComponentLog;
@@ -175,8 +173,8 @@ namespace BrainHatServersMonitor
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1));
 
-                    StreamInfo[] results =  resolve_stream("type", "BFSample", 0, 1);
-                 
+                    StreamInfo[] results = resolve_stream("type", "BFSample", 0, 1);
+
                     List<string> discoveredStreams = new List<string>();
                     foreach (var nextStreamInfo in results)
                     {
@@ -191,7 +189,7 @@ namespace BrainHatServersMonitor
                                 if (!DiscoveredLslStreams.ContainsKey(hostName))
                                 {
                                     DiscoveredLslStreams.TryAdd(hostName, nextStreamInfo);
-                                    Log?.Invoke(this, new LogEventArgs(this, "RunLslScannerAsync", $"Discovered new LSL on host {hostName}." , LogLevel.INFO));
+                                    Log?.Invoke(this, new LogEventArgs(this, "RunLslScannerAsync", $"Discovered new LSL on host {hostName}.", LogLevel.INFO));
                                     Log?.Invoke(this, new LogEventArgs(this, "RunLslScannerAsync", $"LSL Stream Info. {nextStreamInfo.as_xml()}", LogLevel.DEBUG));
                                 }
                             }
@@ -199,7 +197,7 @@ namespace BrainHatServersMonitor
                     }
 
                     var missingStreams = DiscoveredLslStreams.Where(x => !discoveredStreams.Contains(x.Key));
-                    foreach ( var nextStreamInfo in missingStreams )
+                    foreach (var nextStreamInfo in missingStreams)
                     {
                         DiscoveredLslStreams.TryRemove(nextStreamInfo.Key, out var discard);
                         Log?.Invoke(this, new LogEventArgs(this, "RunLslScannerAsync", $"Lost LSL host {nextStreamInfo.Key}.", LogLevel.INFO));
@@ -327,7 +325,7 @@ namespace BrainHatServersMonitor
 
         private void CreateNewHatServer(BrainHatServerStatus serverStatus)
         {
-            if ( ! DiscoveredLslStreams.ContainsKey(serverStatus.HostName) )
+            if (!DiscoveredLslStreams.ContainsKey(serverStatus.HostName))
             {
                 Log?.Invoke(this, new LogEventArgs(this, "ProcessNetworkStatus", $"Discovered new brainHat server {serverStatus.HostName}, but no matching LSL stream - ignoring.", LogLevel.DEBUG));
                 return;
@@ -335,10 +333,10 @@ namespace BrainHatServersMonitor
 
             Log?.Invoke(this, new LogEventArgs(this, "ProcessNetworkStatus", $"Discovered new brainHat server {serverStatus.HostName}.", LogLevel.INFO));
 
-            var hatServer = new HatServer(serverStatus, DiscoveredLslStreams[serverStatus.HostName]);
+            var hatServer = new HatClient(serverStatus, DiscoveredLslStreams[serverStatus.HostName]);
             hatServer.TimeStamp = DateTimeOffset.UtcNow;
             hatServer.Log += OnComponentLog;
-            
+
             DiscoveredServers.TryAdd(serverStatus.HostName, hatServer);
             HatConnectionChanged?.Invoke(this, new HatConnectionEventArgs(HatConnectionState.Discovered, serverStatus.HostName, serverStatus.IpAddress, serverStatus.BoardId, serverStatus.SampleRate));
         }
@@ -350,11 +348,11 @@ namespace BrainHatServersMonitor
         /// <summary>
         /// Send connection status update event
         /// </summary>
-        private  void SendConnectionStatusUpdateEvents(BrainHatServerStatus status)
+        private void SendConnectionStatusUpdateEvents(BrainHatServerStatus status)
         {
             try
             {
-                if ( DiscoveredLslStreams.ContainsKey(status.HostName) )
+                if (DiscoveredLslStreams.ContainsKey(status.HostName))
                 {
                     var streamInfo = DiscoveredLslStreams[status.HostName];
                     var doc = XDocument.Parse(streamInfo.as_xml());

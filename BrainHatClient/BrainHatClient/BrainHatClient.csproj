@@ -237,10 +237,6 @@
       <Project>{8ffe8e83-f51e-47f4-a32d-18a0e5196308}</Project>
       <Name>BrainHatNetwork</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\BrainHatComponents\BrainHatServersMonitor\BrainHatServersMonitor.csproj">
-      <Project>{8a1b8f57-da23-49d7-939a-81703f70a301}</Project>
-      <Name>BrainHatServersMonitor</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\BrainHatComponents\LoggingInterfaces\LoggingInterfaces.csproj">
       <Project>{acffab45-aa43-4959-8e2d-6ccab67e005e}</Project>
       <Name>LoggingInterfaces</Name>

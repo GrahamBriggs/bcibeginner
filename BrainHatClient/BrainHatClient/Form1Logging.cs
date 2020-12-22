@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using BrainHatNetwork;
-using BrainHatServersMonitor;
 using LoggingInterfaces;
 
 namespace BrainHatClient
@@ -51,7 +50,7 @@ namespace BrainHatClient
         /// </summary>
         public void OnLoggedEvents(object sender, IEnumerable<LogEventArgs> logs)
         {
-            var logsToDisplay = logs.Where(x => x.HostName == Server.HostName && x.Level >= LogLevelDisplay);
+            var logsToDisplay = logs.Where(x => x.HostName == ConnectedServer.HostName && x.Level >= LogLevelDisplay);
 
             if (logsToDisplay.Count() > 0)
             {
@@ -107,7 +106,7 @@ namespace BrainHatClient
         private async System.Threading.Tasks.Task SetRemoteLogLevel(LogLevel level)
         {
             OnProgramLog(this, new LogEventArgs(this, "comboBoxRemoteLogLevel_SelectedIndexChanged", $"Setting remote log level {level}.", LogLevel.INFO));
-            var response = await Tcpip.GetTcpResponseAsync(Server.IpAddress, BrainHatNetworkAddresses.ServerPort, $"loglevel?object=a&level={(int)level}\n");
+            var response = await Tcpip.GetTcpResponseAsync(ConnectedServer.IpAddress, BrainHatNetworkAddresses.ServerPort, $"loglevel?object=a&level={(int)level}\n");
             if (!response.CheckHatResponse())
             {
                 OnProgramLog(this, new LogEventArgs(this, "comboBoxRemoteLogLevel_SelectedIndexChanged", $"Received an invalid response {response}.", LogLevel.ERROR));

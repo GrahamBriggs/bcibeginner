@@ -78,9 +78,6 @@
     <ClCompile Include="CommandServer.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="GpioPinManager.cpp">
-      <Filter>Source files</Filter>
-    </ClCompile>
     <ClCompile Include="OpenBCIFileRecorder.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
@@ -153,9 +150,6 @@
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="TCPServerThread.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
-    <ClInclude Include="GpioPinManager.h">
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="UriParser.h">

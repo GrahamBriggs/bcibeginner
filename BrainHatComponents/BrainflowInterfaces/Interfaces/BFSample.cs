@@ -10,6 +10,8 @@ namespace BrainflowInterfaces
 
         double TimeStamp { get; set; }
 
+        int SampleSize { get; }
+
         DateTime ObservationTime { get; }
 
         int NumberExgChannels { get; }
@@ -28,5 +30,7 @@ namespace BrainflowInterfaces
         int NumberAnalogChannels { get; }
         IEnumerable<double> AnalogData { get; }
         double GetAnalogDataForChannel(int channel);
+
+        double[] AsRawSample();
     }
 }

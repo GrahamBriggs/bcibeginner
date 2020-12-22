@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using BrainHatNetwork;
 using LoggingInterfaces;
 using Newtonsoft.Json;
-using OpenBCIInterfaces;
+using BrainflowInterfaces;
 
 namespace BrainHatSharp
 {

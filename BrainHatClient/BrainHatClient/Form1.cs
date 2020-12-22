@@ -1,14 +1,11 @@
 ﻿using BrainflowDataProcessing;
 using LoggingInterfaces;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using BrainflowInterfaces;
-using BrainHatServersMonitor;
 using BrainHatNetwork;
-using System.Collections.Concurrent;
 using System.Media;
 
 namespace BrainHatClient
@@ -16,7 +13,7 @@ namespace BrainHatClient
     public partial class Form1 : Form
     {
         //  brainHat server info
-        public HatServer Server { get; protected set; }
+        public HatClient ConnectedServer { get; protected set; }
 
         BrainflowDataProcessor DataProcessor;
         BlinkDetector BlinkDetector;
@@ -29,12 +26,12 @@ namespace BrainHatClient
         /// <summary>
         /// Constructor
         /// </summary>
-        public Form1(HatServer server)
+        public Form1(HatClient server)
         {
             InitializeComponent();
 
             //  reference to the server we are connecting to
-            Server = server;
+            ConnectedServer = server;
 
             //  create the data processor
             DataProcessor = new BrainflowDataProcessor(server.HostName, server.BoardId, server.SampleRate);
@@ -78,7 +75,7 @@ namespace BrainHatClient
            {
                await DataProcessor.StartDataProcessorAsync();
                await AlphaDetector.StartDetectorAsync();
-               await Server.StartReadingFromLslAsync();
+               await ConnectedServer.StartReadingFromLslAsync();
            });
 
             ConnectToUiEvents();
@@ -103,7 +100,7 @@ namespace BrainHatClient
 
             await DataProcessor.StopDataProcessorAsync();
             await AlphaDetector.StopDetectorAsync();
-            await Server.StopReadingFromLslAsync();
+            await ConnectedServer.StopReadingFromLslAsync();
             await StopBeep();
 
             base.OnFormClosing(e);
@@ -293,7 +290,7 @@ namespace BrainHatClient
         /// </summary>
         private void OnHatConnectionStatusUpdate(object sender, BrainHatStatusEventArgs e)
         {
-            if ( e.Status.HostName == Server.HostName )
+            if ( e.Status.HostName == ConnectedServer.HostName )
             {
                 LatestOffsetTime = e.Status.OffsetTime;
                 LatestRawLatency = e.Status.RawLatency;
@@ -394,7 +391,6 @@ namespace BrainHatClient
         /// <summary>
         /// Stop beep for alpha 
         /// </summary>
-        /// <returns></returns>
         async Task StopBeep()
         {
             if ( BeepCancel != null)
@@ -448,7 +444,7 @@ namespace BrainHatClient
             }
             else
             {
-                await FileWriter.StartWritingToFileAsync(textBoxRecordingName.Text, Server.BoardId, Server.SampleRate);
+                await FileWriter.StartWritingToFileAsync(textBoxRecordingName.Text, ConnectedServer.BoardId, ConnectedServer.SampleRate);
                 buttonStartRecording.Text = "Stop Recording";
                 RecordingStartTime = DateTimeOffset.UtcNow;
             }

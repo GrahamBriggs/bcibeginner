@@ -10,6 +10,8 @@ namespace BrainflowInterfaces
 
         public double TimeStamp { get; set; }
 
+        public int SampleSize => (2 + NumberExgChannels + NumberAccelChannels + NumberOtherChannels + NumberAnalogChannels);
+
         public DateTime ObservationTime => DateTimeOffset.FromUnixTimeMilliseconds((long)(TimeStamp * 1000.0)).ToLocalTime().DateTime;
 
 
@@ -57,21 +59,21 @@ namespace BrainflowInterfaces
 
         public IEnumerable<double> AnalogData => AnalogChannels;
 
-       
+
         public double GetAnalogDataForChannel(int channel)
         {
             if (channel < AnalogChannels.Length)
                 return AnalogChannels[channel];
             return BrainflowConstants.MissingValue;
         }
-              
+
 
         protected double[] ExgChannels;
         protected double[] AcelChannels;
         protected double[] OtherChannels;
         protected double[] AnalogChannels;
 
-       
+
 
         public BFSampleImplementation()
         {
@@ -115,6 +117,30 @@ namespace BrainflowInterfaces
                     AnalogChannels = new double[0];
                     break;
             }
+        }
+
+        public double[] AsRawSample()
+        {
+            var sample = new double[SampleSize];
+            var index = 0;
+
+            sample[index++] = SampleIndex;
+
+            for (int i = 0; i < NumberExgChannels; i++)
+                sample[index++] = GetExgDataForChannel(i);
+
+            for (int i = 0; i < NumberAccelChannels; i++)
+                sample[index++] = GetAccelDataForChannel(i);
+
+            for (int i = 0; i < NumberOtherChannels; i++)
+                sample[index++] = GetOtherDataForChannel(i);
+
+            for (int i = 0; i < NumberAnalogChannels; i++)
+                sample[index++] = GetAnalogDataForChannel(i);
+
+            sample[index] = TimeStamp;
+
+            return sample;
         }
     }
 }
