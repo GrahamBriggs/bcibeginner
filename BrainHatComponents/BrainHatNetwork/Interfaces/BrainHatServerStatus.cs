@@ -14,6 +14,7 @@ namespace BrainHatNetwork
         int DataPort { get; }
         int LogPort { get; }
 
+
        
     }
 
@@ -22,6 +23,7 @@ namespace BrainHatNetwork
     {
         int BoardId { get; }
         int SampleRate { get; }
+        int NumberOfChannels { get; }
 
         bool RecordingDataBrainHat { get; }
         bool RecordingDataBoard { get; }
@@ -33,12 +35,19 @@ namespace BrainHatNetwork
         bool ReceivingRaw { get; }
         double RawLatency { get;  }
 
+        TimeSpan OffsetTime { get;  }
+
         DateTimeOffset TimeStamp { get; }
     }
 
 
     public class BrainHatServerStatus : IBrainHatServerStatus
     {
+        public BrainHatServerStatus()
+        {
+            HostName = "";
+        }
+
         public string HostName { get; set; }
         public string Eth0Address { get; set; }
         public string Wlan0Address { get; set; }
@@ -60,6 +69,7 @@ namespace BrainHatNetwork
 
         public int BoardId { get; set; }
         public int SampleRate { get; set; }
+        public int NumberOfChannels => brainflow.BoardShim.get_exg_channels(BoardId).Length;
 
         public bool RecordingDataBrainHat { get; set; }
         public bool RecordingDataBoard { get; set; }

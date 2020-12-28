@@ -37,6 +37,8 @@ namespace BrainHatNetwork
 
         public int SampleRate { get; set; }
 
+        public int NumberOfChannels => brainflow.BoardShim.get_exg_channels(BoardId).Length;
+
         public bool RecordingDataBrainHat { get; set; }
 
         public bool RecordingDataBoard { get; set; }
@@ -54,6 +56,8 @@ namespace BrainHatNetwork
         public bool ReceivingRaw => RawDataProcessedLast.ElapsedMilliseconds < 5000;
 
         public double RawLatency => RawDataOffsetTime;
+
+        public TimeSpan OffsetTime { get; set; }
 
         public string IpAddress
         {

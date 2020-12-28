@@ -125,7 +125,7 @@ namespace BrainHatNetwork
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1));
 
-                    var oldConnections = DiscoveredServers.Where(x => (DateTimeOffset.UtcNow - x.Value.TimeStamp) > TimeSpan.FromMinutes(LSL_CLIENT_TIMEOUT));
+                    var oldConnections = DiscoveredServers.Where(x => (DateTimeOffset.UtcNow - x.Value.TimeStamp) > TimeSpan.FromSeconds(30));  //  TODO - disconnection timeout ?
 
                     if (oldConnections.Any())
                     {
@@ -299,7 +299,8 @@ namespace BrainHatNetwork
                     //  check the list of discovered servers
                     if (!DiscoveredServers.ContainsKey(hostName))
                     {
-                        CreateNewHatServer(serverStatus);
+                        if (!CreateNewHatServer(serverStatus))
+                            return;
                     }
                     else
                     {
@@ -308,6 +309,8 @@ namespace BrainHatNetwork
                         //  update server connection state
                         await server.UpdateConnection(serverStatus);
                         server.TimeStamp = serverStatus.TimeStamp;
+                        serverStatus.OffsetTime = DateTimeOffset.UtcNow - serverStatus.TimeStamp;
+                        server.OffsetTime = serverStatus.OffsetTime;
 
                         //  set raw data status for the event message
                         serverStatus.ReceivingRaw = server.ReceivingRaw;
@@ -323,22 +326,28 @@ namespace BrainHatNetwork
             }
         }
 
-        private void CreateNewHatServer(BrainHatServerStatus serverStatus)
+        private bool CreateNewHatServer(BrainHatServerStatus serverStatus)
         {
             if (!DiscoveredLslStreams.ContainsKey(serverStatus.HostName))
             {
                 Log?.Invoke(this, new LogEventArgs(this, "ProcessNetworkStatus", $"Discovered new brainHat server {serverStatus.HostName}, but no matching LSL stream - ignoring.", LogLevel.DEBUG));
-                return;
+                return false;
             }
+
+            serverStatus.OffsetTime = DateTimeOffset.UtcNow - serverStatus.TimeStamp;
 
             Log?.Invoke(this, new LogEventArgs(this, "ProcessNetworkStatus", $"Discovered new brainHat server {serverStatus.HostName}.", LogLevel.INFO));
 
             var hatServer = new HatClient(serverStatus, DiscoveredLslStreams[serverStatus.HostName]);
+            serverStatus.OffsetTime = DateTimeOffset.UtcNow - serverStatus.TimeStamp;
+            hatServer.OffsetTime = serverStatus.OffsetTime;
             hatServer.TimeStamp = DateTimeOffset.UtcNow;
             hatServer.Log += OnComponentLog;
 
             DiscoveredServers.TryAdd(serverStatus.HostName, hatServer);
             HatConnectionChanged?.Invoke(this, new HatConnectionEventArgs(HatConnectionState.Discovered, serverStatus.HostName, serverStatus.IpAddress, serverStatus.BoardId, serverStatus.SampleRate));
+
+            return true;
         }
 
 
@@ -365,7 +374,6 @@ namespace BrainHatNetwork
                     }
                 }
 
-                status.OffsetTime = DateTimeOffset.UtcNow - status.TimeStamp;
                 HatConnectionStatusUpdate?.Invoke(this, new BrainHatStatusEventArgs(status));
 
                 if (ReportNetworkTimeInterval.ElapsedMilliseconds > 30000)
