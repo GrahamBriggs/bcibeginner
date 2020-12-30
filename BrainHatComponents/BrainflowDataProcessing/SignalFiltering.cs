@@ -17,7 +17,7 @@ namespace BrainflowDataProcessing
         public event LogEventDelegate Log;
 
         //  Delegates
-        public GetBFChunkDelegate GetUnfilteredData;
+        public GetBFChunkSecondsDelegate GetUnfilteredData;
 
         /// <summary>
         /// Period in milliseconds for the filter to update
@@ -70,14 +70,27 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Get some number of seconds of the filtered data
         /// </summary>
-        /// <param name="seconds"></param>
-        /// <returns></returns>
         public IEnumerable<IBFSample> GetFilteredData(double seconds)
         {
             if ( FilteredData.Count > 0 )
             {
                 var first = FilteredData.First().TimeStamp;
                 var filtered = FilteredData.Where(x => (first - x.TimeStamp) < seconds);
+                return filtered;
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Get filtered data newer than since time
+        /// </summary>
+        public IEnumerable<IBFSample> GetFilteredData(DateTimeOffset since)
+        {
+            if (FilteredData.Count > 0)
+            {
+                var filtered = FilteredData.Where(x => x.ObservationTime > since);
                 return filtered;
             }
 

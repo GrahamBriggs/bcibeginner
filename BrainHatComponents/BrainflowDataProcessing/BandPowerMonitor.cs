@@ -17,7 +17,7 @@ namespace BrainflowDataProcessing
         public event LogEventDelegate Log;
 
         //  Delegates
-        public GetBFChunkDelegate GetUnfilteredData;
+        public GetBFChunkSecondsDelegate GetUnfilteredData;
 
         //  Properties
         public int PeriodMilliseconds { get; set; }

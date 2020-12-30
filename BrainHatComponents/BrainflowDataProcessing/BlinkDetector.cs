@@ -17,7 +17,7 @@ namespace BrainflowDataProcessing
         public event DetectedBlinkDelegate DetectedBlink;
 
         //  Delegates
-        public GetBFChunkDelegate GetData;
+        public GetBFChunkSecondsDelegate GetData;
         public GetBFSampleDelegate GetStdDevMedians;
         
         //  Blink detector properties

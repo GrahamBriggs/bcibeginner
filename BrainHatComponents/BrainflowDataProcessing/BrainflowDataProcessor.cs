@@ -119,6 +119,12 @@ namespace BrainflowDataProcessing
             await BandPowers.StopMonitorAsync();
         }
 
+
+        /// <summary>
+        /// Set the band power processor ranges
+        /// supply a list of tuples: lowFrequency,highFrequency in each range
+        /// </summary>
+        /// <param name="rangeList"></param>
         public void SetBandPowerRangeList(List<Tuple<double,double>> rangeList)
         {
             BandPowers.SetBandPowerRangeList(rangeList);
@@ -133,6 +139,7 @@ namespace BrainflowDataProcessing
             AddDataToProcessor(e.Sample);
         }
 
+
         /// <summary>
         /// Add data to the proecssor queue
         /// </summary>
@@ -144,30 +151,54 @@ namespace BrainflowDataProcessing
 
 
         /// <summary>
-        /// Get the most recent 'seconds' worth of raw data from the processor
+        /// Get the last 'seconds' worth of raw samples relative to the timestamp of the newest sample
         /// </summary>
-        public IEnumerable<IBFSample> GetRawData(double seconds)
+        public IEnumerable<IBFSample> GetRawChunk(double seconds)
         {
             return GetUnfilteredData(seconds);
         }
 
 
         /// <summary>
-        /// Get a range of raw data starting at 'from' seconds ago, and ending at 'to' seconds ago 
+        /// Get a range of raw samples starting at 'from' seconds, and ending at 'to' seconds, relative to the timestamp of the newest sample 
         /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <returns></returns>
-        public IEnumerable<IBFSample> GetRawData(double from, double to)
+        public IEnumerable<IBFSample> GetRawChunk(double from, double to)
         {
             return GetUnfilteredData(from, to);
         }
 
 
         /// <summary>
+        /// Get a range of raw samples newer than since time
+        /// </summary>
+        public IEnumerable<IBFSample> GetRawChunk(DateTimeOffset since)
+        {
+            return GetUnfilteredData(since);
+        }
+
+
+        /// <summary>
+        /// Get the last 'seconds' of filtered data, relative to the timestamp of newest sample
+        /// </summary>
+        public IEnumerable<IBFSample> GetFilteredChunk(double seconds)
+        {
+            return SignalFilter.GetFilteredData(seconds);
+        }
+
+
+        /// <summary>
+        /// Get the filtered samples newer than since time
+        /// </summary>
+        public IEnumerable<IBFSample> GetFilteredChunk(DateTimeOffset since)
+        {
+            return SignalFilter.GetFilteredData(since);
+        }
+
+
+
+        /// <summary>
         /// Get the current standard deviation median
         /// </summary>
-        /// <returns></returns>
         public IBFSample GetStdDevianMedians()
         {
             return StdDevMedians;
@@ -183,14 +214,7 @@ namespace BrainflowDataProcessing
         }
 
 
-        /// <summary>
-        /// Get 
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerable<IBFSample> GetFilteredData(double seconds)
-        {
-            return SignalFilter.GetFilteredData(seconds);
-        }
+       
 
 
         #endregion
@@ -740,6 +764,34 @@ namespace BrainflowDataProcessing
                     if (firstTimeStamp - nextData.TimeStamp < from)
                         continue;
                     else if ((firstTimeStamp - nextData.TimeStamp >= from) && (firstTimeStamp - nextData.TimeStamp <= to))
+                    {
+                        data.Add(nextData);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return data;
+        }
+
+
+        /// <summary>
+        /// Get the last number of seconds of Exg data for the specified channel
+        /// </summary>
+        private IEnumerable<IBFSample> GetUnfilteredData(DateTimeOffset since)
+        {
+            if (UnfilteredData.Count < 1)
+                return null;
+
+            var data = new List<IBFSample>();
+            lock (UnfilteredData)
+            {
+                foreach (var nextData in UnfilteredData)
+                {
+                    if (nextData.ObservationTime > since)
                     {
                         data.Add(nextData);
                     }
