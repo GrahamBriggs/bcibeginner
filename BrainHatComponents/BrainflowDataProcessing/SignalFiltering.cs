@@ -27,7 +27,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Amount of raw data in seconds the filter will process
         /// </summary>
-        public double FilterBufferLength { get; set; }
+        public double FilterBufferLength { get;  set; }
 
 
         //  Public Methods
@@ -117,7 +117,7 @@ namespace BrainflowDataProcessing
 
             PeriodMilliseconds = 100;   //  default 10 Hz
 
-            FilterBufferLength = 5;
+            FilterBufferLength = 10;
 
             ProcessingTimes = new ConcurrentQueue<double>();
 
@@ -189,7 +189,7 @@ namespace BrainflowDataProcessing
                 var sw = new System.Diagnostics.Stopwatch();
                 sw.Start();
 
-                var data = GetUnfilteredData(5.0);
+                var data = GetUnfilteredData(FilterBufferLength).Reverse();
 
 
                 if (data == null || data.Count() == 0)
@@ -202,24 +202,29 @@ namespace BrainflowDataProcessing
                 foreach (var nextSample in data)
                     filteredSamples.Add(MakeNewSample(nextSample));
 
+           
                 for (int i = 0; i < NumberOfChannels; i++)
                 {
                     //var filtered = DataFilter.perform_rolling_filter(data.GetExgDataForChannel(i), 3, (int)AggOperations.EACH);
                     // var filtered = DataFilter.perform_bandpass(data.GetExgDataForChannel(i), SampleRate, 15, 30, 2, (int)FilterTypes.BESSEL, 0.0);
                     //var filtered = DataFilter.perform_bandstop(data.GetExgDataForChannel(i), SampleRate, 50.0, 1.0, 6, (int)FilterTypes.CHEBYSHEV_TYPE_1, 1.0);
-                    var filtered = DataFilter.perform_bandpass(data.GetExgDataForChannel(i), SampleRate, 15.0, 5.0, 2, (int)FilterTypes.BUTTERWORTH, 0.0);
+                    var samples = data.GetExgDataForChannel(i);
+                    var filtered = DataFilter.perform_bandpass(samples, SampleRate, 15.0, 5.0, 2, (int)FilterTypes.BUTTERWORTH, 0.0);
 
                     for (int j = 0; j < data.Count(); j++)
                     {
-                        if (i == 0)
-                            filteredSamples[j].TimeStamp = filteredSamples[0].TimeStamp - (1.0 / SampleRate) * j;
                         filteredSamples[j].SetExgDataForChannel(i, filtered[j]);
                     }
                 }
 
-                //  remove the first bit to avoid filtering artifact
-                if ( filteredSamples.Count > SampleRate )
-                    filteredSamples.RemoveRange(0, (SampleRate));
+                var startTime = data.First().TimeStamp;
+
+                for (int i = 0; i < filteredSamples.Count; i++)
+                    filteredSamples[i].TimeStamp = startTime + (1.0 / SampleRate * i);
+
+                ////  remove the first bit to avoid filtering artifact
+                //if ( filteredSamples.Count > SampleRate )
+                //    filteredSamples.RemoveRange(0, (SampleRate));
 
                 //  update the filtered data collection
                 FilteredData.RemoveAll();

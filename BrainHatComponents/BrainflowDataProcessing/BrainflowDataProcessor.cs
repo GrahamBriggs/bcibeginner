@@ -243,7 +243,14 @@ namespace BrainflowDataProcessing
             BandPowers.GetUnfilteredData = GetUnfilteredData;
             BandPowers.Log += OnComponentLog;
 
-            SignalFilter = new SignalFiltering(name, boardId, sampleRate);
+            RealTimeBufferLengthSeconds = 7;
+
+            SignalFilter = new SignalFiltering(name, boardId, sampleRate)
+            {
+                FilterBufferLength = RealTimeBufferLengthSeconds,
+            };
+
+
             SignalFilter.GetUnfilteredData = GetUnfilteredData;
             SignalFilter.Log += OnComponentLog;
 
@@ -266,6 +273,8 @@ namespace BrainflowDataProcessing
         public int NumberOfChannels { get; private set; }
         public int SampleRate { get; private set; }
         public string Name { get; private set; }
+
+        public double RealTimeBufferLengthSeconds { get; set; }
 
         //  Running tasks
         protected CancellationTokenSource CancelTokenSource { get; set; }
@@ -623,7 +632,7 @@ namespace BrainflowDataProcessing
 
                     if (swFlush.ElapsedMilliseconds > PeriodMsFlushOldData)
                     {
-                        FlushOldData(30.0);
+                        FlushOldData(RealTimeBufferLengthSeconds);
                         swFlush.Restart();
                     }
                 }
