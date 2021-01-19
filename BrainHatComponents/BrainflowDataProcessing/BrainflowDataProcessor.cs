@@ -243,7 +243,7 @@ namespace BrainflowDataProcessing
             BandPowers.GetUnfilteredData = GetUnfilteredData;
             BandPowers.Log += OnComponentLog;
 
-            RealTimeBufferLengthSeconds = 7;
+            RealTimeBufferLengthSeconds = 30;
 
             SignalFilter = new SignalFiltering(name, boardId, sampleRate)
             {

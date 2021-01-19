@@ -189,7 +189,7 @@ namespace BrainflowDataProcessing
                 var sw = new System.Diagnostics.Stopwatch();
                 sw.Start();
 
-                var data = GetUnfilteredData(FilterBufferLength).Reverse();
+                var data = GetUnfilteredData(FilterBufferLength).Reverse().ToList();
 
 
                 if (data == null || data.Count() == 0)
