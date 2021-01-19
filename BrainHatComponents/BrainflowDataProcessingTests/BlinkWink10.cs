@@ -25,7 +25,7 @@ namespace BrainflowDataProcessingTests
             //  create a processor
             BrainflowDataProcessor processor = new BrainflowDataProcessor("", 0, 250);
             BlinkDetector detector = new BlinkDetector();
-            detector.GetData = processor.GetRawData;
+            detector.GetData = processor.GetRawChunk;
             detector.GetStdDevMedians = processor.GetStdDevianMedians;
             processor.NewSample += detector.OnNewSample;
             detector.Log += Detector_Log;
@@ -77,7 +77,7 @@ namespace BrainflowDataProcessingTests
             //  create a processor
             BrainflowDataProcessor processor = new BrainflowDataProcessor("", 0, 250);
             BlinkDetector detector = new BlinkDetector();
-            detector.GetData = processor.GetRawData;
+            detector.GetData = processor.GetRawChunk;
             detector.GetStdDevMedians = processor.GetStdDevianMedians;
             processor.NewSample += detector.OnNewSample;
             detector.Log += Detector_Log;
@@ -125,7 +125,7 @@ namespace BrainflowDataProcessingTests
             //  create a processor
             BrainflowDataProcessor processor = new BrainflowDataProcessor("", 0, 250);
             BlinkDetector detector = new BlinkDetector();
-            detector.GetData = processor.GetRawData;
+            detector.GetData = processor.GetRawChunk;
             detector.GetStdDevMedians = processor.GetStdDevianMedians;
             processor.NewSample += detector.OnNewSample;
             detector.Log += Detector_Log;

@@ -42,7 +42,7 @@ namespace BrainHatClient
             BlinkDetector = new BlinkDetector();
             BlinkDetector.Log += OnLog;
             DataProcessor.NewSample += BlinkDetector.OnNewSample;
-            BlinkDetector.GetData = DataProcessor.GetRawData;
+            BlinkDetector.GetData = DataProcessor.GetRawChunk;
             BlinkDetector.GetStdDevMedians = DataProcessor.GetStdDevianMedians;
        
             //  create the alpha wave detector
