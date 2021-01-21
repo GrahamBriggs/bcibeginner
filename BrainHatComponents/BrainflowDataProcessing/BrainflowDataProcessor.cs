@@ -155,7 +155,7 @@ namespace BrainflowDataProcessing
         /// </summary>
         public IEnumerable<IBFSample> GetRawChunk(double seconds)
         {
-            return GetUnfilteredData(seconds);
+            return GetUnfilteredData(seconds)?.Reverse().ToArray();
         }
 
 
@@ -164,7 +164,7 @@ namespace BrainflowDataProcessing
         /// </summary>
         public IEnumerable<IBFSample> GetRawChunk(double from, double to)
         {
-            return GetUnfilteredData(from, to);
+            return GetUnfilteredData(from, to)?.Reverse().ToArray();
         }
 
 
@@ -173,7 +173,7 @@ namespace BrainflowDataProcessing
         /// </summary>
         public IEnumerable<IBFSample> GetRawChunk(DateTimeOffset since)
         {
-            return GetUnfilteredData(since);
+            return GetUnfilteredData(since)?.Reverse().ToArray();
         }
 
 
@@ -240,7 +240,7 @@ namespace BrainflowDataProcessing
             NotifyAddedData = new SemaphoreSlim(0);
 
             BandPowers = new BandPowerMonitor(Name, BoardId, SampleRate);
-            BandPowers.GetUnfilteredData = GetUnfilteredData;
+            BandPowers.GetRawChunk = GetRawChunk;
             BandPowers.Log += OnComponentLog;
 
             RealTimeBufferLengthSeconds = 30;
@@ -251,7 +251,7 @@ namespace BrainflowDataProcessing
             };
 
 
-            SignalFilter.GetUnfilteredData = GetUnfilteredData;
+            SignalFilter.GetRawChunk = GetRawChunk;
             SignalFilter.Log += OnComponentLog;
 
             TimeTagFirstSample = -1;
@@ -264,7 +264,6 @@ namespace BrainflowDataProcessing
             PeriodMsUpdateDataFilter = 200;     // 5 Hz data filter update
             PeriodMsFlushOldData = 2000;          // Flush old every two seconds
 
-            ProcessingTimesFilter = new ConcurrentQueue<double>();
             ProcessingTimesQueue = new ConcurrentQueue<double>();
         }
 
@@ -305,7 +304,6 @@ namespace BrainflowDataProcessing
 
         //  Performance testing and monitoring
         ConcurrentQueue<double> ProcessingTimesQueue { get; set; }
-        ConcurrentQueue<double> ProcessingTimesFilter { get; set; }
         private int LastSampleIndex { get; set; }
 
 
@@ -351,8 +349,6 @@ namespace BrainflowDataProcessing
             ClearStdDevRunningCollection();
 
             ProcessingTimesQueue.RemoveAll();
-            ProcessingTimesFilter.RemoveAll();
-
         }
 
 
@@ -445,7 +441,7 @@ namespace BrainflowDataProcessing
         /// </summary>
         private void LogProcessorStats(TimeSpan elapsed)
         {
-            if (ProcessingTimesFilter.Count > 0 || ProcessingTimesQueue.Count > 0)
+            if ( ProcessingTimesQueue.Count > 0)
             {
                 IBFSample first;
                 lock (UnfilteredData)
@@ -457,18 +453,14 @@ namespace BrainflowDataProcessing
                 if (ProcessingTimesQueue.Count > 0)
                     processor = $"Queue {(ProcessingTimesQueue.Count / elapsed.TotalSeconds).ToString("F0")} times per second: Av {ProcessingTimesQueue.Average().ToString("F4")} s | Max {ProcessingTimesQueue.Max().ToString("F4")} s.";
 
-                var filter = "Not filtering !";
-                if (ProcessingTimesFilter.Count > 0)
-                    filter = $"Filter {(ProcessingTimesFilter.Count / elapsed.TotalSeconds).ToString("F0")} times per second: Av {ProcessingTimesFilter.Average().ToString("F4")} s | Max {ProcessingTimesFilter.Max().ToString("F4")} s.";
-
-                Log?.Invoke(this, new LogEventArgs(Name, this, "LogProcessorStats", $"{Name} processing: Age {(DateTimeOffset.UtcNow.ToUnixTimeInDoubleSeconds() - first.TimeStamp).ToString("F6")}.  {processor}  {filter}", LogLevel.TRACE));
+               
+                Log?.Invoke(this, new LogEventArgs(Name, this, "LogProcessorStats", $"{Name} processing: Age {(DateTimeOffset.UtcNow.ToUnixTimeInDoubleSeconds() - first.TimeStamp).ToString("F6")}.  {processor}", LogLevel.TRACE));
 
                 if (CountMissingIndex > 0)
                 {
                     Log?.Invoke(this, new LogEventArgs(Name, this, "LogProcessorStats", $"Missed {CountMissingIndex} samples in the past {(int)(PeriodMsUpdateProcessorStats / 1000)} seconds.", LogLevel.WARN));
                     CountMissingIndex = 0;
                 }
-                ProcessingTimesFilter.RemoveAll();
                 ProcessingTimesQueue.RemoveAll();
             }
         }
@@ -705,27 +697,7 @@ namespace BrainflowDataProcessing
 
 
 
-        /// <summary>
-        /// Run the data filter from brainflow example code on all channels
-        /// </summary>
-        private void RunSomeDataFiltering(IEnumerable<IBFSample> data)
-        {
-            if (data == null || data.Count() == 0)
-                return;
-
-            var sw = new System.Diagnostics.Stopwatch();
-            sw.Start();
-
-            for (int i = 0; i < NumberOfChannels; i++)
-            {
-                var result = DataFilter.perform_lowpass(data.GetExgDataForChannel(i), SampleRate, 20.0, 4, (int)FilterTypes.BESSEL, 0.0);
-                result = DataFilter.perform_highpass(result, SampleRate, 2.0, 4, (int)FilterTypes.BUTTERWORTH, 0.0);
-                DataFilter.perform_bandpass(result, SampleRate, 15.0, 5.0, 2, (int)FilterTypes.BUTTERWORTH, 0.0);
-            }
-
-            sw.Stop();
-            ProcessingTimesFilter.Enqueue(sw.Elapsed.TotalSeconds);
-        }
+       
 
 
 
@@ -735,13 +707,10 @@ namespace BrainflowDataProcessing
         /// </summary>
         private IEnumerable<IBFSample> GetUnfilteredData(double seconds)
         {
-            if (UnfilteredData.Count < 1)
-                return null;
-
             var data = new List<IBFSample>();
             lock (UnfilteredData)
             {
-                var firstTimeStamp = UnfilteredData.First().TimeStamp;
+                var firstTimeStamp = UnfilteredData.Count > 0 ? UnfilteredData.First().TimeStamp : 0.0;
                 foreach (var nextData in UnfilteredData)
                 {
                     if (firstTimeStamp - nextData.TimeStamp < seconds)
@@ -754,7 +723,6 @@ namespace BrainflowDataProcessing
                     }
                 }
             }
-
             return data;
         }
 
@@ -767,7 +735,7 @@ namespace BrainflowDataProcessing
             var data = new List<IBFSample>();
             lock (UnfilteredData)
             {
-                var firstTimeStamp = UnfilteredData.First().TimeStamp;
+                var firstTimeStamp = UnfilteredData.Count > 0 ? UnfilteredData.First().TimeStamp : 0.0;
                 foreach (var nextData in UnfilteredData)
                 {
                     if (firstTimeStamp - nextData.TimeStamp < from)
@@ -792,10 +760,8 @@ namespace BrainflowDataProcessing
         /// </summary>
         private IEnumerable<IBFSample> GetUnfilteredData(DateTimeOffset since)
         {
-            if (UnfilteredData.Count < 1)
-                return null;
-
             var data = new List<IBFSample>();
+
             lock (UnfilteredData)
             {
                 foreach (var nextData in UnfilteredData)
@@ -810,7 +776,6 @@ namespace BrainflowDataProcessing
                     }
                 }
             }
-
             return data;
         }
 

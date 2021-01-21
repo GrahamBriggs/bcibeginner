@@ -17,7 +17,7 @@ namespace BrainflowDataProcessing
         public event LogEventDelegate Log;
 
         //  Delegates
-        public GetBFChunkSecondsDelegate GetUnfilteredData;
+        public GetBFChunkSecondsDelegate GetRawChunk;
 
         //  Properties
         public int PeriodMilliseconds { get; set; }
@@ -248,7 +248,7 @@ namespace BrainflowDataProcessing
                 var sw = new System.Diagnostics.Stopwatch();
                 sw.Start();
 
-                var data = GetUnfilteredData(5.0);
+                var data = GetRawChunk(5.0);
 
                 if (data == null || data.Count() == 0)
                     return;

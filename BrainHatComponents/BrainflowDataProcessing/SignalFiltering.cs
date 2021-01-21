@@ -17,7 +17,7 @@ namespace BrainflowDataProcessing
         public event LogEventDelegate Log;
 
         //  Delegates
-        public GetBFChunkSecondsDelegate GetUnfilteredData;
+        public GetBFChunkSecondsDelegate GetRawChunk;
 
         /// <summary>
         /// Period in milliseconds for the filter to update
@@ -122,7 +122,7 @@ namespace BrainflowDataProcessing
             ProcessingTimes = new ConcurrentQueue<double>();
 
 
-            FilteredData = new ConcurrentStack<IBFSample>();
+            FilteredData = new ConcurrentQueue<IBFSample>();
         }
 
         //  Board Properties
@@ -132,7 +132,7 @@ namespace BrainflowDataProcessing
         public string Name { get; protected set; }
 
         //  Filtered Data Collection
-        public ConcurrentStack<IBFSample> FilteredData { get; protected set; }
+        public ConcurrentQueue<IBFSample> FilteredData { get; protected set; }
 
         //  Run task properties
         protected CancellationTokenSource CancelTokenSource { get; set; }
@@ -189,7 +189,7 @@ namespace BrainflowDataProcessing
                 var sw = new System.Diagnostics.Stopwatch();
                 sw.Start();
 
-                var data = GetUnfilteredData(FilterBufferLength).Reverse().ToList();
+                var data = GetRawChunk(FilterBufferLength);
 
 
                 if (data == null || data.Count() == 0)
@@ -228,7 +228,7 @@ namespace BrainflowDataProcessing
 
                 //  update the filtered data collection
                 FilteredData.RemoveAll();
-                FilteredData.PushRange(filteredSamples.ToArray());
+                FilteredData.AddRange(filteredSamples.ToArray());
 
                 sw.Stop();
                 ProcessingTimes.Enqueue(sw.Elapsed.TotalSeconds);
