@@ -248,7 +248,7 @@ namespace BrainflowDataProcessing
                 var sw = new System.Diagnostics.Stopwatch();
                 sw.Start();
 
-                var data = GetRawChunk(5.0);
+                var data = GetRawChunk(2.5);
 
                 if (data == null || data.Count() == 0)
                     return;

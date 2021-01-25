@@ -243,7 +243,7 @@ namespace BrainflowDataProcessing
             BandPowers.GetRawChunk = GetRawChunk;
             BandPowers.Log += OnComponentLog;
 
-            RealTimeBufferLengthSeconds = 30;
+            RealTimeBufferLengthSeconds = 10;
 
             SignalFilter = new SignalFiltering(name, boardId, sampleRate)
             {
