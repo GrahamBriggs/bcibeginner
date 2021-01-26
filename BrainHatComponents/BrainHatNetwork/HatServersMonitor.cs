@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -15,7 +16,8 @@ using static LSL.liblsl;
 namespace BrainHatNetwork
 {
     /// <summary>
-    /// Monitor communications from all servers on the network
+    /// Monitor communications from all servers on the network.
+    /// Creates and manages HatClient object for each connected server.
     /// </summary>
     public class HatServersMonitor
     {
@@ -25,13 +27,13 @@ namespace BrainHatNetwork
         public event HatConnectionStatusUpdateDelegate HatConnectionStatusUpdate;
         public event HatConnectionUpdateDelegate HatConnectionChanged;
 
+
         /// <summary>
         /// Start monitor
         /// </summary>
         public async Task StartMonitorAsync()
         {
             await StopMonitorAsync();
-
 
             MonitorCancelTokenSource = new CancellationTokenSource();
             UdpReaderRunTask = RunUdpMulticastReaderAsync(MonitorCancelTokenSource.Token);
@@ -41,8 +43,6 @@ namespace BrainHatNetwork
 
             ReportNetworkTimeInterval.Start();
         }
-
-
 
 
         /// <summary>
@@ -69,6 +69,9 @@ namespace BrainHatNetwork
         }
 
 
+        /// <summary>
+        /// Get a collection of connected servers
+        /// </summary>
         public IEnumerable<HatClient> ConnectedServers
         {
             get
@@ -79,18 +82,8 @@ namespace BrainHatNetwork
 
 
         /// <summary>
-        /// Constructor
+        /// Get the client object for a specified server
         /// </summary>
-        public HatServersMonitor()
-        {
-            DiscoveredServers = new ConcurrentDictionary<string, HatClient>();
-            DiscoveredLslStreams = new ConcurrentDictionary<string, StreamInfo>();
-
-        }
-
-        protected ConcurrentDictionary<string, HatClient> DiscoveredServers;
-
-
         public HatClient GetServer(string hostName)
         {
             if (DiscoveredServers.ContainsKey(hostName))
@@ -102,7 +95,17 @@ namespace BrainHatNetwork
         }
 
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public HatServersMonitor()
+        {
+            DiscoveredServers = new ConcurrentDictionary<string, HatClient>();
+            DiscoveredLslStreams = new ConcurrentDictionary<string, StreamInfo>();
+        }
 
+        protected ConcurrentDictionary<string, HatClient> DiscoveredServers;
+        private ConcurrentDictionary<string, StreamInfo> DiscoveredLslStreams;
 
         //  Thread cancel token and task
         CancellationTokenSource MonitorCancelTokenSource { get; set; }
@@ -111,11 +114,11 @@ namespace BrainHatNetwork
         Task LslScannerRunTask { get; set; }
         Task ReadLogPortTask { get; set; }
 
+        Stopwatch ReportNetworkTimeInterval = new Stopwatch();
 
-        protected const int LSL_CLIENT_TIMEOUT = 6;
 
         /// <summary>
-        /// Task to monitor when discovered servers go stale
+        /// Task to monitor when discovered servers go stale (disconnected)
         /// </summary>
         protected async Task RunConnectionStatusMonitorAsync(CancellationToken cancelToken)
         {
@@ -163,8 +166,10 @@ namespace BrainHatNetwork
         }
 
 
-        private ConcurrentDictionary<string, StreamInfo> DiscoveredLslStreams;
-
+       
+        /// <summary>
+        /// Task to scan for LSL streams
+        /// </summary>
         private async Task RunLslScannerAsync(CancellationToken cancelToken)
         {
             try
@@ -214,7 +219,8 @@ namespace BrainHatNetwork
 
 
         /// <summary>
-        /// Task to read from the UDP multicast socket
+        /// Task to read from the server UDP multicast socket.
+        /// This function will initiate creation of HatClient for discovered brainHat server.
         /// </summary>
         protected async Task RunUdpMulticastReaderAsync(CancellationToken cancelToken)
         {
@@ -280,8 +286,7 @@ namespace BrainHatNetwork
             }
         }
 
-        System.Diagnostics.Stopwatch ReportNetworkTimeInterval = new System.Diagnostics.Stopwatch();
-
+       
         /// <summary>
         /// Process network connection status message
         /// </summary>
@@ -299,7 +304,7 @@ namespace BrainHatNetwork
                     //  check the list of discovered servers
                     if (!DiscoveredServers.ContainsKey(hostName))
                     {
-                        if (!CreateNewHatServer(serverStatus))
+                        if (!CreateNewHatClient(serverStatus))
                             return;
                     }
                     else
@@ -326,7 +331,11 @@ namespace BrainHatNetwork
             }
         }
 
-        private bool CreateNewHatServer(BrainHatServerStatus serverStatus)
+
+        /// <summary>
+        /// Create a new HatClient for the discovered server
+        /// </summary>
+        private bool CreateNewHatClient(BrainHatServerStatus serverStatus)
         {
             if (!DiscoveredLslStreams.ContainsKey(serverStatus.HostName))
             {
@@ -349,10 +358,7 @@ namespace BrainHatNetwork
 
             return true;
         }
-
-
-
-        System.Diagnostics.Stopwatch PingTimer = new System.Diagnostics.Stopwatch();
+     
 
         /// <summary>
         /// Send connection status update event

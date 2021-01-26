@@ -11,7 +11,9 @@ using static LSL.liblsl;
 namespace BrainHatNetwork
 {
     /// <summary>
-    /// Monitor communications from all servers on the network
+    /// A client connection to a single brainHat server
+    /// Receives raw data from the server via LSL, 
+    /// and provides TCPIP connection to send query/command and receive response from server.
     /// </summary>
     public class HatClient : IBrainHatServerConnection, IBrainHatServerStatus
     {
@@ -158,9 +160,8 @@ namespace BrainHatNetwork
         private StreamInfo StreamInfo { get; set; }
         public int SampleSize { get; protected set; }
 
-        //  Cancel Token for background tasks
-        CancellationTokenSource RunTaskCancelTokenSource { get; set; }
         //  Read data port task
+        CancellationTokenSource RunTaskCancelTokenSource { get; set; }
         Task ReadDataPortTask { get; set; }
 
         //  read disgnostics
@@ -243,6 +244,10 @@ namespace BrainHatNetwork
             }
         }
 
+
+        /// <summary>
+        /// Process chunk read
+        /// </summary>
         private void ProcessChunk(double[,] buffer, int num)
         {
             for (int s = 0; s < num; s++)
@@ -274,6 +279,7 @@ namespace BrainHatNetwork
 
         double RawDataOffsetTime;
         System.Diagnostics.Stopwatch RawDataProcessedLast;
+        
 
         /// <summary>
         /// Log raw data processing performance

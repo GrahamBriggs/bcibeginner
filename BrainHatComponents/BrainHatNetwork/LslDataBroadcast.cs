@@ -11,10 +11,17 @@ using System.Threading.Tasks;
 
 namespace BrainHatNetwork
 {
+    /// <summary>
+    /// Lab Streaming Layer Broadcast
+    /// Setup LSL outlet and run async task to write data to the outlet.
+    /// </summary>
     public class LSLDataBroadcast
     {
         public event LogEventDelegate Log;
 
+        /// <summary>
+        /// Setup LSL outlet for the specified board and start the broadcaster
+        /// </summary>
         public async Task StartLslBroadcastAsyc(int boardId, int sampleRate)
         {
             await StopLslBroadcastAsync();
@@ -25,11 +32,14 @@ namespace BrainHatNetwork
             SetupLslOutletForBoard();
 
             CancelTokenSource = new CancellationTokenSource();
-            RunTask = RunDataBroadcast(CancelTokenSource.Token);
+            RunTask = RunDataBroadcastAsync(CancelTokenSource.Token);
         }
 
 
-
+        /// <summary>
+        /// Stop the broadcaster and close the outlet
+        /// </summary>
+        /// <returns></returns>
         public async Task StopLslBroadcastAsync()
         {
             if (CancelTokenSource != null)
@@ -47,11 +57,19 @@ namespace BrainHatNetwork
             DataToBroadcast.RemoveAll();
         }
 
+
+        /// <summary>
+        /// Add data chunk to broadcast queue
+        /// </summary>
         public void AddData(IEnumerable<IBFSample> chunk)
         {
             DataToBroadcast.AddRange(chunk);
         }
 
+
+        /// <summary>
+        /// Add data sample to the broadcast queue
+        /// </summary>
         public void AddData(IBFSample sample)
         {
             DataToBroadcast.Enqueue(sample);
@@ -76,13 +94,18 @@ namespace BrainHatNetwork
         CancellationTokenSource CancelTokenSource;
         Task RunTask;
 
+        //  Broadcast queue
         ConcurrentQueue<IBFSample> DataToBroadcast { get; set; }
 
+        //  Stream info
         liblsl.StreamInfo StreamInfo { get; set; }
 
+
+        /// <summary>
+        /// Setup LSL outlet for the board
+        /// </summary>
         private void SetupLslOutletForBoard()
         {
-
             var numChannels = BoardShim.get_exg_channels(BoardId).Length;
             var numAccelChannels = BoardShim.get_accel_channels(BoardId).Length;
             var numOtherChannels = BoardShim.get_other_channels(BoardId).Length;
@@ -128,7 +151,9 @@ namespace BrainHatNetwork
 
 
 
-        //  Stream name for board
+       /// <summary>
+       /// Get stream name for this board ID
+       /// </summary>
         private string StreamName()
         {
             switch (BoardId)
@@ -145,7 +170,11 @@ namespace BrainHatNetwork
         }
 
 
-        private async Task RunDataBroadcast(CancellationToken cancelToken)
+        /// <summary>
+        /// Run the broadcast async task
+        /// Will spin continuously and write samples in the queue to the LSL outlet 
+        /// </summary>
+        private async Task RunDataBroadcastAsync(CancellationToken cancelToken)
         {
             try
             {
