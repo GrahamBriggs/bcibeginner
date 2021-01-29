@@ -153,7 +153,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Get the last 'seconds' worth of raw samples relative to the timestamp of the newest sample
         /// </summary>
-        public IEnumerable<IBFSample> GetRawChunk(double seconds)
+        public IBFSample[] GetRawChunk(double seconds)
         {
             return GetUnfilteredData(seconds)?.Reverse().ToArray();
         }
@@ -162,7 +162,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Get a range of raw samples starting at 'from' seconds, and ending at 'to' seconds, relative to the timestamp of the newest sample 
         /// </summary>
-        public IEnumerable<IBFSample> GetRawChunk(double from, double to)
+        public IBFSample[] GetRawChunk(double from, double to)
         {
             return GetUnfilteredData(from, to)?.Reverse().ToArray();
         }
@@ -171,7 +171,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Get a range of raw samples newer than since time
         /// </summary>
-        public IEnumerable<IBFSample> GetRawChunk(DateTimeOffset since)
+        public IBFSample[] GetRawChunk(DateTimeOffset since)
         {
             return GetUnfilteredData(since)?.Reverse().ToArray();
         }
@@ -180,18 +180,18 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Get the last 'seconds' of filtered data, relative to the timestamp of newest sample
         /// </summary>
-        public IEnumerable<IBFSample> GetFilteredChunk(double seconds)
+        public IBFSample[] GetFilteredChunk(double seconds)
         {
-            return SignalFilter.GetFilteredData(seconds);
+            return SignalFilter.GetFilteredData(seconds).ToArray();
         }
 
 
         /// <summary>
         /// Get the filtered samples newer than since time
         /// </summary>
-        public IEnumerable<IBFSample> GetFilteredChunk(DateTimeOffset since)
+        public IBFSample[] GetFilteredChunk(DateTimeOffset since)
         {
-            return SignalFilter.GetFilteredData(since);
+            return SignalFilter.GetFilteredData(since).ToArray();
         }
 
 

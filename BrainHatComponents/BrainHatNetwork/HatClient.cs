@@ -55,7 +55,7 @@ namespace BrainHatNetwork
 
         public DateTimeOffset TimeStamp { get; set; }
 
-        public bool ReceivingRaw => RawDataProcessedLast.ElapsedMilliseconds < 5000;
+        public bool ReceivingRaw => (RunTaskCancelTokenSource != null && TimeSinceLastSample.ElapsedMilliseconds < 5000);
 
         public double RawLatency => RawDataOffsetTime;
 
@@ -83,6 +83,7 @@ namespace BrainHatNetwork
             RunTaskCancelTokenSource = new CancellationTokenSource();
             ReadDataPortTask = RunReadDataPortAsync(RunTaskCancelTokenSource.Token);
             CountRecordsTimer.Start();
+            TimeSinceLastSample.Start();
 
             Log?.Invoke(this, new LogEventArgs(HostName, this, "StartMonitorAsync", $"Started HatServer for {HostName}.", LogLevel.INFO));
         }
@@ -146,15 +147,15 @@ namespace BrainHatNetwork
 
             StreamInfo = streamInfo;
 
-            var doc = XDocument.Parse(streamInfo.as_xml());
-
-            int.TryParse(doc.Element("info")?.Element("channel_count").Value, out var sampleSize);
+            int.TryParse(XDocument.Parse(streamInfo.as_xml()).Element("info")?.Element("channel_count").Value, out var sampleSize);
             SampleSize = sampleSize;
 
             CountRecordsTimer = new System.Diagnostics.Stopwatch();
-            RawDataProcessedLast = new System.Diagnostics.Stopwatch();
+            TimeSinceLastSample = new System.Diagnostics.Stopwatch();
 
             TimeStamp = DateTimeOffset.UtcNow;
+
+            RunTaskCancelTokenSource = null;
         }
 
         private StreamInfo StreamInfo { get; set; }
@@ -189,8 +190,7 @@ namespace BrainHatNetwork
 
                 double[,] buffer = new double[512, SampleSize];
                 double[] timestamps = new double[512];
-                IBFSample nextSample = null;
-
+            
                 sw.Restart();
 
                 //  spin until canceled
@@ -278,7 +278,7 @@ namespace BrainHatNetwork
         System.Diagnostics.Stopwatch CountRecordsTimer;
 
         double RawDataOffsetTime;
-        System.Diagnostics.Stopwatch RawDataProcessedLast;
+        System.Diagnostics.Stopwatch TimeSinceLastSample;
         
 
         /// <summary>
@@ -287,9 +287,8 @@ namespace BrainHatNetwork
         private void LogRawDataProcessingPerformance(IBFSample data)
         {
             RecordsCount++;
-            RawDataProcessedLast.Restart();
+            TimeSinceLastSample.Restart();
             RawDataOffsetTime = Math.Max(Math.Abs(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000 - data.TimeStamp), RawDataOffsetTime);
-
 
             if (CountRecordsTimer.ElapsedMilliseconds > 5000)
             {

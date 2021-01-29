@@ -37,11 +37,11 @@ namespace BrainflowInterfaces
 
 
     //  Get an enumerable of samples for the last number of seconds
-    public delegate IEnumerable<IBFSample> GetBFChunkSecondsDelegate(double seconds);
+    public delegate IBFSample[] GetBFChunkSecondsDelegate(double seconds);
 
-    public delegate IEnumerable<IBFSample> GetBFChunkSecondsRangeDelegate(double from, double to);
+    public delegate IBFSample[] GetBFChunkSecondsRangeDelegate(double from, double to);
 
-    public delegate IEnumerable<IBFSample> GetBFChunkSinceDelegate(DateTimeOffset since);
+    public delegate IBFSample[] GetBFChunkSinceDelegate(DateTimeOffset since);
 
     //  Get a single sample
     public delegate IBFSample GetBFSampleDelegate();
