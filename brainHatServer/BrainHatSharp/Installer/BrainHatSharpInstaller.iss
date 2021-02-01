@@ -28,26 +28,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\BrainHatSharp.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\Accord.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\Accord.dll.config"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\Accord.Math.Core.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\Accord.Math.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\BoardController32.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\brainflow.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\BrainflowDataProcessing.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\BrainHatNetwork.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\BrainHatSharp.exe.config"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\DataHandler32.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\GanglionLib32.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\log4net.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\LoggingInterfaces.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\MLModule32.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\neurosdk-x86.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\OpenBCIInterfaces.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\PlatformHelper.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\grahambriggs\source\tpc_bci\CSharp\BrainHatSharp\bin\Release\WiringPiWrapper.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\Release\BrainHatSharp.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\Release\*.config"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

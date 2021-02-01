@@ -88,7 +88,7 @@ namespace BrainHatSharp
 
                     StatusUpdate?.Invoke(this, new BrainHatStatusEventArgs(status) );
 
-                    await Task.Delay(10000);
+                    await Task.Delay(2000);
                 }
             }
             catch (OperationCanceledException)
@@ -114,9 +114,11 @@ namespace BrainHatSharp
                             switch (ni.Name)
                             {
                                 case "eth0":
+                                case "Ethernet":
                                     eth0 = ip.Address.ToString();
                                     break;
                                 case "wlan0":
+                                case "Wi-Fi":
                                     wlan0 = ip.Address.ToString();
                                     break;
                             }

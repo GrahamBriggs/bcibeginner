@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{5C02EC2A-67EE-4A99-A306-A52EAB1F0272}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>brainHatSharpGUI</RootNamespace>
+    <AssemblyName>brainHatSharpGUI</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\BrainHatComponents\BrainflowDataProcessing\BrainflowDataProcessing.csproj">
+      <Project>{391fa534-d9be-464b-aa3a-cbc7840ff9d5}</Project>
+      <Name>BrainflowDataProcessing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BrainHatComponents\BrainflowInterfaces\BrainflowInterfaces.csproj">
+      <Project>{340d4bb3-3ee2-4d12-8862-b34d37f5ac68}</Project>
+      <Name>BrainflowInterfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BrainHatComponents\brainflow\brainflow.csproj">
+      <Project>{c6c57e16-755b-42ff-a072-6d0a35098503}</Project>
+      <Name>brainflow</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BrainHatComponents\BrainHatNetwork\BrainHatNetwork.csproj">
+      <Project>{7799cb08-3f80-430d-b8e7-8abf83bc71d2}</Project>
+      <Name>BrainHatNetwork</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BrainHatComponents\liblsl\liblsl.csproj">
+      <Project>{4721756b-3baf-423a-8c35-15696d07a51f}</Project>
+      <Name>liblsl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BrainHatComponents\LoggingInterfaces\LoggingInterfaces.csproj">
+      <Project>{974ad5ad-919d-4045-b30c-027a51ac4f91}</Project>
+      <Name>LoggingInterfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BrainHatComponents\PlatformHelper\PlatformHelper.csproj">
+      <Project>{0efa34b4-9f21-4ff5-8a77-35b2e55a66da}</Project>
+      <Name>PlatformHelper</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BrainHatComponents\WiringPiWrapper\WiringPiWrapper.csproj">
+      <Project>{44164c3f-b228-4488-b027-ea9717e7e6e1}</Project>
+      <Name>WiringPiWrapper</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
