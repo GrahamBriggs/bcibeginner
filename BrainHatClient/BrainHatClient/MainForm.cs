@@ -111,10 +111,10 @@ namespace BrainHatClient
         private async void NewForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             var form = (Form1)sender;
-            var server = BrainHatServers.GetServer(form.ConnectedServer.HostName);
-            if (server != null)
+            var client = BrainHatServers.GetHatClient(form.ConnectedServer.HostName);
+            if (client != null)
             {
-                await server.StopReadingFromLslAsync();
+                await client.StopReadingFromLslAsync();
             }
             OpenForms.TryRemove(form.ConnectedServer.HostName, out var discard);
         }
@@ -161,8 +161,8 @@ namespace BrainHatClient
 
                 case HatConnectionState.Lost:
                     {
-                        var server = BrainHatServers.GetServer(e.HostName);
-                        if (server != null)
+                        var client = BrainHatServers.GetHatClient(e.HostName);
+                        if (client != null)
                         {
                             if (OpenForms.ContainsKey(e.HostName))
                             {

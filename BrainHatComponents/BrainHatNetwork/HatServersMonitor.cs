@@ -84,7 +84,7 @@ namespace BrainHatNetwork
         /// <summary>
         /// Get the client object for a specified server
         /// </summary>
-        public HatClient GetServer(string hostName)
+        public HatClient GetHatClient(string hostName)
         {
             if (DiscoveredServers.ContainsKey(hostName))
             {
