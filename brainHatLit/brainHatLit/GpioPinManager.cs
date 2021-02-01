@@ -147,8 +147,6 @@ namespace brainHatLit
                 int.TryParse(xdoc.Element("Config")?.Element("Pins")?.Element("PinLightStringB1").Value, out PinLightStringB1);
 
                 int.TryParse(xdoc.Element("Config")?.Element("Pins")?.Element("PinHapticMotor").Value, out PinHapticMotor);
-
-                Console.WriteLine($"Done loading from config file {PinHapticMotor}.");
             }
             catch (Exception e)
             {
@@ -159,70 +157,6 @@ namespace brainHatLit
             return hostName;
         }
 
-
-        public static void SetupPinsForHost()
-        {
-            var hostName = BrainHatNetwork.NetworkUtilities.GetHostName();
-            switch (hostName)
-            {
-                case "brainHat0":
-                    {
-                        Console.WriteLine("Setting pins for brainHat0");
-
-                        PinLeftRising = 40;
-                        PinLeftFalling = 38;
-                        PinLeftBlink = 36;
-
-                        PinRightRising = 7;
-                        PinRightFalling = 11;
-                        PinRightBlink = 13;
-
-                        PinLightStringA5 = 29;
-                        PinLightStringA4 = 31;
-                        PinLightStringA3 = 32;
-                        PinLightStringA2 = 33;
-                        PinLightStringA1 = 35;
-
-                        PinLightStringB5 = 26;
-                        PinLightStringB4 = 23;
-                        PinLightStringB3 = 24;
-                        PinLightStringB2 = 21;
-                        PinLightStringB1 = 19;
-
-                        PinHapticMotor = 16;
-
-                    }
-                    break;
-
-                case "brainHelmet":
-                    {
-                        PinRightRising = 37;
-                        PinRightFalling = 38;
-                        PinRightBlink = 36;
-
-                        PinLeftRising = 0;
-                        PinLeftFalling = 0;
-                        PinLeftBlink = 0;
-
-                        PinLightStringA5 = 35;
-                        PinLightStringA4 = 32;
-                        PinLightStringA3 = 31;
-                        PinLightStringA2 = 29;
-                        PinLightStringA1 = 33;
-
-                        PinLightStringB5 = 23;
-                        PinLightStringB4 = 21;
-                        PinLightStringB3 = 24;
-                        PinLightStringB2 = 22;
-                        PinLightStringB1 = 26;
-
-                        PinHapticMotor = 12;
-
-                    }
-                    break;
-            }
-
-        }
 
 
         public static void AllOff()

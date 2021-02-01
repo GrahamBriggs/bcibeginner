@@ -20,6 +20,8 @@ namespace brainHatLit
         public Form1()
         {
             InitializeComponent();
+
+            FormClosing += OnFormClosing;
             PlatformHelper.PlatformHelper.GetLibraryEnvironment();
 
             HostName = GpioPinManager.LoadFromConfigFile();
@@ -27,7 +29,7 @@ namespace brainHatLit
 
             textBoxHostName.Text = HostName;
             ConnectToServer = false;
-            ConnectedServer = null;
+            ActiveClient = null;
 
             EnableMotor = true;
             EnableLights = true;
@@ -62,6 +64,13 @@ namespace brainHatLit
 
         }
 
+        private  async void OnFormClosing(object sender, FormClosingEventArgs e)
+        {
+            await GpioPinManager.LightStringMaster.Stop();
+           
+            GpioPinManager.AllOff();
+        }
+
         private async void OnHatStatusUpdate(object sender, BrainHatStatusEventArgs e)
         {
             if (ConnectToServer && ! IsConnected)
@@ -86,8 +95,8 @@ namespace brainHatLit
         AlphaWaveDetector SeekingAlpha { get; set; }
 
         bool ConnectToServer { get; set; }
-        HatClient ConnectedServer { get; set; }
-        bool IsConnected => ConnectedServer != null;
+        HatClient ActiveClient { get; set; }
+        bool IsConnected => ActiveClient != null;
 
         string HostName { get; set; }
 
@@ -104,7 +113,7 @@ namespace brainHatLit
         private async Task StartLightSequence()
         {
             if ( EnableLights )
-                await GpioPinManager.LightStringMaster.StartSequenceAsync(222, 111, true);
+                await GpioPinManager.LightStringMaster.StartSequenceAsync(444, 222, true);
         }
 
         async void OnHatConnectionChanged(object sender, HatConnectionEventArgs e)
@@ -152,15 +161,15 @@ namespace brainHatLit
 
         private bool StartMonitorForServer(BrainHatServerStatus status)
         {
-            ConnectedServer = ServersMonitor.GetServer(HostName);
-            if (ConnectedServer != null)
+            ActiveClient = ServersMonitor.GetHatClient(HostName);
+            if (ActiveClient != null)
             {
                 DataProcessor = new BrainflowDataProcessor(HostName, status.BoardId, status.SampleRate);
                 SetBandPowerCalculator();
 
-                BlinkDetector.GetData = DataProcessor.GetRawData;
+                BlinkDetector.GetData = DataProcessor.GetRawChunk;
                 BlinkDetector.GetStdDevMedians = DataProcessor.GetStdDevianMedians;
-                ConnectedServer.RawDataReceived += DataProcessor.AddDataToProcessor;
+                ActiveClient.RawDataReceived += DataProcessor.AddDataToProcessor;
                 SeekingAlpha.GetBandPower = DataProcessor.GetBandPower;
 
                 DataProcessor.NewSample += BlinkDetector.OnNewSample;
@@ -169,7 +178,7 @@ namespace brainHatLit
                 {
                     await DataProcessor.StartDataProcessorAsync();
                     await DataProcessor.StartBandPowerMonitorAsync();
-                    await ConnectedServer.StartReadingFromLslAsync();
+                    await ActiveClient.StartReadingFromLslAsync();
                 });
 
                 return true;
@@ -180,12 +189,12 @@ namespace brainHatLit
 
         private async Task StopMonitorForServer()
         {
-            if (ConnectedServer != null)
+            if (ActiveClient != null)
             {
-                ConnectedServer.RawDataReceived -= DataProcessor.AddDataToProcessor;
-                await ConnectedServer.StopReadingFromLslAsync();
+                ActiveClient.RawDataReceived -= DataProcessor.AddDataToProcessor;
+                await ActiveClient.StopReadingFromLslAsync();
             }
-            ConnectedServer = null;
+            ActiveClient = null;
             
             if (DataProcessor != null)
             {
@@ -351,6 +360,7 @@ namespace brainHatLit
             }
             else
             {
+                await GpioPinManager.LightStringMaster.Stop();
                 GpioPinManager.AllLightsOff();
             }
         }

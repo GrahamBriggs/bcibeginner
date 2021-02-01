@@ -190,7 +190,7 @@ namespace brainHatLit
                     }
                     if (BiDirectionalSequence)
                     {
-                        for (int i = Pins.Count - 2; i <= 0; i--)
+                        for (int i = Pins.Count - 2; i >= 1; i--)
                         {
                             DigitalWrite(Pins[i], WiringPiPinValue.High);
                             if (SlaveString != null)
