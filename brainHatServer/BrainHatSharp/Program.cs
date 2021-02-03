@@ -218,7 +218,7 @@ namespace BrainHatSharp
             }
             catch (Exception ex)
             {
-                Logger.AddLog(new LogEventArgs(main, "OnBrainflowBoardReadData", ex, LogLevel.ERROR));
+                Logger.AddLog(new LogEventArgs(main, "OnStatusUpdate", ex, LogLevel.ERROR));
             }
         }
 
