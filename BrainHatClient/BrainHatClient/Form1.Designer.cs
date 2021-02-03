@@ -43,13 +43,13 @@
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.labelAcelData = new System.Windows.Forms.Label();
             this.groupBoxBlinkDetector = new System.Windows.Forms.GroupBox();
+            this.checkBoxMuteBeeper = new System.Windows.Forms.CheckBox();
             this.labelAlpha = new System.Windows.Forms.Label();
             this.labelDataProcessing = new System.Windows.Forms.Label();
             this.buttonResetBlinkCounter = new System.Windows.Forms.Button();
             this.labelBlinkDetector = new System.Windows.Forms.Label();
             this.groupBoxOtherData = new System.Windows.Forms.GroupBox();
             this.labelOtherData = new System.Windows.Forms.Label();
-            this.checkBoxMuteBeeper = new System.Windows.Forms.CheckBox();
             this.groupBoxLogging.SuspendLayout();
             this.groupBoxExgChannels.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -116,6 +116,7 @@
             // 
             this.listViewLogs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.listViewLogs.BackColor = System.Drawing.Color.Black;
             this.listViewLogs.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.listViewLogs.HideSelection = false;
             this.listViewLogs.Location = new System.Drawing.Point(6, 12);
@@ -216,6 +217,16 @@
             this.groupBoxBlinkDetector.TabStop = false;
             this.groupBoxBlinkDetector.Text = "Data Processing";
             // 
+            // checkBoxMuteBeeper
+            // 
+            this.checkBoxMuteBeeper.AutoSize = true;
+            this.checkBoxMuteBeeper.Location = new System.Drawing.Point(274, 30);
+            this.checkBoxMuteBeeper.Name = "checkBoxMuteBeeper";
+            this.checkBoxMuteBeeper.Size = new System.Drawing.Size(49, 17);
+            this.checkBoxMuteBeeper.TabIndex = 4;
+            this.checkBoxMuteBeeper.Text = "mute";
+            this.checkBoxMuteBeeper.UseVisualStyleBackColor = true;
+            // 
             // labelAlpha
             // 
             this.labelAlpha.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -285,16 +296,6 @@
             this.labelOtherData.Size = new System.Drawing.Size(98, 17);
             this.labelOtherData.TabIndex = 1;
             this.labelOtherData.Text = "Other Data";
-            // 
-            // checkBoxMuteBeeper
-            // 
-            this.checkBoxMuteBeeper.AutoSize = true;
-            this.checkBoxMuteBeeper.Location = new System.Drawing.Point(274, 30);
-            this.checkBoxMuteBeeper.Name = "checkBoxMuteBeeper";
-            this.checkBoxMuteBeeper.Size = new System.Drawing.Size(49, 17);
-            this.checkBoxMuteBeeper.TabIndex = 4;
-            this.checkBoxMuteBeeper.Text = "mute";
-            this.checkBoxMuteBeeper.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 

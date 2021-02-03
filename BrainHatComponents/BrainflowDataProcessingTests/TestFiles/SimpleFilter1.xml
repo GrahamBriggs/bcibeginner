@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<brainHatConfig>
+  <Filters>
+    <Filter>
+      <Name>bandpass1</Name>
+      <Functions>
+        <Function Name="perform_bandpass">
+          <Parameter Name="data" Value="" />
+          <Parameter Name="sampling_rate" Value="0" />
+          <Parameter Name="center_freq" Value="15.0" />
+          <Parameter Name ="band_width" Value="5.0" />
+          <Parameter Name="order" Value="2" />
+          <Parameter Name="filter_type" Value="0" />
+          <Parameter Name="ripple" Value="0.0" />
+        </Function>
+      </Functions>
+    </Filter>
+    <Filter>
+      <Name>twoStage</Name>
+      <Functions>
+        <Function Name="perform_bandpass">
+          <Parameter Name="data" Value="" />
+          <Parameter Name="sampling_rate" Value="0" />
+          <Parameter Name="center_freq" Value="15.0" />
+          <Parameter Name ="band_width" Value="5.0" />
+          <Parameter Name="order" Value="2" />
+          <Parameter Name="filter_type" Value="0" />
+          <Parameter Name="ripple" Value="0.0" />
+        </Function>
+        <Function Name="perform_bandstop">
+          <Parameter Name="data" Value="" />
+          <Parameter Name="sampling_rate" Value="0" />
+          <Parameter Name="center_freq" Value="50.0" />
+          <Parameter Name ="band_width" Value="1.0" />
+          <Parameter Name="order" Value="6" />
+          <Parameter Name="filter_type" Value="1" />
+          <Parameter Name="ripple" Value="1.0" />
+        </Function>
+      </Functions>
+    </Filter>
+  </Filters>
+</brainHatConfig>

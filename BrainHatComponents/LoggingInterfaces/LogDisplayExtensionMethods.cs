@@ -1,17 +1,14 @@
-﻿using LoggingInterfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace BrainHatClient
+namespace LoggingInterfaces
 {
     /// <summary>
     /// Logging object extension methods
     /// </summary>
-    public static class LoggingExtensionMethods
+    public static class LogDisplayExtensionMethods
     {
         /// <summary>
         /// Log Colour
@@ -57,19 +54,19 @@ namespace BrainHatClient
                 switch (level)
                 {
                     case LogLevel.VERBOSE:
-                        return Color.FromArgb(50,50,50);
+                        return Color.FromArgb(50, 50, 50);
 
                     case LogLevel.TRACE:
-                        return Color.FromArgb(50,50,50);
+                        return Color.FromArgb(50, 50, 50);
 
                     case LogLevel.DEBUG:
-                        return Color.FromArgb(50,50,50);
+                        return Color.FromArgb(50, 50, 50);
 
                     case LogLevel.INFO:
-                        return Color.FromArgb(50,50,50);
+                        return Color.FromArgb(50, 50, 50);
 
                     case LogLevel.WARN:
-                        return Color.FromArgb(50,50,50);
+                        return Color.FromArgb(50, 50, 50);
 
                     case LogLevel.ERROR:
                         return Color.IndianRed;

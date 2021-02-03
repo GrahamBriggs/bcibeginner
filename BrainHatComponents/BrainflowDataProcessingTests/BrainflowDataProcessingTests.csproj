@@ -40,12 +40,15 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BlinkDetector.cs" />
     <Compile Include="BlinkWink10.cs" />
     <Compile Include="BlinkWink5.cs" />
     <Compile Include="DataParsing.cs" />
+    <Compile Include="MethodInfoTests.cs" />
     <Compile Include="NewBlinkTest.cs" />
     <Compile Include="SeekingAlpha.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -77,11 +80,52 @@
       <Project>{7bc8716d-6b6c-4617-a591-3a9d79357131}</Project>
       <Name>BrainflowInterfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\brainflow\brainflow.csproj">
+      <Project>{19d4357f-b416-40d3-99cd-2fcaf56529f6}</Project>
+      <Name>brainflow</Name>
+    </ProjectReference>
     <ProjectReference Include="..\LoggingInterfaces\LoggingInterfaces.csproj">
       <Project>{acffab45-aa43-4959-8e2d-6ccab67e005e}</Project>
       <Name>LoggingInterfaces</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\BrainHatClient\BrainHatClient\Config\DefaultFilterConfig.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TestFiles\blinkWink10_082530.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\BlinkWink5_20201012-153647.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\HardBlinks_20201012-155011.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\HeadTurnAndShot_20201012-154605.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\NewBlinkTest.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\NormalBlinks_20201012-154515.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\SeekingAlpha_20201012-155132.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent Condition=" '$(OS)' != 'Unix' ">
+	echo Copying libraries for $(Platform)
+if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\lib\brainflow\x86\*.dll $(ProjectDir)$(OutDir) /y
+if $(Platform) == Win32 xcopy $(ProjectDir)..\..\lib\brainflow\x86\*.dll $(ProjectDir)$(OutDir) /y
+if $(Platform) == x64 xcopy $(ProjectDir)..\..\lib\brainflow\x64\*.dll $(ProjectDir)$(OutDir) /y
+if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\lib\lsl\x86\bin\lsl* $(ProjectDir)$(OutDir) /y
+if $(Platform) == Win32 xcopy $(ProjectDir)..\..\lib\lsl\x86\bin\lsl* $(ProjectDir)$(OutDir) /y
+if $(Platform) == x64 xcopy $(ProjectDir)..\..\lib\lsl\x64\bin\lsl* $(ProjectDir)$(OutDir) /y
+</PostBuildEvent>
+  </PropertyGroup>
 </Project>

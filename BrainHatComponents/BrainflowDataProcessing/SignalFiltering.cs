@@ -47,7 +47,6 @@ namespace BrainflowDataProcessing
             Log?.Invoke(this, new LogEventArgs(Name, this, "StartMonitorAsync", $"Started signal filtering for {Name}.", LogLevel.INFO));
         }
 
-       
 
         /// <summary>
         /// Stop the data processor async task
@@ -70,13 +69,13 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Get some number of seconds of the filtered data
         /// </summary>
-        public IEnumerable<IBFSample> GetFilteredData(double seconds)
+        public IBFSample[] GetFilteredData(double seconds)
         {
             if ( FilteredData.Count > 0 )
             {
                 var first = FilteredData.First().TimeStamp;
                 var filtered = FilteredData.Where(x => (first - x.TimeStamp) < seconds);
-                return filtered;
+                return filtered.ToArray();
             }
 
             return null;
@@ -86,12 +85,12 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Get filtered data newer than since time
         /// </summary>
-        public IEnumerable<IBFSample> GetFilteredData(DateTimeOffset since)
+        public IBFSample[] GetFilteredData(DateTimeOffset since)
         {
             if (FilteredData.Count > 0)
             {
                 var filtered = FilteredData.Where(x => x.ObservationTime > since);
-                return filtered;
+                return filtered.ToArray();
             }
 
             return null;
@@ -108,12 +107,14 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Constructor
         /// </summary>
-        public SignalFiltering(string name, int boardId, int sampleRate)
+        public SignalFiltering(string name, int boardId, int sampleRate, SignalFilter filter)
         {
             BoardId = boardId;
             NumberOfChannels = BoardShim.get_exg_channels(BoardId).Length;
             SampleRate = sampleRate;
             Name = name;
+
+            Filter = filter;
 
             PeriodMilliseconds = 50;   //  default 20 Hz
 
@@ -130,6 +131,8 @@ namespace BrainflowDataProcessing
         public int NumberOfChannels { get; protected set; }
         public int SampleRate { get; protected set; }
         public string Name { get; protected set; }
+
+        SignalFilter Filter;
 
         //  Filtered Data Collection
         public ConcurrentQueue<IBFSample> FilteredData { get; protected set; }
@@ -159,7 +162,6 @@ namespace BrainflowDataProcessing
                     {
                         swDetect.Restart();
                         FilterSignal();
-
                     }
 
                     if (swReport.ElapsedMilliseconds >= 30000)
@@ -201,11 +203,7 @@ namespace BrainflowDataProcessing
 
                 for (int i = 0; i < NumberOfChannels; i++)
                 {
-                    //var filtered = DataFilter.perform_rolling_filter(data.GetExgDataForChannel(i), 3, (int)AggOperations.EACH);
-                    // var filtered = DataFilter.perform_bandpass(data.GetExgDataForChannel(i), SampleRate, 15, 30, 2, (int)FilterTypes.BESSEL, 0.0);
-                    //var filtered = DataFilter.perform_bandstop(data.GetExgDataForChannel(i), SampleRate, 50.0, 1.0, 6, (int)FilterTypes.CHEBYSHEV_TYPE_1, 1.0);
-                    var samples = rawSamples.GetExgDataForChannel(i);
-                    var filtered = DataFilter.perform_bandpass(samples, SampleRate, 15.0, 5.0, 2, (int)FilterTypes.BUTTERWORTH, 0.0);
+                    var filtered = Filter.ApplyFilter(rawSamples.GetExgDataForChannel(i), SampleRate);
 
                     for (int j = 0; j < rawSamples.Count(); j++)
                     {

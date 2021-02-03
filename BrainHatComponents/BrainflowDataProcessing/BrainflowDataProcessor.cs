@@ -56,7 +56,7 @@ namespace BrainflowDataProcessing
 
             if (CancelTokenSource != null)
             {
-                await SignalFilter.StopSignalFilteringAsync();
+                await StopSignalFilteringAsync();
                 await BandPowers.StopMonitorAsync();
 
                 CancelTokenSource.Cancel();
@@ -71,28 +71,80 @@ namespace BrainflowDataProcessing
             }
         }
 
+        public static void LoadFiltersFile(string filterFilePath)
+        {
+            Filters.LoadSignalFilters(filterFilePath);
+        }
+
+
+        public static IEnumerable<string> GetFilterNames()
+        {
+            return Filters.GetFilterNames();
+        }
+
+
 
         /// <summary>
         /// Start the signal filtering task
         /// </summary>
-        public async Task StartSignalFilteringAsync()
+        public async Task<SignalFiltering> StartSignalFilteringAsync(string filterName)
         {
             if ( CancelTokenSource == null )
             {
                 Log?.Invoke(this, new LogEventArgs(Name, this, "StartSignalFiltering", $"You must start the processor first.", LogLevel.ERROR));
-                return;
+                return null;
             }
 
-            await SignalFilter.StartSignalFilteringAsync();
+            if (ActiveFilters.ContainsKey(filterName))
+                return ActiveFilters[filterName];
+
+            if ( Filters.GetFilter(filterName) != null )
+            {
+                var newFilter = new SignalFiltering(Name, BoardId, SampleRate, Filters.GetFilter(filterName))
+                {
+                    FilterBufferLength = RealTimeBufferLengthSeconds,
+                };
+
+                newFilter.GetRawChunk = GetRawChunk;
+                newFilter.Log += OnComponentLog;
+
+                ActiveFilters.Add(filterName, newFilter);
+                await newFilter.StartSignalFilteringAsync();
+                return newFilter;
+            }
+
+            return null;
         }
 
 
         /// <summary>
-        /// Stop signal filtering task
+        /// Stop all signal filtering tasks
         /// </summary>
         public async Task StopSignalFilteringAsync()
         {
-            await SignalFilter.StopSignalFilteringAsync();
+            foreach (var nextFilter in ActiveFilters)
+            {
+                await nextFilter.Value.StopSignalFilteringAsync();
+                nextFilter.Value.Log -= OnComponentLog;
+                nextFilter.Value.GetRawChunk -= GetRawChunk;
+            }
+            ActiveFilters.Clear();
+        }
+
+
+        /// <summary>
+        /// Stop a specific signal filter task
+        /// </summary>
+        public async Task StopSignalFiltering(string filterName)
+        {
+            if (ActiveFilters.ContainsKey(filterName))
+            {
+                await ActiveFilters[filterName].StopSignalFilteringAsync();
+                ActiveFilters[filterName].Log -= OnComponentLog;
+                ActiveFilters[filterName].GetRawChunk -= GetRawChunk;
+            }
+
+            ActiveFilters.Remove(filterName);
         }
 
 
@@ -177,23 +229,7 @@ namespace BrainflowDataProcessing
         }
 
 
-        /// <summary>
-        /// Get the last 'seconds' of filtered data, relative to the timestamp of newest sample
-        /// </summary>
-        public IBFSample[] GetFilteredChunk(double seconds)
-        {
-            return SignalFilter.GetFilteredData(seconds).ToArray();
-        }
-
-
-        /// <summary>
-        /// Get the filtered samples newer than since time
-        /// </summary>
-        public IBFSample[] GetFilteredChunk(DateTimeOffset since)
-        {
-            return SignalFilter.GetFilteredData(since).ToArray();
-        }
-
+        
 
 
         /// <summary>
@@ -243,16 +279,13 @@ namespace BrainflowDataProcessing
             BandPowers.GetRawChunk = GetRawChunk;
             BandPowers.Log += OnComponentLog;
 
-            RealTimeBufferLengthSeconds = 10;
-
-            SignalFilter = new SignalFiltering(name, boardId, sampleRate)
-            {
-                FilterBufferLength = RealTimeBufferLengthSeconds,
-            };
+            RealTimeBufferLengthSeconds = 30;
 
 
-            SignalFilter.GetRawChunk = GetRawChunk;
-            SignalFilter.Log += OnComponentLog;
+            ActiveFilters = new Dictionary<string, SignalFiltering>();
+
+
+            
 
             TimeTagFirstSample = -1;
 
@@ -297,14 +330,18 @@ namespace BrainflowDataProcessing
 
         //  Band power monitor
         protected BandPowerMonitor BandPowers { get; private set; }
-        protected SignalFiltering SignalFilter { get; private set; }
+
+        //  Signal filtering
+        Dictionary<string,SignalFiltering> ActiveFilters { get; set; }
+        
+        public static SignalFilters Filters = new SignalFilters();
 
         double TimeTagFirstSample { get; set; }
 
 
         //  Performance testing and monitoring
         ConcurrentQueue<double> ProcessingTimesQueue { get; set; }
-        private int LastSampleIndex { get; set; }
+        private int LastSampleIndex;
 
 
 
@@ -539,22 +576,22 @@ namespace BrainflowDataProcessing
             }
         }
 
-        int SampleIndexDifference(int nextIndex)
+        public static int SampleIndexDifference(int lastSampleIndex, int nextIndex)
         {
             int difference = -1;
-            if (Math.Abs((LastSampleIndex - nextIndex) - 255) < 0.1)
+            if (Math.Abs((lastSampleIndex - nextIndex) - 255) < 0.1)
             {
                 difference = 1;
             }
-            else if (nextIndex < LastSampleIndex)
+            else if (nextIndex < lastSampleIndex)
             {
-                difference = (int)nextIndex + (255 - (int)LastSampleIndex);
+                difference = (int)nextIndex + (255 - (int)lastSampleIndex);
             }
             else
             {
-                difference = nextIndex - LastSampleIndex;
+                difference = nextIndex - lastSampleIndex;
             }
-            LastSampleIndex = nextIndex;
+            
             return difference;
         }
 
@@ -567,7 +604,10 @@ namespace BrainflowDataProcessing
         /// </summary>
         private void InspectSampleIndex(IBFSample sample)
         {
-            var difference = SampleIndexDifference((int)(sample.SampleIndex));
+            var nextIndex = (int)(sample.SampleIndex);
+            var difference = SampleIndexDifference( LastSampleIndex, nextIndex );
+            LastSampleIndex = nextIndex;
+
 
             switch (BoardId)
             {

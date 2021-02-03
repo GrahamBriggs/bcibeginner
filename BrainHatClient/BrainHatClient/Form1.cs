@@ -74,11 +74,13 @@ namespace BrainHatClient
         /// </summary>
         private async void Start()
         {
+            DataProcessor.LoadFiltersFile("./Config/DefaultFilterConfig.xml");
+
             await Task.Run(async () =>
            {
                await DataProcessor.StartDataProcessorAsync();
                await DataProcessor.StartBandPowerMonitorAsync();
-               await DataProcessor.StartSignalFilteringAsync();
+               await DataProcessor.StartSignalFilteringAsync("bandpass1");
                await AlphaDetector.StartDetectorAsync();
                await ConnectedServer.StartReadingFromLslAsync();
            });
