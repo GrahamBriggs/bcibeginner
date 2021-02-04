@@ -76,6 +76,11 @@ namespace BrainflowDataProcessing
             Filters.LoadSignalFilters(filterFilePath);
         }
 
+        public static void LoadDefaultFilter()
+        {
+            Filters.LoadDefaultFilter();
+        }
+
 
         public static IEnumerable<string> GetFilterNames()
         {
@@ -284,8 +289,8 @@ namespace BrainflowDataProcessing
 
             ActiveFilters = new Dictionary<string, SignalFiltering>();
 
-
-            
+            if (Filters.GetFilterNames().Count() == 0)
+                Filters.LoadDefaultFilter();
 
             TimeTagFirstSample = -1;
 

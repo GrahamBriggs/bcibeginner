@@ -40,6 +40,8 @@ namespace BrainflowDataProcessing
         {
             await StopSignalFilteringAsync();
 
+            FilteredData.RemoveAll();
+
             // fire off the run tasks
             CancelTokenSource = new CancellationTokenSource();
             MonitorRunTask = RunSignalFilteringAsync(CancelTokenSource.Token);
@@ -116,7 +118,7 @@ namespace BrainflowDataProcessing
 
             Filter = filter;
 
-            PeriodMilliseconds = 50;   //  default 20 Hz
+            PeriodMilliseconds = 33;   
 
             FilterBufferLength = 10;
 
@@ -152,8 +154,10 @@ namespace BrainflowDataProcessing
             {
                 var swDetect = new System.Diagnostics.Stopwatch();
                 var swReport = new System.Diagnostics.Stopwatch();
+                var swClean = new System.Diagnostics.Stopwatch();
                 swDetect.Start();
                 swReport.Start();
+                swClean.Start();
                 while (!cancelToken.IsCancellationRequested)
                 {
                     await Task.Delay(1);
@@ -164,7 +168,19 @@ namespace BrainflowDataProcessing
                         FilterSignal();
                     }
 
-                    if (swReport.ElapsedMilliseconds >= 30000)
+                    if ( swClean.ElapsedMilliseconds >= 1000)
+                    {
+                        var newestSample = FilteredData.LastOrDefault();
+                        if ( newestSample != null )
+                        {
+                            while (newestSample.TimeStamp - FilteredData.First().TimeStamp > FilterBufferLength)
+                                FilteredData.TryDequeue(out var discard);
+                        }
+
+                        swClean.Restart();
+                    }
+
+                    if (swReport.ElapsedMilliseconds >= 5000)
                     {
                         if (ProcessingTimes.Count > 0)
                         {
@@ -191,7 +207,7 @@ namespace BrainflowDataProcessing
                 var sw = new System.Diagnostics.Stopwatch();
                 sw.Start();
 
-                var rawSamples = GetRawChunk(FilterBufferLength);
+                var rawSamples = GetRawChunk(3);
 
                 if (rawSamples == null || rawSamples.Count() == 0)
                 {
@@ -217,8 +233,9 @@ namespace BrainflowDataProcessing
                     filteredSamples[i].TimeStamp = startTime + (1.0 / SampleRate * i);
 
 
-                FilteredData.RemoveAll();
-                FilteredData.AddRange(filteredSamples);
+                var oldestSample = FilteredData.LastOrDefault()?.TimeStamp ?? filteredSamples[0].TimeStamp;
+
+                FilteredData.AddRange(filteredSamples.Where(x=>x.TimeStamp > oldestSample));
 
                 sw.Stop();
                 ProcessingTimes.Enqueue(sw.Elapsed.TotalSeconds);

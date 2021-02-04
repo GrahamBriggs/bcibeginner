@@ -128,6 +128,26 @@ namespace BrainflowDataProcessing
             }
         }
 
+        public void LoadDefaultFilter()
+        {
+            var newFilter = new SignalFilter("bandpass");
+            MethodInfo mi = typeof(DataFilter).GetMethod("perform_bandpass", BindingFlags.Public | BindingFlags.Static);
+            var paramDict = new Dictionary<string, string>
+            {
+                ["data"] = "",
+                ["sampling_rate"] = "0",
+                ["center_freq"] = "15.0",
+                ["band_width"] = "5.0",
+                ["order"] = "2",
+                ["filter_type"] = "0",
+                ["ripple"] = "0.0"
+            };
+
+            //  create object array from parameters, casting to proper type
+            object[] parameters = mi.GetParameters().Select(p => paramDict[p.Name].Length > 0 ? Convert.ChangeType(paramDict[p.Name], p.ParameterType) : null).ToArray();
+            newFilter.AddFunction(typeof(DataFilter).Assembly, mi, parameters);
+            Filters.Add(newFilter.Name, newFilter);
+        }
 
         /// <summary>
         /// Get collection of all filter names
