@@ -154,6 +154,14 @@ namespace BrainflowDataProcessing
 
 
         /// <summary>
+        /// Get a list of the running filters
+        /// </summary>
+        public IEnumerable<string> GetRunningSignalFilterNames()
+        {
+            return ActiveFilters.Keys;
+        }
+
+        /// <summary>
         /// Start band power monitor task
         /// </summary>
         public async Task StartBandPowerMonitorAsync()

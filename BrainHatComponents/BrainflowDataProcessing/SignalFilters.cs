@@ -88,7 +88,13 @@ namespace BrainflowDataProcessing
                 {
                     var doc = XDocument.Load(reader);
 
-                    foreach (var nextFilter in doc.Element("brainHatConfig")?.Element("Filters")?.Elements("Filter"))
+                    var filters = doc.Element("brainHatConfig")?.Element("Filters")?.Elements("Filter");
+                    if ( filters == null )
+                    {
+                        throw new Exception("Document does not hae a <Filters> element.");
+                    }
+
+                    foreach (var nextFilter in filters )
                     {
                         var filterName = nextFilter.Element("Name")?.Value;
                         if ( filterName == null || Filters.ContainsKey(filterName) )
@@ -97,6 +103,12 @@ namespace BrainflowDataProcessing
                         }
 
                         var newFilter = new SignalFilter(filterName);
+
+                        var functions = nextFilter.Element("Functions")?.Elements("Function");
+                        if ( functions == null )
+                        {
+                            throw new Exception($"Filter {filterName} does not have any functions.");
+                        }
 
                         foreach (var nextFunction in nextFilter.Element("Functions")?.Elements("Function"))
                         {
@@ -107,7 +119,7 @@ namespace BrainflowDataProcessing
 
                             if (mi == null)
                             {
-                                throw new Exception("Filter specifies an invalid function");
+                                throw new Exception($"Filter {filterName} specifies an invalid function");
                             }
 
                             //  get dictionary of parameters from XML 
@@ -146,6 +158,8 @@ namespace BrainflowDataProcessing
             //  create object array from parameters, casting to proper type
             object[] parameters = mi.GetParameters().Select(p => paramDict[p.Name].Length > 0 ? Convert.ChangeType(paramDict[p.Name], p.ParameterType) : null).ToArray();
             newFilter.AddFunction(typeof(DataFilter).Assembly, mi, parameters);
+
+            Filters.Clear();
             Filters.Add(newFilter.Name, newFilter);
         }
 
