@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -90,6 +91,7 @@ namespace brainHatSharpGUI
         {
             NotifyAddedLog = new SemaphoreSlim(0);
             LogsQueue = new ConcurrentQueue<LogEventArgs>();
+            LogBuffer = new ConcurrentQueue<LogEventArgs>();
         }
 
 
@@ -100,6 +102,9 @@ namespace brainHatSharpGUI
         //  Queue
         protected SemaphoreSlim NotifyAddedLog { get; set; }
         protected ConcurrentQueue<LogEventArgs> LogsQueue { get; set; }
+
+        //  Buffer
+        public ConcurrentQueue<LogEventArgs> LogBuffer { get; protected set; }
 
 
         /// <summary>
@@ -127,15 +132,21 @@ namespace brainHatSharpGUI
         {
             try
             {
-                using (var udpClient = new UdpClient(BrainHatNetworkAddresses.LogPort))
+                using (var udpServer = new UdpClient())
                 {
+                    cancelToken.Register(() => { try { udpServer.Close(); } catch { } });
+
+                    IPEndPoint localpt = new IPEndPoint(IPAddress.Any, BrainHatNetworkAddresses.LogPort);
+                    udpServer.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                    //udpServer.Client.Bind(localpt);
+
                     try
                     {
                         while (!cancelToken.IsCancellationRequested)
                         {
                             await NotifyAddedLog.WaitAsync(cancelToken);
 
-                            await ProcessLogs(udpClient);
+                            await ProcessLogs(udpServer);
                         }
                     }
                     catch (OperationCanceledException)
@@ -185,7 +196,12 @@ namespace brainHatSharpGUI
                         var sendBytes = Encoding.UTF8.GetBytes($"log?sender={NetworkUtilities.GetHostName()}&log={JsonConvert.SerializeObject(new RemoteLogEventArgs(nextLog))}\n");
                         await udpClient.SendAsync(sendBytes, sendBytes.Length, BrainHatNetworkAddresses.MulticastGroupAddress, BrainHatNetworkAddresses.LogPort);
                     }
+
+                    LogBuffer.Enqueue(nextLog);
                 }
+
+                while (LogBuffer.Count > 1000)
+                    LogBuffer.TryDequeue(out var discard);
             }
             catch (Exception e)
             {

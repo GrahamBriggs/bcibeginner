@@ -6,6 +6,7 @@
 #define MyAppPublisher "Little Bytes of Pi, LLC"
 #define MyAppURL "http://littlebytesofpi.com"
 #define MyAppExeName "brainHatSharpGUI.exe"
+#define MyAppDefaultGroup "brainHat"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -20,7 +21,7 @@ AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
-DefaultGroupName={#MyAppName}
+DefaultGroupName={#MyAppDefaultGroup}
 OutputBaseFilename=brainHatSharpGUI_setup
 Compression=lzma
 SolidCompression=yes

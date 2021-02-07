@@ -13,24 +13,26 @@ namespace brainHatSharpGUI
 {
     public partial class LogWindow : Form
     {
-        public LogWindow(Logging logger)
+        public LogWindow(Logging logger, IEnumerable<LogEventArgs> buffer)
         {
             InitializeComponent();
 
             Logger = logger;
 
-            SetupLoggingUi();
+            SetupLoggingUi(buffer);
         }
 
         Logging Logger;
 
-        protected void SetupLoggingUi()
+        protected void SetupLoggingUi(IEnumerable<LogEventArgs> buffer)
         {
             //  log display list view
             listViewLogs.View = View.Details;
             listViewLogs.Columns.Add("", listViewLogs.Width, HorizontalAlignment.Left);
             listViewLogs.HeaderStyle = ColumnHeaderStyle.None;
             listViewLogs.Resize += listViewLogs_Resize;
+
+            AddLogsToListView(buffer);
 
             // log settings combo box
             comboBoxLogLevel.DataSource = Enum.GetValues(typeof(LogLevel));
@@ -47,26 +49,30 @@ namespace brainHatSharpGUI
             {
                 if (logs.Count() > 0)
                 {
-                    listViewLogs.BeginUpdate();
-
-                    foreach (var nextLog in logs)
-                    {
-                        if (nextLog.Level >= Logger.LogLevelDisplay)
-                        {
-                            var item = listViewLogs.Items.Insert(0, nextLog.FormatLogForConsole());
-                            item.ForeColor = nextLog.Level.LogColour();
-                            item.BackColor = nextLog.Level.BackgrondColour(nextLog.Remote);
-                        }
-                    }
-
-                    while (listViewLogs.Items.Count > 500)
-                        listViewLogs.Items.RemoveAt(listViewLogs.Items.Count - 1);
-
-                    listViewLogs.EndUpdate();
+                    AddLogsToListView(logs);
                 }
             }));
         }
 
+        private void AddLogsToListView(IEnumerable<LogEventArgs> logs)
+        {
+            listViewLogs.BeginUpdate();
+
+            foreach (var nextLog in logs)
+            {
+                if (nextLog.Level >= Logger.LogLevelDisplay)
+                {
+                    var item = listViewLogs.Items.Insert(0, nextLog.FormatLogForConsole());
+                    item.ForeColor = nextLog.Level.LogColour();
+                    item.BackColor = nextLog.Level.BackgrondColour(nextLog.Remote);
+                }
+            }
+
+            while (listViewLogs.Items.Count > 500)
+                listViewLogs.Items.RemoveAt(listViewLogs.Items.Count - 1);
+
+            listViewLogs.EndUpdate();
+        }
 
         public void ChangeLogLevel()
         {

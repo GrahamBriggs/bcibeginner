@@ -14,6 +14,8 @@ using brainflow;
 using BrainflowInterfaces;
 using System.Web;
 using Newtonsoft.Json;
+using BrainflowDataProcessing;
+using System.IO;
 
 namespace brainHatSharpGUI
 {
@@ -25,15 +27,21 @@ namespace brainHatSharpGUI
 
             BrainflowBoard = null;
             LoggingWindow = null;
+
+            FileWriter = new OBCIGuiFormatFileWriter();
         }
 
         LogWindow LoggingWindow;
 
-        protected override async void OnLoad(EventArgs e)
+        protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
 
-            await StartProgramComponentsAsync();
+            _ = Task.Run(async () => 
+            {
+                await SetupLoggingAsync(); 
+                await StartProgramComponentsAsync();
+            });
 
             SetComPortComboBox();
 
@@ -93,7 +101,7 @@ namespace brainHatSharpGUI
             //  create the TCPIP command server
             CommandServer = new TcpipCommandServer();
             CommandServer.Log += OnLog;
-            CommandServer.ProcessReceivedRequest = CommandServerProcessRequest;
+            CommandServer.ProcessReceivedRequest = CommandServerProcessRequestAsync;
 
             //  create status monitor
             MonitorStatus = new StatusMonitor();
@@ -104,7 +112,6 @@ namespace brainHatSharpGUI
             {
                 await BroadcastStatus.StartDataBroadcastServerAsync();
                 await CommandServer.StartCommandServerAsync();
-                await SetupLoggingAsync();
                 await MonitorStatus.StartStatusMonitorAsync();
             });
         }
@@ -119,8 +126,15 @@ namespace brainHatSharpGUI
             {
                 if (BroadcastStatus != null && BrainflowBoard != null)
                 {
-                    e.Status.SampleRate = BrainflowBoard.SampleRate;
-                    e.Status.BoardId = BrainflowBoard.BoardId;
+                    if (BrainflowBoard != null)
+                    {
+                        e.Status.SampleRate = BrainflowBoard.SampleRate;
+                        e.Status.BoardId = BrainflowBoard.BoardId;
+                    }
+                    e.Status.RecordingDataBrainHat = FileWriter.IsLogging;
+                    e.Status.RecordingFileNameBrainHat = Path.GetFileName(FileWriter.FileName);
+                    e.Status.RecordingDurationBrainHat = FileWriter.FileDuration;
+
 
                     BroadcastStatus.QueueStringToBroadcast($"networkstatus?hostname={e.Status.HostName}&status={JsonConvert.SerializeObject(e.Status)}\n");
                 }
@@ -135,7 +149,7 @@ namespace brainHatSharpGUI
         /// <summary>
         /// Process a request from the TCPIP command server port
         /// </summary>
-        private async Task<string> CommandServerProcessRequest(string request)
+        private async Task<string> CommandServerProcessRequestAsync(string request)
         {
             try
             {
@@ -143,15 +157,12 @@ namespace brainHatSharpGUI
                 switch (args.Request)
                 {
                     case "loglevel":
-                        Logger.LogLevelDisplay = (LogLevel)int.Parse(args.GetArg("level"));
-                        Logger.AddLog(new LogEventArgs(this, "CommandServerProcessRequest", $"Process request to set log level to {Logger.LogLevelDisplay}.", LogLevel.INFO));
-                        if (LoggingWindow != null)
-                            LoggingWindow.ChangeLogLevel();
+                            return ProcessChangeLogLevel(args);
 
-                        return $"ACK?response=Log level set to {Logger.LogLevelDisplay}.\n";
+                    case "recording":
+                            return await ProcessSetRecording(args);
 
                     default:
-                        await Task.Delay(1);
                         break;
                 }
             }
@@ -160,9 +171,62 @@ namespace brainHatSharpGUI
                 Logger.AddLog(new LogEventArgs(this, "CommandServerProcessRequest", e, LogLevel.WARN));
             }
 
-            return $"NAK?time={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}\n";
+            Logger.AddLog(new LogEventArgs(this, "CommandServerProcessRequest", $"Invalid request {request}", LogLevel.WARN));
+            return $"NAK?response=Invalid request&time={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}\n";
         }
 
+
+        /// <summary>
+        /// Process set recording command
+        /// </summary>
+        private async Task<string> ProcessSetRecording(UriArgParser args)
+        {
+            try
+            {
+                var enable = bool.Parse(args.GetArg("enable"));
+                var fileName = args.GetArg("filename");
+                if ( BrainflowBoard ==  null )
+                {
+                    return $"NAK?response=Board is not reading data.";
+                }
+                if (enable)
+                {
+                    if (FileWriter.IsLogging)
+                    {
+                        return $"NAK?response=You must close the current recording file before starting a new one.";
+                    }
+                    await FileWriter.StartWritingToFileAsync(fileName, BrainflowBoard.BoardId, BrainflowBoard.SampleRate);
+                    return $"ACK?response=File {Path.GetFileName(FileWriter.FileName)} started.";
+                }
+                else
+                {
+                    if (!FileWriter.IsLogging)
+                    {
+                        return $"NAK?response=No recording in progress.";
+                    }
+                    await FileWriter.StopWritingToFileAsync();
+                    return $"ACK?response=Recording stopped.";
+                }
+            }
+            catch (Exception)
+            {
+                return $"NAK?response=Invalid parameters";
+            }
+        }
+
+
+        /// <summary>
+        /// Process change log level command
+        /// </summary>
+        private string ProcessChangeLogLevel(UriArgParser args)
+        {
+            Logger.LogLevelDisplay = (LogLevel)int.Parse(args.GetArg("level"));
+            Logger.AddLog(new LogEventArgs(this, "CommandServerProcessRequest", $"Process request to set log level to {Logger.LogLevelDisplay}.", LogLevel.INFO));
+            if (LoggingWindow != null)
+                LoggingWindow.ChangeLogLevel();
+
+            return $"ACK?response=Log level set to {Logger.LogLevelDisplay}.";
+        }
 
 
         Logging Logger;
@@ -171,12 +235,13 @@ namespace brainHatSharpGUI
         LSLDataBroadcast LslBroadcast;
         TcpipCommandServer CommandServer;
         StatusMonitor MonitorStatus;
+        OBCIGuiFormatFileWriter FileWriter;
 
       
         /// <summary>
         /// Start / Stop button
         /// </summary>
-        private async void buttonStart_Click(object sender, EventArgs e)
+        private void buttonStart_Click(object sender, EventArgs e)
         {
             buttonStart.Enabled = false;
 
@@ -184,7 +249,7 @@ namespace brainHatSharpGUI
             {
                 BrainFlowInputParams startupParams = SaveConnectionSettings();
 
-                StartBoardAsync(startupParams);
+                StartBoard(startupParams);
 
                 SetUiForConnectionState(false);
 
@@ -195,7 +260,7 @@ namespace brainHatSharpGUI
             }
             else
             {
-                await ShutDownBoardAsync();
+                ShutDownBoard();
 
                 SetUiForConnectionState(true);
 
@@ -218,7 +283,7 @@ namespace brainHatSharpGUI
         /// <summary>
         /// Create and start a board data reader
         /// </summary>
-        private void StartBoardAsync(BrainFlowInputParams startupParams)
+        private void StartBoard(BrainFlowInputParams startupParams)
         {
             BrainflowBoard = new BoardDataReader();
             BrainflowBoard.ConnectToBoard += OnConnectToBoard;
@@ -234,15 +299,15 @@ namespace brainHatSharpGUI
         /// <summary>
         /// Shut down the board data reader
         /// </summary>
-        private async Task ShutDownBoardAsync()
+        private void ShutDownBoard()
         {
             if (LslBroadcast != null)
             {
-                await LslBroadcast.StopLslBroadcastAsync();
+                _ = Task.Run(async () => { await LslBroadcast.StopLslBroadcastAsync(); });
                 LslBroadcast.Log -= OnLog;
             }
 
-            await BrainflowBoard.StopBoardDataReaderAsync();
+            _ = Task.Run(async () => { await BrainflowBoard.StopBoardDataReaderAsync(); });
             BrainflowBoard.Log -= OnLog;
             BrainflowBoard.ConnectToBoard -= OnConnectToBoard;
             BrainflowBoard.BoardReadData -= OnBrainflowBoardReadData;
@@ -299,6 +364,8 @@ namespace brainHatSharpGUI
         private void OnBrainflowBoardReadData(object sender, BFChunkEventArgs e)
         {
             LslBroadcast.AddData(e.Chunk);
+            if (FileWriter.IsLogging)
+                FileWriter.AddData(e.Chunk);
         }
 
 
@@ -343,8 +410,9 @@ namespace brainHatSharpGUI
         {
             if (LoggingWindow == null)
             {
-                LoggingWindow = new LogWindow(Logger);
+                LoggingWindow = new LogWindow(Logger, Logger.LogBuffer.ToArray());
                 LoggingWindow.Show();
+                LoggingWindow.FormClosing += LoggingWindow_OnFormClosing;
             }
             else
             {
@@ -352,6 +420,11 @@ namespace brainHatSharpGUI
                 LoggingWindow.Show();
                 LoggingWindow.WindowState = FormWindowState.Normal;
             }
+        }
+
+        private void LoggingWindow_OnFormClosing(object sender, FormClosingEventArgs e)
+        {
+            LoggingWindow = null;
         }
 
 

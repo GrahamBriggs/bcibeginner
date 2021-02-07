@@ -227,11 +227,17 @@ namespace BrainHatNetwork
             try
             {
                 //  create UDP client
-                using (var udpClient = new UdpClient(BrainHatNetworkAddresses.StatusPort))
+                using (var udpClient = new UdpClient())
                 {
+                    cancelToken.Register(() => udpClient.Close());
+
+                    IPEndPoint localpt = new IPEndPoint(IPAddress.Any, BrainHatNetworkAddresses.StatusPort);
+                    udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                    udpClient.Client.Bind(localpt);
+
                     //  join the multicast group
                     udpClient.JoinMulticastGroup(IPAddress.Parse(BrainHatNetworkAddresses.MulticastGroupAddress));
-                    cancelToken.Register(() => udpClient.Close());
+                    
 
                     //  spin until canceled
                     while (!cancelToken.IsCancellationRequested)
@@ -402,13 +408,17 @@ namespace BrainHatNetwork
         {
             try
             {
-                using (var udpClient = new UdpClient(BrainHatNetwork.BrainHatNetworkAddresses.LogPort))
+                using (var udpClient = new UdpClient())
                 {
+                    cancelToken.Register(() => { try { udpClient.Close(); } catch { } });
+
                     try
                     {
+                        IPEndPoint localpt = new IPEndPoint(IPAddress.Any, BrainHatNetworkAddresses.LogPort);
+                        udpClient.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+                        udpClient.Client.Bind(localpt);
                         udpClient.JoinMulticastGroup(IPAddress.Parse(BrainHatNetworkAddresses.MulticastGroupAddress));
-                        cancelToken.Register(() => { try { udpClient.Close(); } catch { } });
-
+                        
                         while (!cancelToken.IsCancellationRequested)
                         {
                             try

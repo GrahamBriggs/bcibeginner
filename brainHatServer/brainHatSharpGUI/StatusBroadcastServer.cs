@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -76,12 +77,14 @@ namespace brainHatSharpGUI
             try
             {
                 //  create UDP client
-                using (var udpClient = new UdpClient())
+                using (var udpServer = new UdpClient())
                 {
+                    cancelToken.Register(() => { try { udpServer.Close(); } catch { } });
+
                     try
                     {
-                        ////  join the multicast group
-                        //udpClient.JoinMulticastGroup(IPAddress.Parse(NetworkAddress.MulticastGroupAddress));
+                        IPEndPoint localpt = new IPEndPoint(IPAddress.Any, BrainHatNetworkAddresses.StatusPort);
+                        udpServer.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 
                         while (!cancelToken.IsCancellationRequested)
                         {
@@ -93,7 +96,7 @@ namespace brainHatSharpGUI
                                 {
                                     StringsToBroadcast.TryDequeue(out var broadcastString);
                                     var sendBytes = Encoding.UTF8.GetBytes(broadcastString);
-                                    await udpClient.SendAsync(sendBytes, sendBytes.Length, BrainHatNetworkAddresses.MulticastGroupAddress, BrainHatNetworkAddresses.StatusPort);
+                                    await udpServer.SendAsync(sendBytes, sendBytes.Length, BrainHatNetworkAddresses.MulticastGroupAddress, BrainHatNetworkAddresses.StatusPort);
                                 }
                                 catch (Exception ex)
                                 {
