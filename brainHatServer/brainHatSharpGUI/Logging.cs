@@ -200,7 +200,7 @@ namespace brainHatSharpGUI
                     LogBuffer.Enqueue(nextLog);
                 }
 
-                while (LogBuffer.Count > 1000)
+                while (LogBuffer.Count > 333)
                     LogBuffer.TryDequeue(out var discard);
             }
             catch (Exception e)

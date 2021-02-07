@@ -37,11 +37,11 @@ namespace brainHatSharpGUI
         {
             base.OnLoad(e);
 
-            _ = Task.Run(async () => 
+            Task.Run(async () => 
             {
                 await SetupLoggingAsync(); 
                 await StartProgramComponentsAsync();
-            });
+            }).Wait();
 
             SetComPortComboBox();
 
@@ -289,10 +289,10 @@ namespace brainHatSharpGUI
             BrainflowBoard.ConnectToBoard += OnConnectToBoard;
             BrainflowBoard.Log += OnLog;
 
-            _= Task.Run(async () =>
+            Task.Run(async () =>
             {
                 await BrainflowBoard.StartBoardDataReaderAsync(Properties.Settings.Default.BoardId, startupParams);
-            });
+            }).Wait();
         }
 
 
@@ -303,11 +303,11 @@ namespace brainHatSharpGUI
         {
             if (LslBroadcast != null)
             {
-                _ = Task.Run(async () => { await LslBroadcast.StopLslBroadcastAsync(); });
+                Task.Run(async () => { await LslBroadcast.StopLslBroadcastAsync(); }).Wait();
                 LslBroadcast.Log -= OnLog;
             }
 
-            _ = Task.Run(async () => { await BrainflowBoard.StopBoardDataReaderAsync(); });
+            Task.Run(async () => { await BrainflowBoard.StopBoardDataReaderAsync(); }).Wait();
             BrainflowBoard.Log -= OnLog;
             BrainflowBoard.ConnectToBoard -= OnConnectToBoard;
             BrainflowBoard.BoardReadData -= OnBrainflowBoardReadData;
@@ -340,16 +340,13 @@ namespace brainHatSharpGUI
         /// <summary>
         /// Connected to the board, startup the LSL broadcast
         /// </summary>
-        private void OnConnectToBoard(object sender, ConnectToBoardEventArgs e)
+        private async void OnConnectToBoard(object sender, ConnectToBoardEventArgs e)
         {
             if (LslBroadcast == null && BrainflowBoard != null)
             {
                 LslBroadcast = new LSLDataBroadcast();
                 LslBroadcast.Log += OnLog;
-                _ = Task.Run(async () =>
-                {
-                    await LslBroadcast.StartLslBroadcastAsyc(e.BoardId, e.SampleRate);
-                });
+                await LslBroadcast.StartLslBroadcastAsyc(e.BoardId, e.SampleRate);
 
                 BrainflowBoard.BoardReadData += OnBrainflowBoardReadData;
 

@@ -32,7 +32,7 @@ namespace BrainflowDataProcessing
             Data.RemoveAll();
 
             var timeNow = DateTimeOffset.Now;
-            FileName = Path.Combine(Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "hatClientRecordings"), $"{FileNameRoot}_{timeNow.Year}{timeNow.Month.ToString("D02")}{timeNow.Day.ToString("D02")}-{timeNow.Hour.ToString("D02")}{timeNow.Minute.ToString("D02")}{timeNow.Second.ToString("D02")}.txt");
+            FileName = Path.Combine(Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "brainHatRecordings"), $"{FileNameRoot}_{timeNow.Year}{timeNow.Month.ToString("D02")}{timeNow.Day.ToString("D02")}-{timeNow.Hour.ToString("D02")}{timeNow.Minute.ToString("D02")}{timeNow.Second.ToString("D02")}.txt");
 
 
             FileWriterCancelTokenSource = new CancellationTokenSource();
