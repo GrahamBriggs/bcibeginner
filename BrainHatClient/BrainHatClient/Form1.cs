@@ -21,7 +21,7 @@ namespace BrainHatClient
 
 
         //  File writer
-        OpenBCIGuiFormatRawFileWriter FileWriter;
+        OBCIGuiFormatFileWriter FileWriter;
 
         /// <summary>
         /// Constructor
@@ -52,7 +52,7 @@ namespace BrainHatClient
             AlphaDetector.DetectedBrainWave += OnAlphaDetectorDetectedBrainWave;
 
             //  create a file writer to record raw data
-            FileWriter = new OpenBCIGuiFormatRawFileWriter();
+            FileWriter = new OBCIGuiFormatFileWriter();
 
             //  init the blink counter
             BlinkLeftCount = 0;
@@ -74,7 +74,7 @@ namespace BrainHatClient
         /// </summary>
         private async void Start()
         {
-            DataProcessor.LoadFiltersFile("./Config/DefaultFilterConfig.xml");
+            BrainflowDataProcessor.LoadFiltersFile("./Config/DefaultFilterConfig.xml");
 
             await Task.Run(async () =>
            {

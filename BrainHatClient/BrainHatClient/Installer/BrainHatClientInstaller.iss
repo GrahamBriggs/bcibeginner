@@ -6,6 +6,7 @@
 #define MyAppPublisher "Little Bytes of Pi"
 #define MyAppURL "http://github.com/grahambriggs/bcibeginner"
 #define MyAppExeName "BrainHatClient.exe"
+#define MyAppDefaultGroup "brainHat"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -20,7 +21,7 @@ AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
-DefaultGroupName={#MyAppName}
+DefaultGroupName={#MyAppDefaultGroup}
 OutputBaseFilename=setup
 Compression=lzma
 SolidCompression=yes
@@ -35,6 +36,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "..\bin\Release\BrainHatClient.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\Release\*.config"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\Release\Config\DefaultFilterConfig.xml"; DestDir: "{app}\Config"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
@@ -43,3 +45,6 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[Dirs]
+Name: "{app}\Config"

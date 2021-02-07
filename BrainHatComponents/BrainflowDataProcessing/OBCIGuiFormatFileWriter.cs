@@ -1,19 +1,22 @@
-﻿using LoggingInterfaces;
-using BrainflowInterfaces;
+﻿using BrainflowInterfaces;
+using LoggingInterfaces;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BrainHatClient
+namespace BrainflowDataProcessing
 {
-    class OpenBCIGuiFormatRawFileWriter
+    public class OBCIGuiFormatFileWriter
     {
         //  Events
         public event LogEventDelegate Log;
 
-        public bool IsLogging =>  FileWriterCancelTokenSource != null;
+        public bool IsLogging => FileWriterCancelTokenSource != null;
 
 
         /// <summary>
@@ -28,10 +31,18 @@ namespace BrainHatClient
             await StopWritingToFileAsync();
             Data.RemoveAll();
 
+            var timeNow = DateTimeOffset.Now;
+            FileName = Path.Combine(Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "hatClientRecordings"), $"{FileNameRoot}_{timeNow.Year}{timeNow.Month.ToString("D02")}{timeNow.Day.ToString("D02")}-{timeNow.Hour.ToString("D02")}{timeNow.Minute.ToString("D02")}{timeNow.Second.ToString("D02")}.txt");
+
+
             FileWriterCancelTokenSource = new CancellationTokenSource();
             FileWritingTask = RunFileWriter(FileWriterCancelTokenSource.Token);
         }
 
+        public string FileName { get; protected set; }
+
+        protected Stopwatch FileTimer { get; set; }
+        public double FileDuration => FileTimer.Elapsed.TotalSeconds;
 
         /// <summary>
         /// Stop the file writer
@@ -42,6 +53,7 @@ namespace BrainHatClient
             {
                 FileWriterCancelTokenSource.Cancel();
                 await FileWritingTask;
+                FileName = "";
                 FileWriterCancelTokenSource = null;
                 FileWritingTask = null;
             }
@@ -69,21 +81,34 @@ namespace BrainHatClient
             }
         }
 
+        public void AddData(IEnumerable<IBFSample> chunk)
+        {
+            if ( FileWritingTask != null )
+            {
+                Data.AddRange(chunk);
+                NotifyAddedData.Release();
+            }
+        }
+
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public OpenBCIGuiFormatRawFileWriter()
+        public OBCIGuiFormatFileWriter()
         {
             Data = new ConcurrentQueue<IBFSample>();
             NotifyAddedData = new SemaphoreSlim(0);
+
+            FileName = "";
+            FileTimer = new Stopwatch();
+            FileTimer.Reset();
         }
 
         //  File writing task 
         protected CancellationTokenSource FileWriterCancelTokenSource;
         protected Task FileWritingTask;
         protected SemaphoreSlim NotifyAddedData;
-        
+
         // Queue to hold data pending write
         ConcurrentQueue<IBFSample> Data;
 
@@ -97,7 +122,7 @@ namespace BrainHatClient
 
         private string FileBoardDescription()
         {
-            switch ( BoardId)
+            switch (BoardId)
             {
                 case 0:
                     return "OpenBCI_GUI$BoardCytonSerial";
@@ -115,28 +140,27 @@ namespace BrainHatClient
             try
             {
                 //  generate test file name
-                var timeNow = DateTimeOffset.Now;
-                string fileName = Path.Combine( Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "hatClientRecordings"),  $"{FileNameRoot}_{timeNow.Year}{timeNow.Month.ToString("D02")}{timeNow.Day.ToString("D02")}-{timeNow.Hour.ToString("D02")}{timeNow.Minute.ToString("D02")}{timeNow.Second.ToString("D02")}.txt");
-
-                if (!Directory.Exists(Path.GetDirectoryName(fileName)))
+              
+                if (!Directory.Exists(Path.GetDirectoryName(FileName)))
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(fileName));
+                    Directory.CreateDirectory(Path.GetDirectoryName(FileName));
                 }
 
 
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter(fileName))
+                using (System.IO.StreamWriter file = new System.IO.StreamWriter(FileName))
                 {
                     //  write header
                     file.WriteLine("%OpenBCI Raw EEG Data");
                     file.WriteLine($"%Number of channels = {brainflow.BoardShim.get_exg_channels(BoardId).Length}");
                     file.WriteLine($"%Sample Rate = {SampleRate} Hz");
                     file.WriteLine($"%Board = {FileBoardDescription()}");
-                    file.WriteLine("%Logger = BCIpi Data Logger");
+                    file.WriteLine("%Logger = brainHat");
                     bool writeHeader = false;
 
-                 
+
                     try
                     {
+                        FileTimer.Restart();
 
                         while (!cancelToken.IsCancellationRequested)
                         {
@@ -144,24 +168,27 @@ namespace BrainHatClient
 
                             try
                             {
-                                Data.TryDequeue(out var nextReading);
-                                if (nextReading == null)
+                                while (Data.Count > 0)
                                 {
-                                    Log?.Invoke(this, new LogEventArgs(this, "RunFileWriter", $"Null sample.", LogLevel.WARN));
-                                    continue;
-                                }
+                                    Data.TryDequeue(out var nextReading);
+                                    if (nextReading == null)
+                                    {
+                                        Log?.Invoke(this, new LogEventArgs(this, "RunFileWriter", $"Null sample.", LogLevel.WARN));
+                                        continue;
+                                    }
 
-                                if (!writeHeader)
-                                {
-                                    WriteHeaderToFile(file, nextReading);
-                                    writeHeader = true;
-                                }
+                                    if (!writeHeader)
+                                    {
+                                        WriteHeaderToFile(file, nextReading);
+                                        writeHeader = true;
+                                    }
 
-                                WriteToFile(file, nextReading);
+                                    WriteToFile(file, nextReading);
+                                }
                             }
                             catch (Exception ex)
                             {
-                              Log?.Invoke(this, new LogEventArgs(this, "RunFileWriter", ex, LogLevel.ERROR));
+                                Log?.Invoke(this, new LogEventArgs(this, "RunFileWriter", ex, LogLevel.ERROR));
                             }
                         }
                     }
@@ -174,6 +201,7 @@ namespace BrainHatClient
                     finally
                     {
                         file.Close();
+                        FileTimer.Reset();
                     }
                 }
             }
@@ -190,7 +218,7 @@ namespace BrainHatClient
         private void WriteHeaderToFile(StreamWriter file, IBFSample nextReading)
         {
             string header = "Sample Index";
-            
+
             //  exg channels
             for (int i = 0; i < nextReading.NumberExgChannels; i++)
             {
@@ -235,7 +263,7 @@ namespace BrainHatClient
             var writeLine = nextSample.SampleIndex.ToString("F3");
 
             //  exg channels
-            foreach ( var nextExg in nextSample.ExgData)
+            foreach (var nextExg in nextSample.ExgData)
             {
                 writeLine += $",{nextExg:F4}";
             }
@@ -247,7 +275,7 @@ namespace BrainHatClient
             }
 
             //  other channels
-            foreach ( var nextOther in nextSample.OtherData)
+            foreach (var nextOther in nextSample.OtherData)
             {
                 writeLine += $",{nextOther:F4}";
             }
