@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BrainflowInterfaces\BrainflowInterfaces.csproj" />
-    <ProjectReference Include="..\brainflow\brainflow.csproj" />
+    <ProjectReference Include="..\brainflow\csharp-package\brainflow\brainflow\brainflowNetStandard.csproj" />
     <ProjectReference Include="..\liblsl\liblsl.csproj" />
     <ProjectReference Include="..\LoggingInterfaces\LoggingInterfaces.csproj" />
   </ItemGroup>

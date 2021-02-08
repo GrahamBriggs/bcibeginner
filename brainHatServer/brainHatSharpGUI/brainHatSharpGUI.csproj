@@ -105,7 +105,7 @@
       <Project>{340d4bb3-3ee2-4d12-8862-b34d37f5ac68}</Project>
       <Name>BrainflowInterfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\BrainHatComponents\brainflow\brainflow.csproj">
+    <ProjectReference Include="..\..\BrainHatComponents\brainflow\csharp-package\brainflow\brainflow\brainflowNetStandard.csproj">
       <Project>{c6c57e16-755b-42ff-a072-6d0a35098503}</Project>
       <Name>brainflow</Name>
     </ProjectReference>
@@ -146,9 +146,9 @@
   <PropertyGroup>
     <PostBuildEvent Condition=" '$(OS)' != 'Unix' ">
 	echo Copying libraries for $(Platform)
-if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\lib\brainflow\x86\*.dll $(ProjectDir)$(OutDir) /y
-if $(Platform) == Win32 xcopy $(ProjectDir)..\..\lib\brainflow\x86\*.dll $(ProjectDir)$(OutDir) /y
-if $(Platform) == x64 xcopy $(ProjectDir)..\..\lib\brainflow\x64\*.dll $(ProjectDir)$(OutDir) /y
+if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\BrainHatComponents\brainflow\compiled\Release\*32.dll $(ProjectDir)$(OutDir) /y
+if $(Platform) == Win32 xcopy $(ProjectDir)..\..\BrainHatComponents\brainflow\compiled\Release\*32.dll $(ProjectDir)$(OutDir) /y
+if $(Platform) == x64 xcopy $(ProjectDir)..\..\BrainHatComponents\brainflow\compiled\Release\*.dll $(ProjectDir)$(OutDir) /y
 if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\lib\lsl\x86\bin\lsl* $(ProjectDir)$(OutDir) /y
 if $(Platform) == Win32 xcopy $(ProjectDir)..\..\lib\lsl\x86\bin\lsl* $(ProjectDir)$(OutDir) /y
 if $(Platform) == x64 xcopy $(ProjectDir)..\..\lib\lsl\x64\bin\lsl* $(ProjectDir)$(OutDir) /y

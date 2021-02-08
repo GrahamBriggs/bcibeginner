@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\brainflow\brainflow.csproj" />
+    <ProjectReference Include="..\brainflow\csharp-package\brainflow\brainflow\brainflowNetStandard.csproj" />
     <ProjectReference Include="..\LoggingInterfaces\LoggingInterfaces.csproj" />
     <ProjectReference Include="..\BrainflowInterfaces\BrainflowInterfaces.csproj" />
   </ItemGroup>

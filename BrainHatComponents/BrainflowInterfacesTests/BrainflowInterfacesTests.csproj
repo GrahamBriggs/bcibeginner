@@ -62,7 +62,7 @@
       <Project>{7bc8716d-6b6c-4617-a591-3a9d79357131}</Project>
       <Name>BrainflowInterfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\brainflow\brainflow.csproj">
+    <ProjectReference Include="..\brainflow\csharp-package\brainflow\brainflow\brainflowNetStandard.csproj">
       <Project>{19d4357f-b416-40d3-99cd-2fcaf56529f6}</Project>
       <Name>brainflow</Name>
     </ProjectReference>

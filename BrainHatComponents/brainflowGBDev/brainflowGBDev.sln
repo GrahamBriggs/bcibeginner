@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{803FD0C6-D64E-4E16-9DC3-1DAEC859A3D2}") = "brainflowGBDev", "brainflowGBDev\brainflowGBDev.vgdbcmake", "{C6E83B73-061B-4F6F-9C25-52379C504D76}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|VisualGDB = Debug|VisualGDB
+		MinSizeRel|VisualGDB = MinSizeRel|VisualGDB
+		Release|VisualGDB = Release|VisualGDB
+		RelWithDebInfo|VisualGDB = RelWithDebInfo|VisualGDB
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C6E83B73-061B-4F6F-9C25-52379C504D76}.Debug|VisualGDB.ActiveCfg = Debug|VisualGDB
+		{C6E83B73-061B-4F6F-9C25-52379C504D76}.Debug|VisualGDB.Build.0 = Debug|VisualGDB
+		{C6E83B73-061B-4F6F-9C25-52379C504D76}.MinSizeRel|VisualGDB.ActiveCfg = MinSizeRel|VisualGDB
+		{C6E83B73-061B-4F6F-9C25-52379C504D76}.MinSizeRel|VisualGDB.Build.0 = MinSizeRel|VisualGDB
+		{C6E83B73-061B-4F6F-9C25-52379C504D76}.Release|VisualGDB.ActiveCfg = Release|VisualGDB
+		{C6E83B73-061B-4F6F-9C25-52379C504D76}.Release|VisualGDB.Build.0 = Release|VisualGDB
+		{C6E83B73-061B-4F6F-9C25-52379C504D76}.RelWithDebInfo|VisualGDB.ActiveCfg = RelWithDebInfo|VisualGDB
+		{C6E83B73-061B-4F6F-9C25-52379C504D76}.RelWithDebInfo|VisualGDB.Build.0 = RelWithDebInfo|VisualGDB
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {28521834-3EA2-46E6-A218-CD05B1D40F64}
+	EndGlobalSection
+EndGlobal

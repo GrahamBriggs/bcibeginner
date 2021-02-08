@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LoggingInterfaces;
-using BrainflowDataProcessing;
+using PlatformHelper;
 using brainflow;
 using BrainflowInterfaces;
 using BrainHatNetwork;
@@ -286,7 +286,7 @@ namespace BrainHatSharp
         /// <param name="input_params"></param>
         private static void SetDefaultSerialPort(BrainFlowInputParams input_params)
         {
-            if (PlatformHelper.GetLibraryEnvironment() == LibraryEnvironment.Linux)
+            if (PlatformHelper.PlatformHelper.GetLibraryEnvironment() == PlatformHelper.LibraryEnvironment.Linux)
             {
                 input_params.serial_port = "/dev/ttyUSB0";
             }

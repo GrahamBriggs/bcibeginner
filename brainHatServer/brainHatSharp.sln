@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.30711.63
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrainHatSharp", "BrainHatSharp\BrainHatSharp.csproj", "{FD05CF5D-A9F7-4C94-A77B-17FFE518D6C3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0EFA34B4-9F21-4FF5-8A77-35B2E55A66DA} = {0EFA34B4-9F21-4FF5-8A77-35B2E55A66DA}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrainflowDataProcessing", "..\BrainHatComponents\BrainflowDataProcessing\BrainflowDataProcessing.csproj", "{391FA534-D9BE-464B-AA3A-CBC7840FF9D5}"
 EndProject
@@ -15,7 +18,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WiringPiWrapper", "..\Brain
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrainHatNetwork", "..\BrainHatComponents\BrainHatNetwork\BrainHatNetwork.csproj", "{7799CB08-3F80-430D-B8E7-8ABF83BC71D2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "brainflow", "..\BrainHatComponents\brainflow\brainflow.csproj", "{C6C57E16-755B-42FF-A072-6D0A35098503}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "brainflowNetStandard", "..\BrainHatComponents\brainflow\csharp-package\brainflow\brainflow\brainflowNetStandard.csproj", "{C6C57E16-755B-42FF-A072-6D0A35098503}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlatformHelper", "..\BrainHatComponents\PlatformHelper\PlatformHelper.csproj", "{0EFA34B4-9F21-4FF5-8A77-35B2E55A66DA}"
 EndProject

@@ -59,7 +59,7 @@
       <Project>{391fa534-d9be-464b-aa3a-cbc7840ff9d5}</Project>
       <Name>BrainflowDataProcessing</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\BrainHatComponents\brainflow\brainflow.csproj">
+    <ProjectReference Include="..\..\BrainHatComponents\brainflow\csharp-package\brainflow\brainflow\brainflowNetStandard.csproj">
       <Project>{c6c57e16-755b-42ff-a072-6d0a35098503}</Project>
       <Name>brainflow</Name>
     </ProjectReference>
@@ -78,6 +78,10 @@
     <ProjectReference Include="..\..\BrainHatComponents\BrainflowInterfaces\BrainflowInterfaces.csproj">
       <Project>{340d4bb3-3ee2-4d12-8862-b34d37f5ac68}</Project>
       <Name>OpenBCIInterfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BrainHatComponents\PlatformHelper\PlatformHelper.csproj">
+      <Project>{0efa34b4-9f21-4ff5-8a77-35b2e55a66da}</Project>
+      <Name>PlatformHelper</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\BrainHatComponents\WiringPiWrapper\WiringPiWrapper.csproj">
       <Project>{44164c3f-b228-4488-b027-ea9717e7e6e1}</Project>

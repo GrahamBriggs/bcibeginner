@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29519.87
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrainHatClient", "BrainHatClient\BrainHatClient.csproj", "{6D26485D-D8D5-4924-9406-833BE1AB2BE1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "brainflow", "..\BrainHatComponents\brainflow\brainflow.csproj", "{19D4357F-B416-40D3-99CD-2FCAF56529F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "brainflow", "..\BrainHatComponents\brainflow\csharp-package\brainflow\brainflow\brainflowNetStandard.csproj", "{19D4357F-B416-40D3-99CD-2FCAF56529F6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BrainflowDataProcessing", "..\BrainHatComponents\BrainflowDataProcessing\BrainflowDataProcessing.csproj", "{A0AA0570-01DD-41B9-84F4-67589A52DF20}"
 EndProject

@@ -1,0 +1,6 @@
+[submodule "BrainHatComponents\\brainflow"]
+	path = BrainHatComponents\\brainflow
+	url = https://github.com/GrahamBriggs/brainflow.git
+[submodule "BrainHatComponents/brainflow"]
+	path = BrainHatComponents/brainflow
+	url = https://github.com/GrahamBriggs/brainflow.git
