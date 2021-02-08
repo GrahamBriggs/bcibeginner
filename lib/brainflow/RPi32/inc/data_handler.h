@@ -32,6 +32,8 @@ extern "C"
         double *output_data);
     SHARED_EXPORT int CALLING_CONVENTION perform_wavelet_denoising (
         double *data, int data_len, char *wavelet, int decomposition_level);
+    SHARED_EXPORT int CALLING_CONVENTION get_window (
+        int window_function, int window_len, double *output_window);
     SHARED_EXPORT int CALLING_CONVENTION perform_fft (
         double *data, int data_len, int window_function, double *output_re, double *output_im);
     SHARED_EXPORT int CALLING_CONVENTION perform_ifft (
@@ -48,8 +50,10 @@ extern "C"
         double freq_start, double freq_end, double *band_power);
 
     SHARED_EXPORT int CALLING_CONVENTION get_avg_band_powers (double *raw_data, int rows, int cols,
-        int sampling_rate, int aply_filters, double *avg_band_powers, double *stddev_band_powers);
-
+        int sampling_rate, int apply_filters, double *avg_band_powers, double *stddev_band_powers);
+    // logging methods
+    SHARED_EXPORT int CALLING_CONVENTION set_log_level (int log_level);
+    SHARED_EXPORT int CALLING_CONVENTION set_log_file (char *log_file);
     // file operations
     SHARED_EXPORT int CALLING_CONVENTION write_file (
         double *data, int num_rows, int num_cols, char *file_name, char *file_mode);
