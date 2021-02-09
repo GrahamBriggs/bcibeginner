@@ -87,7 +87,14 @@ namespace BrainflowDataProcessing
             return Filters.GetFilterNames();
         }
 
+        public async Task<SignalFiltering> StartSignalFilteringAsync()
+        {
+            var filterName = ActiveFilters.FirstOrDefault().Key;
+            if (filterName != null)
+                return await StartSignalFilteringAsync(filterName);
 
+            return null;
+        }
 
         /// <summary>
         /// Start the signal filtering task

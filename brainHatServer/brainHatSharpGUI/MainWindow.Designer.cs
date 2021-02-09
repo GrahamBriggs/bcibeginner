@@ -33,11 +33,12 @@ namespace brainHatSharpGUI
             this.buttonStart = new System.Windows.Forms.Button();
             this.comboBoxComPort = new System.Windows.Forms.ComboBox();
             this.groupBoxBoard = new System.Windows.Forms.GroupBox();
+            this.buttonRefresh = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.radioButtonDaisy = new System.Windows.Forms.RadioButton();
             this.radioButtonCyton = new System.Windows.Forms.RadioButton();
             this.buttonViewLogs = new System.Windows.Forms.Button();
-            this.buttonRefresh = new System.Windows.Forms.Button();
+            this.buttonConfigureBoard = new System.Windows.Forms.Button();
             this.groupBoxBoard.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -78,6 +79,17 @@ namespace brainHatSharpGUI
             this.groupBoxBoard.TabStop = false;
             this.groupBoxBoard.Text = "Connect to Board";
             // 
+            // buttonRefresh
+            // 
+            this.buttonRefresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonRefresh.Location = new System.Drawing.Point(241, 76);
+            this.buttonRefresh.Name = "buttonRefresh";
+            this.buttonRefresh.Size = new System.Drawing.Size(71, 23);
+            this.buttonRefresh.TabIndex = 5;
+            this.buttonRefresh.Text = "Refresh";
+            this.buttonRefresh.UseVisualStyleBackColor = true;
+            this.buttonRefresh.Click += new System.EventHandler(this.buttonRefresh_Click);
+            // 
             // label1
             // 
             this.label1.AutoSize = true;
@@ -112,7 +124,7 @@ namespace brainHatSharpGUI
             // buttonViewLogs
             // 
             this.buttonViewLogs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonViewLogs.Location = new System.Drawing.Point(370, 58);
+            this.buttonViewLogs.Location = new System.Drawing.Point(370, 84);
             this.buttonViewLogs.Name = "buttonViewLogs";
             this.buttonViewLogs.Size = new System.Drawing.Size(109, 23);
             this.buttonViewLogs.TabIndex = 3;
@@ -120,22 +132,23 @@ namespace brainHatSharpGUI
             this.buttonViewLogs.UseVisualStyleBackColor = true;
             this.buttonViewLogs.Click += new System.EventHandler(this.buttonViewLogs_Click);
             // 
-            // buttonRefresh
+            // buttonConfigureBoard
             // 
-            this.buttonRefresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonRefresh.Location = new System.Drawing.Point(241, 76);
-            this.buttonRefresh.Name = "buttonRefresh";
-            this.buttonRefresh.Size = new System.Drawing.Size(71, 23);
-            this.buttonRefresh.TabIndex = 5;
-            this.buttonRefresh.Text = "Refresh";
-            this.buttonRefresh.UseVisualStyleBackColor = true;
-            this.buttonRefresh.Click += new System.EventHandler(this.buttonRefresh_Click);
+            this.buttonConfigureBoard.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonConfigureBoard.Location = new System.Drawing.Point(370, 55);
+            this.buttonConfigureBoard.Name = "buttonConfigureBoard";
+            this.buttonConfigureBoard.Size = new System.Drawing.Size(109, 23);
+            this.buttonConfigureBoard.TabIndex = 4;
+            this.buttonConfigureBoard.Text = "Configure Board";
+            this.buttonConfigureBoard.UseVisualStyleBackColor = true;
+            this.buttonConfigureBoard.Click += new System.EventHandler(this.buttonConfigureBoard_Click);
             // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(505, 126);
+            this.Controls.Add(this.buttonConfigureBoard);
             this.Controls.Add(this.buttonViewLogs);
             this.Controls.Add(this.groupBoxBoard);
             this.Controls.Add(this.buttonStart);
@@ -158,6 +171,7 @@ namespace brainHatSharpGUI
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button buttonViewLogs;
         private System.Windows.Forms.Button buttonRefresh;
+        private System.Windows.Forms.Button buttonConfigureBoard;
     }
 }
 

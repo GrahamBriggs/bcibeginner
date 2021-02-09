@@ -47,6 +47,9 @@ namespace brainHatSharpGUI
 
             SetBoardIdRadioButton();
 
+            SetUiForConnectionState(true);
+            buttonConfigureBoard.Enabled = false;
+
             Logger.AddLog(this, new LogEventArgs(this, "OnLoad", $"Program started.", LogLevel.INFO));
         }
 
@@ -266,9 +269,11 @@ namespace brainHatSharpGUI
 
                 buttonStart.Text = "Start Server";
                 groupBoxBoard.Text = " Connect to Board ";
+                buttonStart.Enabled = true;
+                buttonConfigureBoard.Enabled = false;
             }
 
-            buttonStart.Enabled = true;
+           
         }
 
         private void SetUiForConnectionState(bool enable)
@@ -277,6 +282,7 @@ namespace brainHatSharpGUI
             radioButtonDaisy.Enabled = enable;
             comboBoxComPort.Enabled = enable;
             buttonRefresh.Enabled = enable;
+           
         }
 
 
@@ -350,7 +356,7 @@ namespace brainHatSharpGUI
 
                 BrainflowBoard.BoardReadData += OnBrainflowBoardReadData;
 
-                groupBoxBoard.Invoke(new Action(() => { groupBoxBoard.Text = " <<<  Connected to Board   >>> "; }));
+                groupBoxBoard.Invoke(new Action(() => { groupBoxBoard.Text = " <<<  Connected to Board   >>> "; buttonStart.Enabled = true; buttonConfigureBoard.Enabled = true; }));
             }
         }
 
@@ -421,6 +427,7 @@ namespace brainHatSharpGUI
 
         private void LoggingWindow_OnFormClosing(object sender, FormClosingEventArgs e)
         {
+            LoggingWindow.FormClosing -= LoggingWindow_OnFormClosing;
             LoggingWindow = null;
         }
 
@@ -432,6 +439,34 @@ namespace brainHatSharpGUI
         {
             SetComPortComboBox();
 
+        }
+
+        ConfigurationWindow ConfigWindow = null;
+        private void buttonConfigureBoard_Click(object sender, EventArgs e)
+        {
+            if (BrainflowBoard != null && ConfigWindow == null)
+            {
+                ConfigWindow = new ConfigurationWindow(BrainflowBoard);
+                ConfigWindow.Log += OnLog;
+                ConfigWindow.FormClosed += ConfigurationWindowFormClosed;
+                ConfigWindow.Show();
+            }
+            else if ( ConfigWindow != null )
+            {
+                ConfigWindow.WindowState = FormWindowState.Minimized;
+                ConfigWindow.Show();
+                ConfigWindow.WindowState = FormWindowState.Normal;
+            }
+            else
+            {
+                MessageBox.Show("Please start the server before using Configure Board.", "brainHat GUI");
+            }
+        }
+
+        private void ConfigurationWindowFormClosed(object sender, FormClosedEventArgs e)
+        {
+            ConfigWindow.Log -= OnLog;
+            ConfigWindow = null;
         }
     }
 }

@@ -34,7 +34,7 @@ namespace brainHatSharpGUI
     /// Board Data Reader Class
     /// pretty specific to Cyton 8 channel right now, could be more generalized to work with other boards (?)
     /// </summary>
-    class BoardDataReader
+    public class BoardDataReader
     {
         public event LogEventDelegate Log;
         public event ConnectBoBoardEventDelegate ConnectToBoard;
@@ -43,7 +43,9 @@ namespace brainHatSharpGUI
         //  Properties
         public int BoardReadDelayMilliseconds { get; set; }
 
-        //
+        public string BoardConfigurationString { get; protected set; }
+
+        // Public Interface
         #region PublicInterface
 
         /// <summary>
@@ -52,6 +54,8 @@ namespace brainHatSharpGUI
         public async Task StartBoardDataReaderAsync(int boardId, BrainFlowInputParams inputParams)
         {
             await StopBoardDataReaderAsync();
+
+            Log?.Invoke(this, new LogEventArgs(this, "StartBoardDataReaderAsync", $"Starting board data reader", LogLevel.DEBUG));
 
             BoardId = boardId;
             InputParams = inputParams;
@@ -74,6 +78,8 @@ namespace brainHatSharpGUI
         {
             if (CancelTokenSource != null)
             {
+                Log?.Invoke(this, new LogEventArgs(this, "StopBoardDataReaderAsync", $"Stopping board data reader", LogLevel.DEBUG));
+
                 CancelTokenSource.Cancel();
                 if (RunTask != null)
                     await RunTask;
@@ -83,6 +89,88 @@ namespace brainHatSharpGUI
 
                 ReleaseBoard();
             }
+        }
+
+
+        /// <summary>
+        /// Reset the active session
+        /// </summary>
+        public async Task ResetSessionAsync()
+        {
+            Log?.Invoke(this, new LogEventArgs(this, "ResetSession", $"Resetting active session", LogLevel.DEBUG));
+
+            await StopBoardDataReaderAsync();
+            await Task.Delay(3000);
+            await StartBoardDataReaderAsync(BoardId, InputParams);
+        }
+
+
+        public async Task StartSignalTestAsync(TestSignalMode mode)
+        {
+            Log?.Invoke(this, new LogEventArgs(this, "StartSignalTestAsync", $"Setting board to signal test mode {mode}.", LogLevel.DEBUG));
+
+            await Task.Delay(1);
+
+            StopStreaming();
+
+            await Task.Delay(2000);
+
+            _ = ConfigureBoard("?");
+
+            await Task.Delay(3000);
+
+            var response = ConfigureBoard(mode.TestModeCommand());
+
+            Log?.Invoke(this, new LogEventArgs(this, "StartSignalTestAsync", $"Set test mode response:{response}.", LogLevel.DEBUG));
+
+            StartStreaming();
+        }
+
+
+        public async Task ResetChannelsToDefaultAsync()
+        {
+            Log?.Invoke(this, new LogEventArgs(this, "ResetChannelsToDefaultAsync", $"Resetting channels to defaults", LogLevel.DEBUG));
+
+            await Task.Delay(1);
+
+            StopStreaming();
+
+            await Task.Delay(2000);
+
+            _ = ConfigureBoard("?");
+
+            await Task.Delay(3000);
+
+            var response = ConfigureBoard("d");
+
+            Log?.Invoke(this, new LogEventArgs(this, "ResetChannelsToDefaultAsync", $"Resetting channels to defaults:{response}.", LogLevel.DEBUG));
+
+            BoardConfigurationString = ConfigureBoard("?");
+
+            StartStreaming();
+        }
+
+        /// <summary>
+        /// Configure board 
+        /// send raw ascii characters to the board and return the response
+        /// </summary>
+        protected string ConfigureBoard(string command)
+        {
+            Log?.Invoke(this, new LogEventArgs(this, "ConfigureBoard", $"Sending {command} to board.", LogLevel.DEBUG));
+
+            try
+            {
+                if (TheBoard.is_prepared())
+                {
+                    return TheBoard.config_board(command);
+                }
+            }
+            catch (Exception e)
+            {
+                Log?.Invoke(this, new LogEventArgs(this, "ConfigureBoard", e, LogLevel.ERROR));
+            }
+
+            return "";
         }
 
         #endregion
@@ -95,7 +183,10 @@ namespace brainHatSharpGUI
             BoardShim.set_log_level((int)LogLevels.LEVEL_ERROR);
 
             BoardReadDelayMilliseconds = 50;    //  default 20 hz
+
+            StreamRunning = false;
         }
+
 
         //  Thread run objects
         CancellationTokenSource CancelTokenSource;
@@ -109,11 +200,122 @@ namespace brainHatSharpGUI
         protected BrainFlowInputParams InputParams { get; private set; }
         private int InvalidReadCounter { get; set; }
 
+        private bool StreamRunning;
+
         //  Some properties to manage and inspect the data stream
         double LastReadingTimestamp { get; set; }
         int ReadCounter { get; set; }
         int ReadCounterLastReport { get; set; }
         DateTimeOffset LastReportTime { get; set; }
+
+
+        /// <summary>
+        /// Connect (reconnect) to board function
+        /// </summary>
+        private async Task EstablishConnectionWithBoard()
+        {
+            if (!BoardReady)
+            {
+                await InitializeBoard();
+
+                if (!BoardReady)
+                    await Task.Delay(1000);
+            }
+        }
+
+
+        /// <summary>
+        /// Init the board session
+        /// </summary>
+        private async Task InitializeBoard()
+        {
+            try
+            {
+                Log?.Invoke(this, new LogEventArgs(this, "InitializeBoard", $"Initializaing board", LogLevel.DEBUG));
+
+                ReleaseBoard();
+
+                TheBoard = new BoardShim(BoardId, InputParams);
+                SampleRate = BoardShim.get_sampling_rate(BoardId);
+                TimeStampIndex = BoardShim.get_timestamp_channel(BoardId);
+                TheBoard.prepare_session();
+
+                BoardConfigurationString = "";
+                int retries = 0;
+                while (BoardConfigurationString.Length == 0 && retries < 5)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5));
+                    BoardConfigurationString = TheBoard.config_board("?");
+                    if (retries > 0)
+                        Log?.Invoke(this, new LogEventArgs(this, "InitializeBoard", $"Retry get board configuration.", LogLevel.WARN));
+                    retries++;
+                }
+
+                StartStreaming();
+
+                // for STREAMING_BOARD you have to query information using board id for master board
+                // because for STREAMING_BOARD data format is determined by master board!
+                if (BoardId == (int)brainflow.BoardIds.STREAMING_BOARD)
+                {
+                    BoardId = int.Parse(InputParams.other_info);
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(3));
+
+                ConnectToBoard?.Invoke(this, new ConnectToBoardEventArgs(BoardId, SampleRate));
+            }
+            catch (Exception e)
+            {
+                Log?.Invoke(this, new LogEventArgs(this, "InitializeBoard", e, LogLevel.ERROR));
+
+                if (TheBoard != null && TheBoard.is_prepared())
+                {
+                    TheBoard.release_session();
+                }
+                TheBoard = null;
+            }
+        }
+
+
+        /// <summary>
+        /// Release the board session
+        /// </summary>
+        private void ReleaseBoard()
+        {
+            if (TheBoard != null)
+            {
+                if (TheBoard.is_prepared())
+                {
+                    Log?.Invoke(this, new LogEventArgs(this, "ReleaseBoard", $"Releasing board.", LogLevel.DEBUG));
+
+                    if (StreamRunning)
+                        StopStreaming();
+                    TheBoard.release_session();
+                }
+
+                InvalidReadCounter = 0;
+            }
+        }
+
+
+        /// <summary>
+        /// Stop the active session streaming data
+        /// </summary>
+        private void StopStreaming()
+        {
+            StreamRunning = false;
+            TheBoard.stop_stream();
+        }
+
+        /// <summary>
+        /// Start the active session streaming data
+        /// </summary>
+        private void StartStreaming()
+        {
+            TheBoard.start_stream();
+            StreamRunning = true;
+        }
+
 
         /// <summary>
         /// Read board data run function
@@ -125,7 +327,8 @@ namespace brainHatSharpGUI
                 while (!cancelToken.IsCancellationRequested)
                 {
                     await EstablishConnectionWithBoard();
-                    if (!BoardReady)
+
+                    if (!BoardReady || ! StreamRunning)
                     {
                         //  board is not ready, wait a second before trying again
                         await Task.Delay(TimeSpan.FromSeconds(1));
@@ -253,9 +456,6 @@ namespace brainHatSharpGUI
         }
 
 
-
-
-
         /// <summary>
         /// Calculate the period between readings
         /// use this period to estimate more precise time stamp of each reading
@@ -320,80 +520,6 @@ namespace brainHatSharpGUI
         private bool BoardReady => TheBoard != null && TheBoard.is_prepared();
 
 
-        /// <summary>
-        /// Connect (reconnect) to board function
-        /// </summary>
-        private async Task EstablishConnectionWithBoard()
-        {
-            if (!BoardReady)
-            {
-                await InitializeBoard();
-
-                if (!BoardReady)
-                    await Task.Delay(1000);
-            }
-        }
-
-
-        /// <summary>
-        /// Init the board session
-        /// </summary>
-        private async Task InitializeBoard()
-        {
-            try
-            {
-                Log?.Invoke(this, new LogEventArgs(this, "InitializeBoard", $"Initializaing board", LogLevel.DEBUG));
-
-                ReleaseBoard();
-
-                TheBoard = new BoardShim(BoardId, InputParams);
-                SampleRate = BoardShim.get_sampling_rate(BoardId);
-                TimeStampIndex = BoardShim.get_timestamp_channel(BoardId);
-                TheBoard.prepare_session();
-                TheBoard.start_stream();
-
-                // for STREAMING_BOARD you have to query information using board id for master board
-                // because for STREAMING_BOARD data format is determined by master board!
-                if (BoardId == (int)brainflow.BoardIds.STREAMING_BOARD)
-                {
-                    BoardId = int.Parse(InputParams.other_info);
-                }
-
-                await Task.Delay(TimeSpan.FromSeconds(7));
-
-                ConnectToBoard?.Invoke(this, new ConnectToBoardEventArgs(BoardId, SampleRate));
-            }
-            catch (Exception e)
-            {
-                Log?.Invoke(this, new LogEventArgs(this, "InitializeBoard", e, LogLevel.ERROR));
-
-                if (TheBoard != null && TheBoard.is_prepared())
-                {
-                    TheBoard.release_session();
-                }
-                TheBoard = null;
-            }
-        }
-
-
-        /// <summary>
-        /// Release the board session
-        /// </summary>
-        private void ReleaseBoard()
-        {
-            if (TheBoard != null)
-            {
-                if (TheBoard.is_prepared())
-                {
-                    Log?.Invoke(this, new LogEventArgs(this, "ReleaseBoard", $"Releasing board.", LogLevel.DEBUG));
-
-                    TheBoard.stop_stream();
-                    TheBoard.release_session();
-                }
-
-                InvalidReadCounter = 0;
-            }
-        }
 
 
         #endregion
