@@ -62,6 +62,7 @@ namespace brainHatSharpGUI
             {
                 if (nextLog.Level >= Logger.LogLevelDisplay)
                 {
+                    System.Diagnostics.Debug.WriteLine($"Next Log in UI: {nextLog.FormatLogForConsole()}");
                     var item = listViewLogs.Items.Insert(0, nextLog.FormatLogForConsole());
                     item.ForeColor = nextLog.Level.LogColour();
                     item.BackColor = nextLog.Level.BackgrondColour(nextLog.Remote);

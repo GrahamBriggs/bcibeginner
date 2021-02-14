@@ -50,6 +50,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoardDataReader.cs" />
+    <Compile Include="ChannelSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ChannelSettings.Designer.cs">
+      <DependentUpon>ChannelSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="ComboBoxItem.cs" />
     <Compile Include="ConfigurationWindow.cs">
       <SubType>Form</SubType>
@@ -75,6 +81,9 @@
     <Compile Include="StatusBroadcastServer.cs" />
     <Compile Include="StatusMonitor.cs" />
     <Compile Include="TcpipCommandServer.cs" />
+    <EmbeddedResource Include="ChannelSettings.resx">
+      <DependentUpon>ChannelSettings.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ConfigurationWindow.resx">
       <DependentUpon>ConfigurationWindow.cs</DependentUpon>
     </EmbeddedResource>
