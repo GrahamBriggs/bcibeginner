@@ -82,11 +82,13 @@ namespace brainHatSharpGUI
             listViewConfig.Resize += listViewConfig_Resize;
 
             listViewChannels.Columns.Add("Channel", 60);
-            listViewChannels.Columns.Add("Power Down", 75);
+            listViewChannels.Columns.Add("Power Down", 100);
             listViewChannels.Columns.Add("Gain", 50);
             listViewChannels.Columns.Add("Input Type", 75);
             listViewChannels.Columns.Add("Bias Set", 60);
             listViewChannels.Columns.Add("SRB2", 60);
+            listViewChannels.Columns.Add("LLOF P", 60);
+            listViewChannels.Columns.Add("LLOF N", 60);
             listViewChannels.MultiSelect = true;
             listViewChannels.FullRowSelect = true;
 
@@ -167,7 +169,17 @@ namespace brainHatSharpGUI
             {
                 foreach (var nextChannel in nextBoard.Channels)
                 {
-                    var newItem = listViewChannels.Items.Add( new ListViewItem(new string[6] { nextChannel.ChannelNumber.ToString(), nextChannel.PowerDown.ToString(), nextChannel.Gain.ToString(), nextChannel.InputType.ToString(), nextChannel.Bias.ToString(), nextChannel.Srb2.ToString() }));
+                    var newItem = listViewChannels.Items.Add(new ListViewItem(new string[8]
+                    {
+                        nextChannel.ChannelNumber.ToString(),
+                        nextChannel.PowerDown.ToString(),
+                        nextChannel.Gain.ToString(),
+                        nextChannel.InputType.ToString(),
+                        nextChannel.Bias.ToString(),
+                        nextChannel.Srb2.ToString(),
+                        nextChannel.LlofP.ToString(),
+                        nextChannel.LlofN.ToString(),
+                    }));
                     newItem.Tag = nextChannel;
                 }
             }
@@ -260,6 +272,7 @@ namespace brainHatSharpGUI
             buttonStopStream.Enabled = enable;
             buttonCytonSrb.Enabled = enable;
             buttonDaisySrb.Enabled = enable;
+            buttonImpedance.Enabled = enable;
         }
 
 
@@ -297,7 +310,7 @@ namespace brainHatSharpGUI
                 catch (Exception)
                 {
                     UpdateListViewRawConfiguration("Failed to get valid board configuration! Retrying ...");
-                    await Task.Delay(3000);
+                    await Task.Delay(4000);
                     retries++;
                 }
             }
@@ -383,7 +396,37 @@ namespace brainHatSharpGUI
                     BlankBoardUi("Setting channels ...");
 
                     await Board.SetBoardChannelAsync(settingsWindow.ChannelsToSet, settingsWindow);
-                    await Task.Delay(3000);
+                    await Task.Delay(4000);
+
+                    await GetBoardConfigAndUpdateUi();
+                    EnableSettingsButtons(true);
+                }
+            }
+        }
+
+        private async void buttonImpedance_Click(object sender, EventArgs e)
+        {
+            if (!IsSafeToExecuteCommand())
+                return;
+
+            var selected = listViewChannels.SelectedItems;
+
+            if (selected.Count > 0)
+            {
+                List<int> selectedChannels = new List<int>();
+                for (int i = 0; i < listViewChannels.SelectedItems.Count; i++)
+                {
+                    selectedChannels.Add(((ICytonChannelSettings)(listViewChannels.SelectedItems[i]).Tag).ChannelNumber);
+                }
+
+                var settingsWindow = new ImpedanceSettings(selectedChannels, (ICytonChannelSettings)selected[0].Tag);
+                if (settingsWindow.ShowDialog() == DialogResult.OK)
+                {
+                    EnableSettingsButtons(false);
+                    BlankBoardUi("Setting channels ...");
+
+                    await Board.SetImpedanceModeAsync(settingsWindow.ChannelsToSet, settingsWindow);
+                    await Task.Delay(4000);
 
                     await GetBoardConfigAndUpdateUi();
                     EnableSettingsButtons(true);
@@ -404,7 +447,7 @@ namespace brainHatSharpGUI
             BlankBoardUi("Setting channels to default ...");
 
             await Board.ResetChannelsToDefaultAsync();
-            await Task.Delay(3000);
+            await Task.Delay(4000);
 
             await GetBoardConfigAndUpdateUi();
             EnableSettingsButtons(true);
@@ -424,7 +467,7 @@ namespace brainHatSharpGUI
 
             var item = (ComboBoxItem)comboBoxSignalTest.SelectedItem;
             await Board.SetSignalTestModeAsync((TestSignalMode)item.Value);
-            await Task.Delay(3000);
+            await Task.Delay(4000);
 
             await GetBoardConfigAndUpdateUi();
             EnableSettingsButtons(true);
@@ -449,7 +492,7 @@ namespace brainHatSharpGUI
                 BlankBoardUi();
 
                 await Board.SetSrb1Async(firstChannel, !isSet);
-                await Task.Delay(3000);
+                await Task.Delay(4000);
 
                 await GetBoardConfigAndUpdateUi();
                 EnableSettingsButtons(true);
@@ -472,12 +515,13 @@ namespace brainHatSharpGUI
                 BlankBoardUi();
 
                 await Board.SetSrb1Async(firstChannel, ! isSet);
-                await Task.Delay(3000);
+                await Task.Delay(4000);
 
                 await GetBoardConfigAndUpdateUi();
                 EnableSettingsButtons(true);
             }
         }
-       
+
+      
     }
 }

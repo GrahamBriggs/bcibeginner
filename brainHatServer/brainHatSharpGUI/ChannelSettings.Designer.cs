@@ -178,7 +178,7 @@ namespace brainHatSharpGUI
             this.MaximumSize = new System.Drawing.Size(389, 347);
             this.MinimumSize = new System.Drawing.Size(389, 347);
             this.Name = "ChannelSettings";
-            this.Text = "ChannelSettings";
+            this.Text = "Channel Settings";
             this.ResumeLayout(false);
             this.PerformLayout();
 

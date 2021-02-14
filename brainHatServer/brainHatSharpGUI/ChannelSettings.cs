@@ -126,6 +126,8 @@ namespace brainHatSharpGUI
         }
 
         public int ChannelNumber { get; set; }
+        public bool LlofP { get; set; }
+        public bool LlofN { get; set; }
 
         private void buttonSetChannels_Click(object sender, EventArgs e)
         {

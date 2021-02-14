@@ -237,6 +237,56 @@ namespace brainHatSharpGUI
         }
 
 
+        /// <summary>
+        /// Set Board Channels
+        /// </summary>
+        public async Task<bool> SetImpedanceModeAsync(IEnumerable<int> channels, ICytonChannelSettings settings)
+        {
+            if (await SettingsLock.WaitAsync(0))
+            {
+                try
+                {
+                    Log?.Invoke(this, new LogEventArgs(this, "SetImpedanceModeAsync", $"Setting board impedance {string.Join(",", channels)} to P {settings.LlofP} N {settings.LlofN}.", LogLevel.DEBUG));
+
+                    string settingsString = "";
+                    int setChannelCounter = 0;
+                    foreach (var nextChannel in channels)
+                    {
+                        setChannelCounter++;
+                        settingsString += $"z{nextChannel.ChannelSetCharacter()}{settings.LlofP.BoolCharacter()}{settings.LlofN.BoolCharacter()}Z";
+                        if (setChannelCounter > 0)
+                        {
+                            var response = ConfigureBoard(settingsString);
+                            Log?.Invoke(this, new LogEventArgs(this, "SetImpedanceModeAsync", $"Response:{response}.", LogLevel.DEBUG));
+                            settingsString = "";
+                            setChannelCounter = 0;
+                            await Task.Delay(500);
+                        }
+                    }
+
+                    if (settingsString.Length > 0)
+                    {
+                        var response = ConfigureBoard(settingsString);
+                        Log?.Invoke(this, new LogEventArgs(this, "SetImpedanceModeAsync", $"Response:{response}.", LogLevel.DEBUG));
+                        await Task.Delay(500);
+                    }
+
+                    return true;
+                }
+                finally
+                {
+                    SettingsLock.Release();
+                }
+            }
+            else
+            {
+                Log?.Invoke(this, new LogEventArgs(this, "SetImpedanceModeAsync", $"Another process is busy with the settings.", LogLevel.WARN));
+                return false;
+            }
+        }
+
+
+
         public async Task<bool> SetSrb1Async(ICytonChannelSettings settings, bool connect)
         {
             if (await SettingsLock.WaitAsync(0))

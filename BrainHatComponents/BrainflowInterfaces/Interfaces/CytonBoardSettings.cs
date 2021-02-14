@@ -12,6 +12,8 @@ namespace BrainflowInterfaces
         ChannelGain Gain { get; set; }
         AdsChannelInputType InputType { get; set; }
         bool Bias { get; set; }
+        bool LlofP { get; set; }
+        bool LlofN { get; set; }
         bool Srb2 { get; set; }
 
     }
@@ -33,6 +35,8 @@ namespace BrainflowInterfaces
         public ChannelGain Gain { get; set;}
         public AdsChannelInputType InputType { get; set;}
         public bool Bias { get; set;}
+        public bool LlofP { get; set; }
+        public bool LlofN { get; set; }
         public bool Srb2 { get; set;}
 
         public override string ToString()
@@ -138,6 +142,8 @@ namespace BrainflowInterfaces
                     }
                     else if (nextLine.Length > "BIAS_SENSP".Length && nextLine.Substring(0, "BIAS_SENSP".Length) == "BIAS_SENSP")
                     {
+                        ValidateBoardChannels();
+
                         var columns = nextLine.Split(',');
                         if (columns.Length == 11)
                         {
@@ -149,8 +155,40 @@ namespace BrainflowInterfaces
                             }
                         }
                     }
+                    else if (nextLine.Length > "LOFF_SENSP".Length && nextLine.Substring(0, "LOFF_SENSP".Length) == "LOFF_SENSP")
+                    {
+                        ValidateBoardChannels();
+
+                        var columns = nextLine.Split(',');
+                        if (columns.Length == 11)
+                        {
+                            int bit = 0;
+                            foreach (var nextChannel in _Boards.Last().Channels)
+                            {
+                                nextChannel.LlofP = columns[bit.IndexOfBit()] == "1" ? true : false;
+                                bit++;
+                            }
+                        }
+                    }
+                    else if (nextLine.Length > "LOFF_SENSN".Length && nextLine.Substring(0, "LOFF_SENSN".Length) == "LOFF_SENSN")
+                    {
+                        ValidateBoardChannels();
+
+                        var columns = nextLine.Split(',');
+                        if (columns.Length == 11)
+                        {
+                            int bit = 0;
+                            foreach (var nextChannel in _Boards.Last().Channels)
+                            {
+                                nextChannel.LlofN = columns[bit.IndexOfBit()] == "1" ? true : false;
+                                bit++;
+                            }
+                        }
+                    }
                     else if (nextLine.Length > "MISC1".Length && nextLine.Substring(0, "MISC1".Length) == "MISC1")
                     {
+                        ValidateBoardChannels();
+
                         var columns = nextLine.Split(',');
                         if (columns.Length == 11)
                         {
@@ -164,6 +202,15 @@ namespace BrainflowInterfaces
             catch (Exception e)
             {
                 throw e;
+            }
+        }
+
+        private void ValidateBoardChannels()
+        {
+            if (_Boards.Last().Channels.Length != 8)
+            {
+                _Boards = new List<CytonBoardSettingsImplementation>();
+                throw new Exception("Fewer than 8 channels in the board");
             }
         }
 

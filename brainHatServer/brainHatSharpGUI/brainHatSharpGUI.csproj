@@ -50,6 +50,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoardDataReader.cs" />
+    <Compile Include="ImpedanceSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ImpedanceSettings.Designer.cs">
+      <DependentUpon>ImpedanceSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="ChannelSettings.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -81,6 +87,9 @@
     <Compile Include="StatusBroadcastServer.cs" />
     <Compile Include="StatusMonitor.cs" />
     <Compile Include="TcpipCommandServer.cs" />
+    <EmbeddedResource Include="ImpedanceSettings.resx">
+      <DependentUpon>ImpedanceSettings.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ChannelSettings.resx">
       <DependentUpon>ChannelSettings.cs</DependentUpon>
     </EmbeddedResource>
