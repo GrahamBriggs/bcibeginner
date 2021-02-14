@@ -26,8 +26,8 @@ namespace BrainflowInterfacesTests
                 foreach ( var nextChannel in boardSettings.Boards.First().Channels)
                 {
                     Assert.AreEqual(false, nextChannel.PowerDown);
-                    Assert.AreEqual(ChannelGain.Gain24, nextChannel.Gain);
-                    Assert.AreEqual(ChannelInputType.AdsinputNormal, nextChannel.InputType);
+                    Assert.AreEqual(ChannelGain.x24, nextChannel.Gain);
+                    Assert.AreEqual(AdsChannelInputType.Normal, nextChannel.InputType);
                     Assert.AreEqual(true, nextChannel.Srb2);
                     Assert.AreEqual(true, nextChannel.Bias);
                 }
@@ -36,8 +36,8 @@ namespace BrainflowInterfacesTests
                 foreach (var nextChannel in boardSettings.Boards.Last().Channels)
                 {
                     Assert.AreEqual(false, nextChannel.PowerDown);
-                    Assert.AreEqual(ChannelGain.Gain24, nextChannel.Gain);
-                    Assert.AreEqual(ChannelInputType.AdsinputNormal, nextChannel.InputType);
+                    Assert.AreEqual(ChannelGain.x24, nextChannel.Gain);
+                    Assert.AreEqual(AdsChannelInputType.Normal, nextChannel.InputType);
                     Assert.AreEqual(true, nextChannel.Srb2);
                     Assert.AreEqual(true, nextChannel.Bias);
                 }

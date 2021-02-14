@@ -48,7 +48,7 @@
     <Compile Include="BlinkWink10.cs" />
     <Compile Include="BlinkWink5.cs" />
     <Compile Include="DataParsing.cs" />
-    <Compile Include="MethodInfoTests.cs" />
+    <Compile Include="SignalFilterTests.cs" />
     <Compile Include="NewBlinkTest.cs" />
     <Compile Include="SeekingAlpha.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -91,6 +91,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\BrainHatClient\BrainHatClient\Config\DefaultFilterConfig.xml" />
+    <Content Include="TestFiles\SimpleFilter1.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="TestFiles\blinkWink10_082530.csv">

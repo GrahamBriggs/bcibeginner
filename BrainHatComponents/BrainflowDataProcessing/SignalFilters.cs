@@ -11,9 +11,9 @@ using System.Xml.Linq;
 namespace BrainflowDataProcessing
 {
     /// <summary>
-    /// Signal filter function
+    /// Signal filter function base class
     /// </summary>
-    public class SignalFilterFunction
+    public abstract class SignalFilterFunction
     {
         public SignalFilterFunction(object methodObject, MethodInfo method, object[] parameters)
         {
@@ -22,18 +22,52 @@ namespace BrainflowDataProcessing
             Parameters = parameters;
         }
 
-        public double[] RunFilterFunction(double[] data, int sampleRate)
+        public abstract double[] RunFilterFunction(double[] data, int sampleRate);
+
+        protected object MethodObject;
+        protected MethodInfo Method;
+        protected object[] Parameters;
+    }
+
+
+    /// <summary>
+    /// Signal filter function with dynamic parameters of data[] and sample rate
+    /// </summary>
+    public class SignalFilterFunctionDataSampleRate : SignalFilterFunction
+    {
+        public SignalFilterFunctionDataSampleRate(object methodObject, MethodInfo method, object[] parameters)
+            :base(methodObject, method, parameters)
+        {
+           
+        }
+
+        public override double[] RunFilterFunction(double[] data, int sampleRate)
         {
             Parameters[0] = data;
             Parameters[1] = sampleRate;
 
             return (double[])Method.Invoke(MethodObject, Parameters);
         }
+    }
 
 
-        object MethodObject;
-        MethodInfo Method;
-        object[] Parameters;
+    /// <summary>
+    /// Signal filter function with dynamic parameter of data only
+    /// </summary>
+    public class SignalFilterFunctionData : SignalFilterFunction
+    {
+        public SignalFilterFunctionData(object methodObject, MethodInfo method, object[] parameters)
+            : base(methodObject, method, parameters)
+        {
+
+        }
+
+        public override double[] RunFilterFunction(double[] data, int sampleRate)
+        {
+            Parameters[0] = data;
+          
+            return (double[])Method.Invoke(MethodObject, Parameters);
+        }
     }
 
 
@@ -52,9 +86,9 @@ namespace BrainflowDataProcessing
             return data;
         }
 
-        public void AddFunction(object methodObject, MethodInfo method, object[] parameters)
+        public void AddFunction(SignalFilterFunction function)
         {
-            FilterFunctions.Add(new SignalFilterFunction(methodObject, method, parameters));
+            FilterFunctions.Add(function);
         }
 
         public SignalFilter(string name)
@@ -88,7 +122,7 @@ namespace BrainflowDataProcessing
                 {
                     var doc = XDocument.Load(reader);
 
-                    var filters = doc.Element("brainHatConfig")?.Element("Filters")?.Elements("Filter");
+                    var filters = doc.Element("brainHatSignalFilters")?.Element("Filters")?.Elements("Filter");
                     if ( filters == null )
                     {
                         throw new Exception("Document does not hae a <Filters> element.");
@@ -127,7 +161,7 @@ namespace BrainflowDataProcessing
                             //  create object array from parameters, casting to proper type
                             object[] parameters = mi.GetParameters().Select(p => paramDict[p.Name].Length > 0 ? Convert.ChangeType(paramDict[p.Name], p.ParameterType) : null).ToArray();
 
-                            newFilter.AddFunction(typeof(DataFilter).Assembly, mi, parameters);
+                            AddSignalFilterFunction(newFilter, mi, paramDict, parameters);
                         }
 
                         Filters.Add(filterName, newFilter);
@@ -140,6 +174,23 @@ namespace BrainflowDataProcessing
             }
         }
 
+        
+        /// <summary>
+        /// Add a function to the filter
+        /// will determine if this function has dynamic parameters of data[] only, or data[] and sampling_rate
+        /// </summary>
+        private static void AddSignalFilterFunction(SignalFilter filter, MethodInfo mi, Dictionary<string, string> paramDict, object[] parameters)
+        {
+            if (paramDict.ContainsKey("sampling_rate"))
+                filter.AddFunction(new SignalFilterFunctionDataSampleRate(typeof(DataFilter).Assembly, mi, parameters));
+            else
+                filter.AddFunction(new SignalFilterFunctionData(typeof(DataFilter).Assembly, mi, parameters));
+        }
+
+
+        /// <summary>
+        /// Load a default filter into the signal filters
+        /// </summary>
         public void LoadDefaultFilter()
         {
             var newFilter = new SignalFilter("bandpass");
@@ -157,7 +208,7 @@ namespace BrainflowDataProcessing
 
             //  create object array from parameters, casting to proper type
             object[] parameters = mi.GetParameters().Select(p => paramDict[p.Name].Length > 0 ? Convert.ChangeType(paramDict[p.Name], p.ParameterType) : null).ToArray();
-            newFilter.AddFunction(typeof(DataFilter).Assembly, mi, parameters);
+            newFilter.AddFunction(new SignalFilterFunctionDataSampleRate(typeof(DataFilter).Assembly, mi, parameters));
 
             Filters.Clear();
             Filters.Add(newFilter.Name, newFilter);

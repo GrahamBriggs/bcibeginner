@@ -75,8 +75,8 @@ namespace BrainflowDataProcessing
         {
             if ( FilteredData.Count > 0 )
             {
-                var first = FilteredData.First().TimeStamp;
-                var filtered = FilteredData.Where(x => (first - x.TimeStamp) < seconds);
+                var last = FilteredData.Last().TimeStamp;
+                var filtered = FilteredData.Where(x => (last - x.TimeStamp) < seconds);
                 return filtered.ToArray();
             }
 
