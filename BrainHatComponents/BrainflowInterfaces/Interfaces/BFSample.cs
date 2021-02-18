@@ -33,4 +33,31 @@ namespace BrainflowInterfaces
 
         double[] AsRawSample();
     }
+
+
+    public static class BFSample
+    {
+        public static IBFSample MakeNewSample(IBFSample sample)
+        {
+            if (sample is BFCyton8Sample cyton8Sample)
+                return new BFCyton8Sample(cyton8Sample);
+            else if (sample is BFCyton16Sample cyton16Sample)
+                return new BFCyton16Sample(cyton16Sample);
+            else
+                return null;    // TODO - ganglion
+        }
+
+        public static IBFSample MakeNewSample(int boardId)
+        {
+            switch (boardId)
+            {
+                case 0:
+                    return new BFCyton8Sample();
+                case 2:
+                    return new BFCyton16Sample();
+                default:
+                    return null;    // TODO - ganglion
+            }
+        }
+    }
 }

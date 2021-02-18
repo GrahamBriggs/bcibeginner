@@ -1,4 +1,5 @@
 ﻿using brainflow;
+using BrainflowInterfaces;
 using LoggingInterfaces;
 using System;
 using System.Collections.Generic;
@@ -246,5 +247,50 @@ namespace BrainflowDataProcessing
         //  The filter collection
         protected Dictionary<string, SignalFilter> Filters;
 
+    }
+
+
+    public static class FilterBrainflowSample
+    {
+        public static IBFSample[] FilterChunk(SignalFilter filter, IEnumerable<IBFSample> chunk, int boardId, int numberOfChannels, int sampleRate)
+        {
+            try
+            {
+                if (chunk == null || chunk.Count() == 0)
+                {
+                    throw new ArgumentException("Invalid chunk");
+                }
+
+                //  copy the data for filtering
+                var filteredSamples = new List<IBFSample>(chunk.Select(x => BFSample.MakeNewSample(x)));
+
+                for (int i = 0; i < numberOfChannels; i++)
+                {
+                    var filtered = filter.ApplyFilter(chunk.GetExgDataForChannel(i), sampleRate);
+
+                    for (int j = 0; j < chunk.Count(); j++)
+                    {
+                        filteredSamples[j].SetExgDataForChannel(i, filtered[j]);
+                    }
+                }
+
+                var lastTimeStamp = chunk.First().TimeStamp;
+                int lastSampleIndex = (int)chunk.First().SampleIndex;
+                for (int i = 0; i < filteredSamples.Count; i++)
+                {
+                    filteredSamples[i].TimeStamp = lastTimeStamp + filteredSamples[i].SampleIndex.TimeBetweenSamples(lastSampleIndex, boardId, sampleRate);
+                    lastTimeStamp = filteredSamples[i].TimeStamp;
+                    lastSampleIndex = (int)filteredSamples[i].SampleIndex;
+                }
+
+                return filteredSamples.ToArray();
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        
     }
 }

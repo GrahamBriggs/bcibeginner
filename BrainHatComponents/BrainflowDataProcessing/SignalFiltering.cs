@@ -200,6 +200,9 @@ namespace BrainflowDataProcessing
         }
 
 
+        /// <summary>
+        /// Apply the filter to the signal
+        /// </summary>
         private void FilterSignal()
         {
             try
@@ -209,36 +212,17 @@ namespace BrainflowDataProcessing
 
                 var rawSamples = GetRawChunk(3);
 
-                if (rawSamples == null || rawSamples.Count() == 0)
-                {
-                    return;
-                }
-
-                //  copy the data for filtering
-                var filteredSamples = new List<IBFSample>(rawSamples.Select(x => MakeNewSample(x)));
-
-                for (int i = 0; i < NumberOfChannels; i++)
-                {
-                    var filtered = Filter.ApplyFilter(rawSamples.GetExgDataForChannel(i), SampleRate);
-
-                    for (int j = 0; j < rawSamples.Count(); j++)
-                    {
-                        filteredSamples[j].SetExgDataForChannel(i, filtered[j]);
-                    }
-                }
-
-                var startTime = rawSamples.First().TimeStamp;
-
-                for (int i = 0; i < filteredSamples.Count; i++)
-                    filteredSamples[i].TimeStamp = startTime + (1.0 / SampleRate * i);
-
+                var filteredSamples = FilterBrainflowSample.FilterChunk(Filter, rawSamples, BoardId, NumberOfChannels, SampleRate);
 
                 var oldestSample = FilteredData.LastOrDefault()?.TimeStamp ?? filteredSamples[0].TimeStamp;
-
                 FilteredData.AddRange(filteredSamples.Where(x=>x.TimeStamp > oldestSample));
 
                 sw.Stop();
                 ProcessingTimes.Enqueue(sw.Elapsed.TotalSeconds);
+            }
+            catch (ArgumentException ae)
+            {
+                Log?.Invoke(this, new LogEventArgs(Name, this, "FilterSignal",ae, LogLevel.WARN));
             }
             catch (Exception e)
             {
@@ -246,17 +230,6 @@ namespace BrainflowDataProcessing
             }
         }
 
-      
-
-        private IBFSample MakeNewSample(IBFSample sample)
-        {
-            if (sample is BFCyton8Sample cyton8Sample)
-                return new BFCyton8Sample(cyton8Sample);
-            else if (sample is BFCyton16Sample cyton16Sample)
-                return new BFCyton16Sample(cyton16Sample);
-            else
-                return null;    // TODO - ganglion
-        }
 
         #endregion
     }
