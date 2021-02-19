@@ -170,7 +170,7 @@ namespace BrainflowInterfaces
         public BFCyton16Sample(string sample)
         {
             var fields = sample.Split(',');
-            if ( fields.Length == 24 )
+            if ( fields.Length == 32 )
             {
                 int index = 0;
                 SampleIndex = double.Parse(fields[index++]);

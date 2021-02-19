@@ -18,7 +18,7 @@
         <Transport>SSH</Transport>
         <UserName>pi</UserName>
       </RemoteHost>
-      <LocalDirectory>C:\Users\grahambriggs\source\bciBeginner\BrainHatComponents\brainflow</LocalDirectory>
+      <LocalDirectory>$(ProjectDir)\..\..\brainflow</LocalDirectory>
       <RemoteDirectory>/home/pi/Source/brainflowGBDev</RemoteDirectory>
       <FileMasks>
         <string>-*.opensdf</string>

@@ -87,7 +87,14 @@ namespace BrainflowDataProcessing
             return Filters.GetFilterNames();
         }
 
+        public async Task<SignalFiltering> StartSignalFilteringAsync()
+        {
+            var filterName = ActiveFilters.FirstOrDefault().Key;
+            if (filterName != null)
+                return await StartSignalFilteringAsync(filterName);
 
+            return null;
+        }
 
         /// <summary>
         /// Start the signal filtering task
@@ -107,7 +114,7 @@ namespace BrainflowDataProcessing
             {
                 var newFilter = new SignalFiltering(Name, BoardId, SampleRate, Filters.GetFilter(filterName))
                 {
-                    FilterBufferLength = RealTimeBufferLengthSeconds,
+                    FilterBufferLength = 30,
                 };
 
                 newFilter.GetRawChunk = GetRawChunk;
@@ -186,17 +193,6 @@ namespace BrainflowDataProcessing
 
 
         /// <summary>
-        /// Set the band power processor ranges
-        /// supply a list of tuples: lowFrequency,highFrequency in each range
-        /// </summary>
-        /// <param name="rangeList"></param>
-        public void SetBandPowerRangeList(List<Tuple<double,double>> rangeList)
-        {
-            BandPowers.SetBandPowerRangeList(rangeList);
-        }
-
-
-        /// <summary>
         /// Add data to the proecssor queue from an event
         /// </summary>
         public void AddDataToProcessor(object sender, BFSampleEventArgs e)
@@ -241,6 +237,19 @@ namespace BrainflowDataProcessing
             return GetUnfilteredData(since)?.Reverse().ToArray();
         }
 
+
+        /// <summary>
+        /// Get a data source with all the current data
+        /// </summary>
+        public BrainflowDataSource GetDataSourceWithCurrentData()
+        {
+            lock (UnfilteredData)
+            {
+                var currentData = UnfilteredData.ToList();
+                currentData.Reverse();
+                return new BrainflowDataSource(BoardId, NumberOfChannels, SampleRate, currentData);
+            }
+        }
 
         
 
@@ -292,7 +301,7 @@ namespace BrainflowDataProcessing
             BandPowers.GetRawChunk = GetRawChunk;
             BandPowers.Log += OnComponentLog;
 
-            RealTimeBufferLengthSeconds = 30;
+            RealTimeBufferLengthSeconds = 5*60;
 
 
             ActiveFilters = new Dictionary<string, SignalFiltering>();
@@ -589,24 +598,6 @@ namespace BrainflowDataProcessing
             }
         }
 
-        public static int SampleIndexDifference(int lastSampleIndex, int nextIndex)
-        {
-            int difference = -1;
-            if (Math.Abs((lastSampleIndex - nextIndex) - 255) < 0.1)
-            {
-                difference = 1;
-            }
-            else if (nextIndex < lastSampleIndex)
-            {
-                difference = (int)nextIndex + (255 - (int)lastSampleIndex);
-            }
-            else
-            {
-                difference = nextIndex - lastSampleIndex;
-            }
-            
-            return difference;
-        }
 
 
         private int CountMissingIndex;
@@ -618,9 +609,8 @@ namespace BrainflowDataProcessing
         private void InspectSampleIndex(IBFSample sample)
         {
             var nextIndex = (int)(sample.SampleIndex);
-            var difference = SampleIndexDifference( LastSampleIndex, nextIndex );
+            var difference = sample.SampleIndex.SampleIndexDifference(LastSampleIndex);
             LastSampleIndex = nextIndex;
-
 
             switch (BoardId)
             {

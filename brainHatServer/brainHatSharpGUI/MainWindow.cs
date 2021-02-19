@@ -25,14 +25,30 @@ namespace brainHatSharpGUI
         {
             InitializeComponent();
 
+#if DEBUG
+            BoardShim.set_log_file("./brainflowLogs.txt");
+            BoardShim.log_message((int)LogLevels.LEVEL_DEBUG, "Logging Message Test");
+#endif
             BrainflowBoard = null;
             LoggingWindow = null;
 
             FileWriter = new OBCIGuiFormatFileWriter();
         }
 
-        LogWindow LoggingWindow;
+       
+        Logging Logger;
+        BoardDataReader BrainflowBoard;
+        StatusBroadcastServer BroadcastStatus;
+        LSLDataBroadcast LslBroadcast;
+        TcpipCommandServer CommandServer;
+        StatusMonitor MonitorStatus;
+        OBCIGuiFormatFileWriter FileWriter;
+        ConfigurationWindow ConfigWindow = null;
+        LogWindow LoggingWindow = null;
 
+        /// <summary>
+        /// On Window Loaded
+        /// </summary>
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -47,10 +63,38 @@ namespace brainHatSharpGUI
 
             SetBoardIdRadioButton();
 
+            EnableConnectionButtons(true);
+            buttonConfigureBoard.Enabled = false;
+
             Logger.AddLog(this, new LogEventArgs(this, "OnLoad", $"Program started.", LogLevel.INFO));
         }
 
-       
+
+        /// <summary>
+        /// Create and start the program components
+        /// </summary>
+        private async Task StartProgramComponentsAsync()
+        {
+            //  create udp multicast broadcaster
+            BroadcastStatus = new StatusBroadcastServer();
+            BroadcastStatus.Log += OnLog;
+
+            //  create the TCPIP command server
+            CommandServer = new TcpipCommandServer();
+            CommandServer.Log += OnLog;
+            CommandServer.ProcessReceivedRequest = CommandServerProcessRequestAsync;
+
+            //  create status monitor
+            MonitorStatus = new StatusMonitor();
+            MonitorStatus.Log += OnLog;
+            MonitorStatus.StatusUpdate += OnStatusUpdate;
+
+            await BroadcastStatus.StartDataBroadcastServerAsync();
+            await CommandServer.StartCommandServerAsync();
+            await MonitorStatus.StartStatusMonitorAsync();
+        }
+
+
         /// <summary>
         /// Setup the COM port combo box
         /// </summary>
@@ -90,35 +134,146 @@ namespace brainHatSharpGUI
 
 
         /// <summary>
-        /// Create and start the program components
+        /// Enable buttons based on connection state
         /// </summary>
-        private async Task StartProgramComponentsAsync()
+        private void EnableConnectionButtons(bool enable)
         {
-            //  create udp multicast broadcaster
-            BroadcastStatus = new StatusBroadcastServer();
-            BroadcastStatus.Log += OnLog;
+            radioButtonCyton.Enabled = enable;
+            radioButtonDaisy.Enabled = enable;
+            comboBoxComPort.Enabled = enable;
+            buttonRefresh.Enabled = enable;
+        }
 
-            //  create the TCPIP command server
-            CommandServer = new TcpipCommandServer();
-            CommandServer.Log += OnLog;
-            CommandServer.ProcessReceivedRequest = CommandServerProcessRequestAsync;
 
-            //  create status monitor
-            MonitorStatus = new StatusMonitor();
-            MonitorStatus.Log += OnLog;
-            MonitorStatus.StatusUpdate += OnStatusUpdate;
+        /// <summary>
+        /// Save the connection settings and 
+        /// create a brainflow input params object to start the board
+        /// </summary>
+        private BrainFlowInputParams SaveConnectionSettings()
+        {
+            if (radioButtonCyton.Checked)
+                Properties.Settings.Default.BoardId = 0;
+            else if (radioButtonDaisy.Checked)
+                Properties.Settings.Default.BoardId = 2;
+
+            Properties.Settings.Default.ComPort = (string)comboBoxComPort.SelectedItem;
+
+            BrainFlowInputParams startupParams = new BrainFlowInputParams()
+            {
+                serial_port = Properties.Settings.Default.ComPort,
+            };
+            return startupParams;
+        }
+
+
+        /// <summary>
+        /// Refresh com port combo box button
+        /// </summary>
+        private void buttonRefresh_Click(object sender, EventArgs e)
+        {
+            SetComPortComboBox();
+        }
+
+
+        /// <summary>
+        /// Start / Stop button
+        /// </summary>
+        private async void buttonStart_Click(object sender, EventArgs e)
+        {
+            if (BrainflowBoard == null)
+            {
+                EnableConnectionButtons(false);
+                buttonStart.Text = "Cancel";
+                groupBoxBoard.Text = " --- Connecting to Board --- ";
+
+                BrainFlowInputParams startupParams = SaveConnectionSettings();
+
+                await StartBoard(startupParams);
+
+                Logger.AddLog(this, new LogEventArgs(this, "buttonStart_Click", $"Started board {Properties.Settings.Default.BoardId} on {Properties.Settings.Default.ComPort}.", LogLevel.INFO));
+            }
+            else
+            {
+                if (ConfigWindow != null)
+                {
+                    MessageBox.Show("You must close the configuration window before stopping the server.", "brainHat", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                await ShutDownBoard();
+
+                EnableConnectionButtons(true);
+
+                buttonStart.Text = "Start Server";
+                groupBoxBoard.Text = " Connect to Board ";
+                buttonStart.Enabled = true;
+                buttonConfigureBoard.Enabled = false;
+            }
+        }
+
+
+        /// <summary>
+        /// Create and start a board data reader
+        /// </summary>
+        private async Task StartBoard(BrainFlowInputParams startupParams)
+        {
+            BrainflowBoard = new BoardDataReader();
+            BrainflowBoard.ConnectToBoard += OnConnectToBoard;
+            BrainflowBoard.Log += OnLog;
 
             await Task.Run(async () =>
             {
-                await BroadcastStatus.StartDataBroadcastServerAsync();
-                await CommandServer.StartCommandServerAsync();
-                await MonitorStatus.StartStatusMonitorAsync();
+                await BrainflowBoard.StartBoardDataReaderAsync(Properties.Settings.Default.BoardId, startupParams);
             });
         }
 
 
         /// <summary>
-        /// Status update handler
+        /// Shut down the board data reader
+        /// </summary>
+        private async Task ShutDownBoard()
+        {
+            if (LslBroadcast != null)
+            {
+                await LslBroadcast.StopLslBroadcastAsync();
+                LslBroadcast.Log -= OnLog;
+            }
+
+            await BrainflowBoard.StopBoardDataReaderAsync();
+            BrainflowBoard.Log -= OnLog;
+            BrainflowBoard.ConnectToBoard -= OnConnectToBoard;
+            BrainflowBoard.BoardReadData -= OnBrainflowBoardReadData;
+            BrainflowBoard = null;
+            LslBroadcast = null;
+        }
+
+
+        /// <summary>
+        /// Connected to the board, startup the LSL broadcast
+        /// </summary>
+        private async void OnConnectToBoard(object sender, ConnectToBoardEventArgs e)
+        {
+            if (LslBroadcast == null && BrainflowBoard != null)
+            {
+                LslBroadcast = new LSLDataBroadcast();
+                LslBroadcast.Log += OnLog;
+                await LslBroadcast.StartLslBroadcastAsyc(e.BoardId, e.SampleRate);
+
+                BrainflowBoard.BoardReadData += OnBrainflowBoardReadData;
+
+                //  update the UI
+                groupBoxBoard.Invoke(new Action(() => 
+                { 
+                    groupBoxBoard.Text = " <<<  Connected to Board   >>> "; 
+                    buttonStart.Text = "Stop Server"; 
+                    buttonConfigureBoard.Enabled = true; 
+                }));
+            }
+        }
+
+
+        /// <summary>
+        /// Board status update handler
         /// </summary>
         private void OnStatusUpdate(object sender, BrainHatStatusEventArgs e)
         {
@@ -145,6 +300,50 @@ namespace brainHatSharpGUI
             }
         }
 
+        /// <summary>
+        /// Data was read from the board, send it to the broadcaster
+        /// </summary>
+        private void OnBrainflowBoardReadData(object sender, BFChunkEventArgs e)
+        {
+            LslBroadcast.AddData(e.Chunk);
+            if (FileWriter.IsLogging)
+                FileWriter.AddData(e.Chunk);
+        }
+
+
+        /// <summary>
+        /// Configure board button
+        /// </summary>
+        private void buttonConfigureBoard_Click(object sender, EventArgs e)
+        {
+            if (BrainflowBoard != null && ConfigWindow == null)
+            {
+                ConfigWindow = new ConfigurationWindow(BrainflowBoard);
+                ConfigWindow.Log += OnLog;
+                ConfigWindow.FormClosed += ConfigurationWindowFormClosed;
+                ConfigWindow.Show();
+            }
+            else if (ConfigWindow != null)
+            {
+                ConfigWindow.WindowState = FormWindowState.Minimized;
+                ConfigWindow.Show();
+                ConfigWindow.WindowState = FormWindowState.Normal;
+            }
+            else
+            {
+                MessageBox.Show("Please start the server before using Configure Board.", "brainHat GUI");
+            }
+        }
+        //
+        private void ConfigurationWindowFormClosed(object sender, FormClosedEventArgs e)
+        {
+            ConfigWindow.Log -= OnLog;
+            ConfigWindow = null;
+        }
+
+
+        // Handle TCPIP server commands
+        #region CommandServer
 
         /// <summary>
         /// Process a request from the TCPIP command server port
@@ -157,10 +356,10 @@ namespace brainHatSharpGUI
                 switch (args.Request)
                 {
                     case "loglevel":
-                            return ProcessChangeLogLevel(args);
+                        return ProcessChangeLogLevel(args);
 
                     case "recording":
-                            return await ProcessSetRecording(args);
+                        return await ProcessSetRecording(args);
 
                     default:
                         break;
@@ -185,7 +384,7 @@ namespace brainHatSharpGUI
             {
                 var enable = bool.Parse(args.GetArg("enable"));
                 var fileName = args.GetArg("filename");
-                if ( BrainflowBoard ==  null )
+                if (BrainflowBoard == null)
                 {
                     return $"NAK?response=Board is not reading data.";
                 }
@@ -228,142 +427,7 @@ namespace brainHatSharpGUI
             return $"ACK?response=Log level set to {Logger.LogLevelDisplay}.";
         }
 
-
-        Logging Logger;
-        BoardDataReader BrainflowBoard;
-        StatusBroadcastServer BroadcastStatus;
-        LSLDataBroadcast LslBroadcast;
-        TcpipCommandServer CommandServer;
-        StatusMonitor MonitorStatus;
-        OBCIGuiFormatFileWriter FileWriter;
-
-      
-        /// <summary>
-        /// Start / Stop button
-        /// </summary>
-        private void buttonStart_Click(object sender, EventArgs e)
-        {
-            buttonStart.Enabled = false;
-
-            if (BrainflowBoard == null)
-            {
-                BrainFlowInputParams startupParams = SaveConnectionSettings();
-
-                StartBoard(startupParams);
-
-                SetUiForConnectionState(false);
-
-                buttonStart.Text = "Stop Server";
-                groupBoxBoard.Text = " --- Connecting to Board --- ";
-
-                Logger.AddLog(this, new LogEventArgs(this, "buttonStart_Click", $"Started board {Properties.Settings.Default.BoardId} on {Properties.Settings.Default.ComPort}.", LogLevel.INFO));
-            }
-            else
-            {
-                ShutDownBoard();
-
-                SetUiForConnectionState(true);
-
-                buttonStart.Text = "Start Server";
-                groupBoxBoard.Text = " Connect to Board ";
-            }
-
-            buttonStart.Enabled = true;
-        }
-
-        private void SetUiForConnectionState(bool enable)
-        {
-            radioButtonCyton.Enabled = enable;
-            radioButtonDaisy.Enabled = enable;
-            comboBoxComPort.Enabled = enable;
-            buttonRefresh.Enabled = enable;
-        }
-
-
-        /// <summary>
-        /// Create and start a board data reader
-        /// </summary>
-        private void StartBoard(BrainFlowInputParams startupParams)
-        {
-            BrainflowBoard = new BoardDataReader();
-            BrainflowBoard.ConnectToBoard += OnConnectToBoard;
-            BrainflowBoard.Log += OnLog;
-
-            Task.Run(async () =>
-            {
-                await BrainflowBoard.StartBoardDataReaderAsync(Properties.Settings.Default.BoardId, startupParams);
-            }).Wait();
-        }
-
-
-        /// <summary>
-        /// Shut down the board data reader
-        /// </summary>
-        private void ShutDownBoard()
-        {
-            if (LslBroadcast != null)
-            {
-                Task.Run(async () => { await LslBroadcast.StopLslBroadcastAsync(); }).Wait();
-                LslBroadcast.Log -= OnLog;
-            }
-
-            Task.Run(async () => { await BrainflowBoard.StopBoardDataReaderAsync(); }).Wait();
-            BrainflowBoard.Log -= OnLog;
-            BrainflowBoard.ConnectToBoard -= OnConnectToBoard;
-            BrainflowBoard.BoardReadData -= OnBrainflowBoardReadData;
-            BrainflowBoard = null;
-            LslBroadcast = null;
-        }
-
-
-        /// <summary>
-        /// Save the connection settings and 
-        /// create a brainflow input params object to start the board
-        /// </summary>
-        private BrainFlowInputParams SaveConnectionSettings()
-        {
-            if (radioButtonCyton.Checked)
-                Properties.Settings.Default.BoardId = 0;
-            else if (radioButtonDaisy.Checked)
-                Properties.Settings.Default.BoardId = 2;
-
-            Properties.Settings.Default.ComPort = (string)comboBoxComPort.SelectedItem;
-
-            BrainFlowInputParams startupParams = new BrainFlowInputParams()
-            {
-                serial_port = Properties.Settings.Default.ComPort,
-            };
-            return startupParams;
-        }
-
-
-        /// <summary>
-        /// Connected to the board, startup the LSL broadcast
-        /// </summary>
-        private async void OnConnectToBoard(object sender, ConnectToBoardEventArgs e)
-        {
-            if (LslBroadcast == null && BrainflowBoard != null)
-            {
-                LslBroadcast = new LSLDataBroadcast();
-                LslBroadcast.Log += OnLog;
-                await LslBroadcast.StartLslBroadcastAsyc(e.BoardId, e.SampleRate);
-
-                BrainflowBoard.BoardReadData += OnBrainflowBoardReadData;
-
-                groupBoxBoard.Invoke(new Action(() => { groupBoxBoard.Text = " <<<  Connected to Board   >>> "; }));
-            }
-        }
-
-
-        /// <summary>
-        /// Data was read from the board, send it to the broadcaster
-        /// </summary>
-        private void OnBrainflowBoardReadData(object sender, BFChunkEventArgs e)
-        {
-            LslBroadcast.AddData(e.Chunk);
-            if (FileWriter.IsLogging)
-                FileWriter.AddData(e.Chunk);
-        }
+        #endregion
 
 
         //  Logging
@@ -395,14 +459,15 @@ namespace brainHatSharpGUI
         /// </summary>
         private void OnLoggedEvents(object sender, IEnumerable<LogEventArgs> e)
         {
-            foreach (var nextLog in e)
+            if (LoggingWindow != null)
             {
-                if (LoggingWindow != null)
-                    LoggingWindow.OnLoggedEvents(sender, e);
+                LoggingWindow.OnLoggedEvents(sender, e);
             }
         }
 
-
+        /// <summary>
+        /// View logs button
+        /// </summary>
         private void buttonViewLogs_Click(object sender, EventArgs e)
         {
             if (LoggingWindow == null)
@@ -419,19 +484,19 @@ namespace brainHatSharpGUI
             }
         }
 
+
+        /// <summary>
+        /// Log window form closing
+        /// </summary>
         private void LoggingWindow_OnFormClosing(object sender, FormClosingEventArgs e)
         {
+            LoggingWindow.FormClosing -= LoggingWindow_OnFormClosing;
             LoggingWindow = null;
         }
 
 
 
-        #endregion
+#endregion
 
-        private void buttonRefresh_Click(object sender, EventArgs e)
-        {
-            SetComPortComboBox();
-
-        }
     }
 }

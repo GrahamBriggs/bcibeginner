@@ -89,7 +89,7 @@ namespace BrainHatSharp
 
         public BoardDataReader()
         {
-            BoardShim.set_log_level((int)LogLevels.LEVEL_ERROR);
+            BoardShim.set_log_level((int)LogLevels.LEVEL_DEBUG);
 
             BoardReadDelayMilliseconds = 50;    //  default 20 hz
         }

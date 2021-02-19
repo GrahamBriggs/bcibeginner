@@ -16,7 +16,7 @@ namespace LoggingInterfaces
 
         public static string FormatLogForConsole(this LogEventArgs value)
         {
-            return $"{value.Time.FormatTimeHoursHHmmssfff()} [{string.Format("{0,3}", value.Thread.ToString().Right(3))}] {string.Format("{0,7}", value.Level)} {string.Format("{0,-20}", value?.Sender?.ToString().Left(19) ?? "senderUnknown")} {string.Format("{0,-20}", value?.Function?.Left(19) ?? "functionUnknown")} {value.Data ?? "dataUnknown"}";
+            return $"{value.Time.FormatTimeHoursHHmmssfff()} [{string.Format("{0,3}", value.Thread.ToString().Right(3))}] {string.Format("{0,7}", value.Level)} {string.Format("{0,-40}", value?.Sender?.ToString().Left(39) ?? "senderUnknown")} {string.Format("{0,-30}", value?.Function?.Left(29) ?? "functionUnknown")} {value.Data ?? "dataUnknown"}";
         }
         
     }

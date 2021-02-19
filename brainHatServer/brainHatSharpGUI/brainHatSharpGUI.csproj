@@ -50,6 +50,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoardDataReader.cs" />
+    <Compile Include="ImpedanceSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ImpedanceSettings.Designer.cs">
+      <DependentUpon>ImpedanceSettings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ChannelSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ChannelSettings.Designer.cs">
+      <DependentUpon>ChannelSettings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ComboBoxItem.cs" />
+    <Compile Include="ConfigurationWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConfigurationWindow.Designer.cs">
+      <DependentUpon>ConfigurationWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -68,6 +87,15 @@
     <Compile Include="StatusBroadcastServer.cs" />
     <Compile Include="StatusMonitor.cs" />
     <Compile Include="TcpipCommandServer.cs" />
+    <EmbeddedResource Include="ImpedanceSettings.resx">
+      <DependentUpon>ImpedanceSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ChannelSettings.resx">
+      <DependentUpon>ChannelSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ConfigurationWindow.resx">
+      <DependentUpon>ConfigurationWindow.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="LogWindow.resx">
       <DependentUpon>LogWindow.cs</DependentUpon>
     </EmbeddedResource>
@@ -145,7 +173,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent Condition=" '$(OS)' != 'Unix' ">
-	echo Copying libraries for $(Platform)
+	echo Copying libraries for $(Configuration) $(Platform)
 if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\BrainHatComponents\brainflow\compiled\Release\*32.dll $(ProjectDir)$(OutDir) /y
 if $(Platform) == Win32 xcopy $(ProjectDir)..\..\BrainHatComponents\brainflow\compiled\Release\*32.dll $(ProjectDir)$(OutDir) /y
 if $(Platform) == x64 xcopy $(ProjectDir)..\..\BrainHatComponents\brainflow\compiled\Release\*.dll $(ProjectDir)$(OutDir) /y

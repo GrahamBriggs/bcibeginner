@@ -1,8 +1,168 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<brainHatConfig>
+<brainHatSignalFilters>
+
+  <!--
+  **********************************************************************************************
+  Configuration File for brainHat Signal Filters
+  You can define one or more filters in this file
+  Each filter can contain one or more of the supported brainflow library filter functions
+  **********************************************************************************************
+  -->
+
+  <SampleDocumentTemplate>
+    <brainHatSignalFilters>
+      <Filters>
+        <Filter>
+          <Name>mustBeUniqueFilterName</Name>
+          <Functions>
+            <Function Name="supportedBrainflowFunctionName">
+              <Parameter Name="data" Value="" />
+              <!--Run time data will be used here, you must use empty string for Value in the data element -->
+              <Parameter Name="nameOfNextParameter" Value="valueToUse" />
+              <!--  If this next parameter is sampling_rate, use 0 and the board sample rate will be used at runtime -->
+              <!-- rest of the parameters go here ... -->
+              <Parameter Name="nameOfLastParameter" Value="valueToUse" />
+            </Function>
+          </Functions>
+        </Filter>
+      </Filters>
+    </brainHatSignalFilters>
+  </SampleDocumentTemplate>
+
+  <!--  supported brainflow signal filter functions  -->
+  <!--
+      perform_lowpass  (double[] data, int sampling_rate, double cutoff, int order, int filter_type, double ripple)                                     
+      perform_highpass (double[] data, int sampling_rate, double cutoff, int order, int filter_type, double ripple)                                     
+      perform_bandpass (double[] data, int sampling_rate, double center_freq, double band_width, int order, int filter_type, double ripple)             
+      perform_bandstop (double[] data, int sampling_rate, double center_freq, double band_width, int order, int filter_type, double ripple)  
+      perform_rolling_filter (double[] data, int period, int operation)  
+      detrend(double[] data, int operation)
+      perform_wavelet_denoising (double[] data, string wavelet, int decomposition_level)
+      
+      Where Enumerated Parameters are:
+      
+      perform_*pass filters ( ..., int filter_type, ... ) 
+        BUTTERWORTH = 0,
+        CHEBYSHEV_TYPE_1 = 1,
+        BESSEL = 2
+        
+      perform_rolling_filter ( ..., int operation)
+        MEAN = 0,
+        MEDIAN = 1,
+        EACH = 2
+        
+      detrend ( ..., int operation )
+        NONE = 0,
+        CONSTANT = 1,
+        LINEAR = 2
+        
+      perform_wavelet_denoising ( ..., string wavelet, ... )
+        db1..db15,
+        haar,
+        sym2..sym10,
+        coif1..coif5,
+        bior1.1,
+        bior1.3,
+        bior1.5,
+        bior2.2,
+        bior2.4,
+        bior2.6,
+        bior2.8,
+        bior3.1,
+        bior3.3,
+        bior3.5,
+        bior3.7,
+        bior3.9,
+        bior4.4,
+        bior5.5,
+        bior6.8
+    -->
+
+
+  <!-- Cut and paste template for a new filter -->
+  <!-- 
+  <Filter>
+    <Name></Name>
+    <Functions>
+        //  Paste one or more functions here
+    </Functions>
+  </Filter>
+  -->
+
+  <!-- Cut and paste function Template low/high pass-->
+  <!--
+  <Function Name="perform_LowOrHighpass">
+    <Parameter Name="data" Value="" />
+    <Parameter Name="sampling_rate" Value="0" />
+    <Parameter Name="cutoff" Value="20.0" />
+    <Parameter Name="order" Value="4" />
+    <Parameter Name="filter_type" Value="0" />
+    <Parameter Name="ripple" Value="0.0" />
+  </Function>
+  -->
+
+
+  <!--Cut and Paste Function Template band pass/stop -->
+  <!--
+  <Function Name="perform_bandSomething">
+    <Parameter Name="data" Value="" />
+    <Parameter Name="sampling_rate" Value="0" />
+    <Parameter Name="center_freq" Value="15.0" />
+    <Parameter Name ="band_width" Value="5.0" />
+    <Parameter Name="order" Value="2" />
+    <Parameter Name="filter_type" Value="0" />
+    <Parameter Name="ripple" Value="0.0" />
+  </Function>
+  -->
+
+
+  <!--Cut and Paste Function Template rolling_filter -->
+  <!--
+  <Name>perform_rolling_filter</Name>
+  <Functions>
+    <Function Name="perform_rolling_filter">
+      <Parameter Name="data" Value="" />
+      <Parameter Name="period" Value="3" />
+      <Parameter Name="operation" Value="0" />
+    </Function>
+    -->
+
+
   <Filters>
+
+    <!--perform_lowpass-->
     <Filter>
-      <Name>bandpass1</Name>
+      <Name>perform_lowpass</Name>
+      <Functions>
+        <Function Name="perform_lowpass">
+          <Parameter Name="data" Value="" />
+          <Parameter Name="sampling_rate" Value="0" />
+          <Parameter Name="cutoff" Value="20.0" />
+          <Parameter Name="order" Value="4" />
+          <Parameter Name="filter_type" Value="2" />
+          <Parameter Name="ripple" Value="0.0" />
+        </Function>
+      </Functions>
+    </Filter>
+
+    <!--perform_highpass-->
+    <Filter>
+      <Name>perform_highpass</Name>
+      <Functions>
+        <Function Name="perform_highpass">
+          <Parameter Name="data" Value="" />
+          <Parameter Name="sampling_rate" Value="0" />
+          <Parameter Name="cutoff" Value="2.0" />
+          <Parameter Name="order" Value="4" />
+          <Parameter Name="filter_type" Value="0" />
+          <Parameter Name="ripple" Value="0.0" />
+        </Function>
+      </Functions>
+    </Filter>
+
+    <!--perform_bandpass-->
+    <Filter>
+      <Name>perform_bandpass</Name>
       <Functions>
         <Function Name="perform_bandpass">
           <Parameter Name="data" Value="" />
@@ -15,18 +175,11 @@
         </Function>
       </Functions>
     </Filter>
+
+    <!--perform_bandstop-->
     <Filter>
-      <Name>twoStage</Name>
+      <Name>perform_bandstop</Name>
       <Functions>
-        <Function Name="perform_bandpass">
-          <Parameter Name="data" Value="" />
-          <Parameter Name="sampling_rate" Value="0" />
-          <Parameter Name="center_freq" Value="15.0" />
-          <Parameter Name ="band_width" Value="5.0" />
-          <Parameter Name="order" Value="2" />
-          <Parameter Name="filter_type" Value="0" />
-          <Parameter Name="ripple" Value="0.0" />
-        </Function>
         <Function Name="perform_bandstop">
           <Parameter Name="data" Value="" />
           <Parameter Name="sampling_rate" Value="0" />
@@ -38,5 +191,95 @@
         </Function>
       </Functions>
     </Filter>
+
+    <!--perform_rolling_filter-->
+    <Filter>
+      <Name>perform_rolling_filter</Name>
+      <Functions>
+        <Function Name="perform_rolling_filter">
+          <Parameter Name="data" Value="" />
+          <Parameter Name="period" Value="3" />
+          <Parameter Name="operation" Value="0" />
+        </Function>
+      </Functions>
+    </Filter>
+
+    <!--detrend-->
+    <Filter>
+      <Name>detrend</Name>
+      <Functions>
+        <Function Name="detrend">
+          <Parameter Name="data" Value="" />
+          <Parameter Name="operation" Value="2" />
+        </Function>
+      </Functions>
+    </Filter>
+
+    <!--perform_wavelet_denoising-->
+    <Filter>
+      <Name>perform_wavelet_denoising</Name>
+      <Functions>
+        <Function Name="perform_wavelet_denoising">
+          <Parameter Name="data" Value="" />
+          <Parameter Name="wavelet" Value="db4" />
+          <Parameter Name="decomposition_level" Value="3" />
+        </Function>
+      </Functions>
+    </Filter>
+
+    <!--Two function filter-->
+    <Filter>
+      <Name>Filter2</Name>
+      <Functions>
+        <Function Name="perform_bandstop">
+          <Parameter Name="data" Value="" />
+          <Parameter Name="sampling_rate" Value="0" />
+          <Parameter Name="center_freq" Value="50.0" />
+          <Parameter Name ="band_width" Value="1.0" />
+          <Parameter Name="order" Value="6" />
+          <Parameter Name="filter_type" Value="1" />
+          <Parameter Name="ripple" Value="1.0" />
+        </Function>
+        <Function Name="perform_bandpass">
+          <Parameter Name="data" Value="" />
+          <Parameter Name="sampling_rate" Value="0" />
+          <Parameter Name="center_freq" Value="20.5" />
+          <Parameter Name ="band_width" Value="20" />
+          <Parameter Name="order" Value="2" />
+          <Parameter Name="filter_type" Value="0" />
+          <Parameter Name="ripple" Value="0.0" />
+        </Function>
+      </Functions>
+    </Filter>
+
+    <!--Three function filter-->
+    <Filter>
+      <Name>Filter3</Name>
+      <Functions>
+        <Function Name="detrend">
+          <Parameter Name="data" Value="" />
+          <Parameter Name="operation" Value="2" />
+        </Function>
+        <Function Name="perform_bandstop">
+          <Parameter Name="data" Value="" />
+          <Parameter Name="sampling_rate" Value="0" />
+          <Parameter Name="center_freq" Value="50.0" />
+          <Parameter Name ="band_width" Value="1.0" />
+          <Parameter Name="order" Value="6" />
+          <Parameter Name="filter_type" Value="1" />
+          <Parameter Name="ripple" Value="1.0" />
+        </Function>
+        <Function Name="perform_bandpass">
+          <Parameter Name="data" Value="" />
+          <Parameter Name="sampling_rate" Value="0" />
+          <Parameter Name="center_freq" Value="20.5" />
+          <Parameter Name ="band_width" Value="20" />
+          <Parameter Name="order" Value="2" />
+          <Parameter Name="filter_type" Value="0" />
+          <Parameter Name="ripple" Value="0.0" />
+        </Function>
+      </Functions>
+    </Filter>
+
   </Filters>
-</brainHatConfig>
+</brainHatSignalFilters>

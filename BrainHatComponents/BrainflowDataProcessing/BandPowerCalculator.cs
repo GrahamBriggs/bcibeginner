@@ -10,6 +10,46 @@ namespace BrainflowDataProcessing
 {
     public class BandPowerCalculator
     {
+        /// <summary>
+        /// Create a band power range list for 8,10,12 and 18,20,22 
+        /// </summary>
+        public static List<Tuple<double, double>> CreateSampleBandPowerRangeList()
+        {
+            //  create a list of tuples for your band power ranges
+            var rangeList = new List<Tuple<double, double>>() {
+                    new Tuple<double, double>(7.0,9.0),
+                    new Tuple<double, double>(9.0,11.0),
+                    new Tuple<double, double>(11.0,13.0),
+
+                    new Tuple<double, double>(17.0,19.0),
+                    new Tuple<double, double>(19.0,21.0),
+                    new Tuple<double, double>(21.0,23.0),
+                };
+
+            return rangeList;
+        }
+
+
+        /// <summary>
+        /// Create a band power range list for 1-60
+        /// </summary>
+        public static List<Tuple<double, double>> CreateFullBandPowerRangeList()
+        {
+            var rangeList = new List<Tuple<double, double>>();
+
+
+            for (int i = 1; i <= 60; i++)
+            {
+                rangeList.Add(new Tuple<double, double>(i - 1, i + 1));
+            }
+
+            return rangeList;
+        }
+
+
+        /// <summary>
+        /// Calculate band power
+        /// </summary>
         public static IEnumerable<double> CalculateBandPower(IEnumerable<IBFSample> data, int sampleRate, int channel, IEnumerable<Tuple<double,double>> freqRanges)
         {
             try
@@ -37,5 +77,51 @@ namespace BrainflowDataProcessing
                 throw e;
             }
         }
+
+
+
+        public BandPowerCalculator(int boardId, int numChannels, int sampleRate)
+        {
+            BoardId = boardId;
+            NumberOfChannels = numChannels;
+            SampleRate = sampleRate;
+           
+            BandPowerCalcRangeList = CreateFullBandPowerRangeList();
+           
+        }
+
+        public int BoardId { get; protected set; }
+        public int NumberOfChannels { get; protected set; }
+        public int SampleRate { get; protected set; }
+
+
+        public int NumberOfBands => BandPowerCalcRangeList.Count;
+       
+        public List<Tuple<double, double>> BandPowerCalcRangeList { get; protected set; }
+
+
+        public IBFSample[] CalculateBandPowers(IEnumerable<IBFSample> samples)
+        {
+            var bandPowers = new IBFSample[BandPowerCalcRangeList.Count];
+            for (int i = 0; i < BandPowerCalcRangeList.Count; i++)
+            {
+                bandPowers[i] = new BFSampleImplementation(BoardId);
+            }
+
+            for (int i = 0; i < NumberOfChannels; i++)
+            {
+                var bandPower = BandPowerCalculator.CalculateBandPower(samples, SampleRate, i, BandPowerCalcRangeList);
+
+                int j = 0;
+                foreach (var nextBandPower in bandPower)
+                {
+                    bandPowers[j++].SetExgDataForChannel(i, nextBandPower);
+                }
+            }
+
+            return bandPowers;
+        }
+
+
     }
 }
