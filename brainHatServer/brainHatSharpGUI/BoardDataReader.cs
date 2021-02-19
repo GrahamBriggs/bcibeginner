@@ -754,11 +754,9 @@ namespace brainHatSharpGUI
                 LastSampleIndex = (int)sample.SampleIndex;
                 return;
             }
-
-            var nextIndex = (int)(sample.SampleIndex);
-            var difference = BrainflowDataProcessor.SampleIndexDifference(LastSampleIndex, nextIndex);
-            LastSampleIndex = nextIndex;
-
+ 
+            var difference = sample.SampleIndex.SampleIndexDifference(LastSampleIndex);
+            LastSampleIndex = (int)sample.SampleIndex;
 
             switch (BoardId)
             {
@@ -771,7 +769,6 @@ namespace brainHatSharpGUI
                     if (difference > 2)
                         CountMissingIndex++;
                     break;
-
             }
         }
 

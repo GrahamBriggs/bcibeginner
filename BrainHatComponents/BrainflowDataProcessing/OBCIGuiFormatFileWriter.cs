@@ -146,8 +146,8 @@ namespace BrainflowDataProcessing
                     Directory.CreateDirectory(Path.GetDirectoryName(FileName));
                 }
 
-
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter(FileName))
+                using (var fileStream = await FileSystemExtensionMethods.WaitForFileAsync(FileName, FileMode.Create, FileAccess.Write, FileShare.Read))
+                using (System.IO.StreamWriter file = new System.IO.StreamWriter(fileStream))
                 {
                     //  write header
                     file.WriteLine("%OpenBCI Raw EEG Data");

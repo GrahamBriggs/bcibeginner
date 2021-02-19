@@ -3,20 +3,23 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BrainflowDataProcessing
 {
     public class OBCIGuiFormatFileReader
     {
-        public bool ReadFile(string fileName)
+        public async Task<bool> ReadFile(string fileName)
         {
             _Samples = new List<IBFSample>();
-
-            using (var reader = new StreamReader(fileName))
+            string prevLine = "";
+            using (var fileReader = await FileSystemExtensionMethods.WaitForFileAsync(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var reader = new StreamReader(fileReader))
             {
 
                 var nextLine = reader.ReadLine();
-                while (nextLine !=  null )
+                
+                while (nextLine != null)
                 {
                     if (nextLine.Contains("%") || nextLine.Contains("Sample Index"))
                     {
@@ -24,14 +27,18 @@ namespace BrainflowDataProcessing
                     }
                     else
                     {
-                        CreateSample(nextLine);
+                        if (!CreateSample(nextLine))
+                            break;
                     }
 
                     nextLine = reader.ReadLine();
+                    if (nextLine != null)
+                        prevLine = nextLine;
                 }
             }
 
             return IsValidFile();
+
         }
 
         bool IsValidFile()
@@ -40,7 +47,7 @@ namespace BrainflowDataProcessing
         }
 
 
-        private void CreateSample(string nextLine)
+        private bool CreateSample(string nextLine)
         {
             IBFSample newSample = null;
 
@@ -58,11 +65,16 @@ namespace BrainflowDataProcessing
                     throw new Exception($"Board ID is not set.");
             }
 
+            if (Math.Abs(newSample.TimeStamp-0) < 0.0000001)
+                return false;
+
             if (!StartTime.HasValue)
                 StartTime = newSample.TimeStamp;
             EndTime = newSample.TimeStamp;
 
             _Samples.Add(newSample);
+
+            return true;
         }
 
 
