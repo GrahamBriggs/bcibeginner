@@ -36,8 +36,6 @@ namespace BrainflowDataProcessing
         public static List<Tuple<double, double>> CreateFullBandPowerRangeList()
         {
             var rangeList = new List<Tuple<double, double>>();
-
-
             for (int i = 1; i <= 60; i++)
             {
                 rangeList.Add(new Tuple<double, double>(i - 1, i + 1));
@@ -80,6 +78,9 @@ namespace BrainflowDataProcessing
 
 
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public BandPowerCalculator(int boardId, int numChannels, int sampleRate)
         {
             BoardId = boardId;
@@ -95,11 +96,16 @@ namespace BrainflowDataProcessing
         public int SampleRate { get; protected set; }
 
 
+        //  Define bands and ranges in this list
+        public List<Tuple<double, double>> BandPowerCalcRangeList { get; set; }
+
         public int NumberOfBands => BandPowerCalcRangeList.Count;
        
-        public List<Tuple<double, double>> BandPowerCalcRangeList { get; protected set; }
+        
 
-
+        /// <summary>
+        /// Calculate band powers for the range list
+        /// </summary>
         public IBFSample[] CalculateBandPowers(IEnumerable<IBFSample> samples)
         {
             var bandPowers = new IBFSample[BandPowerCalcRangeList.Count];
@@ -110,7 +116,7 @@ namespace BrainflowDataProcessing
 
             for (int i = 0; i < NumberOfChannels; i++)
             {
-                var bandPower = BandPowerCalculator.CalculateBandPower(samples, SampleRate, i, BandPowerCalcRangeList);
+                var bandPower = CalculateBandPower(samples, SampleRate, i, BandPowerCalcRangeList);
 
                 int j = 0;
                 foreach (var nextBandPower in bandPower)

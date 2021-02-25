@@ -193,6 +193,17 @@ namespace BrainflowDataProcessing
 
 
         /// <summary>
+        /// Set the band power processor ranges
+        /// supply a list of tuples: lowFrequency,highFrequency in each range
+        /// </summary>
+        /// <param name="rangeList"></param>
+        public void SetBandPowerRangeList(List<Tuple<double, double>> rangeList)
+        {
+            BandPowers.SetBandPowerRangeList(rangeList);
+        }
+
+
+        /// <summary>
         /// Add data to the proecssor queue from an event
         /// </summary>
         public void AddDataToProcessor(object sender, BFSampleEventArgs e)

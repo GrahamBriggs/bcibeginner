@@ -33,8 +33,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Setup the band powers range lists
         /// </summary>
-        /// <param name="rangeList"></param>
-        public void SetBandPowerRangeList()
+        public void InitializeMonitorForBandPowerRangeList()
         {
             BandPowers = new IBFSample[BandPowerCalc.NumberOfBands];
 
@@ -48,6 +47,17 @@ namespace BrainflowDataProcessing
                 var key = (BandPowerCalc.BandPowerCalcRangeList[j].Item1 + (BandPowerCalc.BandPowerCalcRangeList[j].Item2 - BandPowerCalc.BandPowerCalcRangeList[j].Item1) / 2).BandPowerKey();
                 BandPowersCollection.TryAdd(key, BandPowers[j]);
             }
+        }
+
+        /// <summary>
+        /// Set the collection of band power ranges you wish to calculate
+        /// must be unique to 0.1 (for example 7.7 and 7.75 are not allowed in the same list)
+        /// </summary>
+        public void SetBandPowerRangeList(List<Tuple<double, double>> rangeList)
+        {
+            BandPowerCalc.BandPowerCalcRangeList = rangeList;
+
+            InitializeMonitorForBandPowerRangeList();
         }
 
 
@@ -127,7 +137,7 @@ namespace BrainflowDataProcessing
             ProcessingTimes = new ConcurrentQueue<double>();
             BandPowersCollection = new ConcurrentDictionary<string, IBFSample>();
             BandPowerCalc = new BandPowerCalculator(BoardId, NumberOfChannels, SampleRate);
-            SetBandPowerRangeList();
+            InitializeMonitorForBandPowerRangeList();
         }
 
 
