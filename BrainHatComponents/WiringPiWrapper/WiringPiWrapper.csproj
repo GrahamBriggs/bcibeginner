@@ -8,8 +8,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WiringPiWrapper</RootNamespace>
     <AssemblyName>WiringPiWrapper</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -47,16 +48,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Accord">
-      <Version>3.8.0</Version>
-    </PackageReference>
-    <PackageReference Include="Accord.Math">
-      <Version>3.8.0</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\PlatformHelper\PlatformHelper.csproj">
-      <Project>{0efa34b4-9f21-4ff5-8a77-35b2e55a66da}</Project>
+      <Project>{32d36a3e-c2f0-49ff-8741-3e4ffe6bf7ac}</Project>
       <Name>PlatformHelper</Name>
     </ProjectReference>
   </ItemGroup>

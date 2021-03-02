@@ -1,5 +1,4 @@
-﻿using Accord.Math;
-using brainflow;
+﻿using brainflow;
 using BrainflowDataProcessing;
 using BrainflowInterfaces;
 using LoggingInterfaces;
@@ -133,7 +132,7 @@ namespace brainHatSharpGUI
             while (retries < 5)
             {
                 var discard = TheBoard.get_board_data();
-                if (discard.Columns() == 0)
+                if (discard.GetLength(1) == 0)
                     break;
                 await Task.Delay(200);
                 retries++;
@@ -640,7 +639,7 @@ namespace brainHatSharpGUI
                 var timeReadData = sw.Elapsed.TotalSeconds;
                 sw.Restart();
 
-                if (rawData.Columns() == 0)
+                if (rawData.GetLength(1) == 0)
                 {
                     InvalidReadCounter++;
                 }
@@ -648,7 +647,7 @@ namespace brainHatSharpGUI
                 {
                     InvalidReadCounter = 0;
 
-                    if (rawData.Columns() > 255)
+                    if (rawData.GetLength(1) > 255)
                         return data;    //  this is the first connection surge, flush these readings
 
                     //Log?.Invoke(this, new LogEventArgs(this, "ReadDataFromBoard", $"Read {rawData.Columns()}.", LogLevel.VERBOSE));
@@ -656,7 +655,7 @@ namespace brainHatSharpGUI
                     double oldestReadingTime, period;
                     CalculateReadingPeriod(rawData, out oldestReadingTime, out period);
 
-                    for (int i = 0; i < rawData.Columns(); i++)
+                    for (int i = 0; i < rawData.GetLength(1); i++)
                     {
                         IBFSample nextSample = null;
                         switch (BoardId)
@@ -725,7 +724,7 @@ namespace brainHatSharpGUI
         private void CalculateReadingPeriod(double[,] rawData, out double oldestReadingTime, out double period)
         {
             double newestReadingTime = rawData[TimeStampIndex, 0];
-            oldestReadingTime = rawData[TimeStampIndex, rawData.Columns() - 1];
+            oldestReadingTime = rawData[TimeStampIndex, rawData.GetLength(1) - 1];
             if (LastReadingTimestamp > 0)
             {
                 oldestReadingTime = LastReadingTimestamp;
@@ -736,7 +735,7 @@ namespace brainHatSharpGUI
                 LastReadingTimestamp = oldestReadingTime;
             }
 
-            period = (newestReadingTime - oldestReadingTime) / rawData.Columns();
+            period = (newestReadingTime - oldestReadingTime) / rawData.GetLength(1);
         }
 
 

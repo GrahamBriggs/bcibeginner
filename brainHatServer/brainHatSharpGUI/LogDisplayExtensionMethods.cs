@@ -1,9 +1,10 @@
-﻿using System;
+﻿using LoggingInterfaces;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
 
-namespace LoggingInterfaces
+namespace brainHatSharpGUI
 {
     /// <summary>
     /// Logging object extension methods

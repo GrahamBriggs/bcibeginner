@@ -146,6 +146,9 @@
   <PropertyGroup>
     <ApplicationIcon>brainHatLogo.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -173,6 +176,7 @@
     <Compile Include="Form1Logging.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="LogDisplayExtensionMethods.cs" />
     <Compile Include="Logging.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -212,9 +216,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Accord.Math">
-      <Version>3.8.0</Version>
-    </PackageReference>
     <PackageReference Include="log4net">
       <Version>2.0.11</Version>
     </PackageReference>
@@ -223,33 +224,37 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\BrainHatComponents\BrainflowDataProcessing\BrainflowDataProcessing.csproj">
-      <Project>{a0aa0570-01dd-41b9-84f4-67589a52df20}</Project>
-      <Name>BrainflowDataProcessing</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\BrainHatComponents\brainflow\csharp-package\brainflow\brainflow\brainflowNetStandard.csproj">
-      <Project>{19d4357f-b416-40d3-99cd-2fcaf56529f6}</Project>
-      <Name>brainflow</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\BrainHatComponents\BrainHatNetwork\BrainHatNetwork.csproj">
-      <Project>{8ffe8e83-f51e-47f4-a32d-18a0e5196308}</Project>
-      <Name>BrainHatNetwork</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\BrainHatComponents\LoggingInterfaces\LoggingInterfaces.csproj">
-      <Project>{acffab45-aa43-4959-8e2d-6ccab67e005e}</Project>
-      <Name>LoggingInterfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\BrainHatComponents\BrainflowInterfaces\BrainflowInterfaces.csproj">
-      <Project>{7bc8716d-6b6c-4617-a591-3a9d79357131}</Project>
-      <Name>BrainflowInterfaces</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="brainHatLogo.ico" />
     <Content Include="Config\DefaultFilterConfig.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\brainHatLogo.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\BrainHatComponents\BrainflowDataProcessing\BrainflowDataProcessing.csproj">
+      <Project>{06abdaba-c8ae-4db5-9b0d-bdd2f6fffe6b}</Project>
+      <Name>BrainflowDataProcessing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BrainHatComponents\BrainflowInterfaces\BrainflowInterfaces.csproj">
+      <Project>{74308a8c-80d9-47ce-b22e-620e6f562229}</Project>
+      <Name>BrainflowInterfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BrainHatComponents\brainflow\csharp-package\brainflow\brainflow\brainflow.csproj">
+      <Project>{19d4357f-b416-40d3-99cd-2fcaf56529f6}</Project>
+      <Name>brainflow</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BrainHatComponents\BrainHatNetwork\BrainHatNetwork.csproj">
+      <Project>{f8824343-ec45-4476-ba97-0010bddef9f1}</Project>
+      <Name>BrainHatNetwork</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BrainHatComponents\liblsl-Csharp\liblsl.csproj">
+      <Project>{82bef4b5-5f28-499b-b3d5-cc802c8519a2}</Project>
+      <Name>liblsl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BrainHatComponents\LoggingInterfaces\LoggingInterfaces.csproj">
+      <Project>{eae81bba-a0c2-4e59-85f6-270e3f6fb6fa}</Project>
+      <Name>LoggingInterfaces</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
