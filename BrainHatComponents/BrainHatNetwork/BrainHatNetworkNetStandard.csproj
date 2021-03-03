@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Properties\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <None Remove="Properties\**" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BrainflowInterfaces\BrainflowInterfacesNetStandard.csproj" />
+    <ProjectReference Include="..\brainflow\csharp-package\brainflow\brainflow\brainflowNetStandard.csproj" />
+    <ProjectReference Include="..\liblsl-Csharp\liblslNetStandard.csproj" />
+    <ProjectReference Include="..\LoggingInterfaces\LoggingInterfacesNetStandard.csproj" />
+  </ItemGroup>
+
+</Project>

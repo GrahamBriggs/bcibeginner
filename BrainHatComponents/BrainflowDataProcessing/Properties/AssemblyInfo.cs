@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("brainHatSharpGUI")]
+[assembly: AssemblyTitle("BrainflowDataProcessing")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("brainHatSharpGUI")]
+[assembly: AssemblyCompany("Little Bytes of Pi, LLC")]
+[assembly: AssemblyProduct("BrainflowDataProcessing")]
 [assembly: AssemblyCopyright("Copyright ©  2021")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("5c02ec2a-67ee-4a99-a306-a52eab1f0272")]
+[assembly: Guid("06abdaba-c8ae-4db5-9b0d-bdd2f6fffe6b")]
 
 // Version information for an assembly consists of the following four values:
 //

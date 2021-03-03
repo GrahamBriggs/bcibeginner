@@ -12,7 +12,7 @@ namespace BrainHatNetwork
 {
     /// <summary>
     /// A client connection to a single brainHat server
-    /// Receives raw data from the server via LSL, 
+    /// Receives raw data from the server via LSL,     
     /// and provides TCPIP connection to send query/command and receive response from server.
     /// </summary>
     public class HatClient : IBrainHatServerConnection, IBrainHatServerStatus

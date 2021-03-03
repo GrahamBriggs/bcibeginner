@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -11,7 +11,7 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Deterministic>true</Deterministic>
+    <Deterministic>false</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -69,6 +69,7 @@
     <Compile Include="ConfigurationWindow.Designer.cs">
       <DependentUpon>ConfigurationWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="LogDisplayExtensionMethods.cs" />
     <Compile Include="MainWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -126,31 +127,27 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\BrainHatComponents\BrainflowDataProcessing\BrainflowDataProcessing.csproj">
-      <Project>{391fa534-d9be-464b-aa3a-cbc7840ff9d5}</Project>
+      <Project>{06abdaba-c8ae-4db5-9b0d-bdd2f6fffe6b}</Project>
       <Name>BrainflowDataProcessing</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\BrainHatComponents\BrainflowInterfaces\BrainflowInterfaces.csproj">
-      <Project>{340d4bb3-3ee2-4d12-8862-b34d37f5ac68}</Project>
+      <Project>{74308a8c-80d9-47ce-b22e-620e6f562229}</Project>
       <Name>BrainflowInterfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\BrainHatComponents\brainflow\csharp-package\brainflow\brainflow\brainflowNetStandard.csproj">
-      <Project>{c6c57e16-755b-42ff-a072-6d0a35098503}</Project>
+    <ProjectReference Include="..\..\BrainHatComponents\brainflow\csharp-package\brainflow\brainflow\brainflow.csproj">
+      <Project>{19d4357f-b416-40d3-99cd-2fcaf56529f6}</Project>
       <Name>brainflow</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\BrainHatComponents\BrainHatNetwork\BrainHatNetwork.csproj">
-      <Project>{7799cb08-3f80-430d-b8e7-8abf83bc71d2}</Project>
+      <Project>{f8824343-ec45-4476-ba97-0010bddef9f1}</Project>
       <Name>BrainHatNetwork</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\BrainHatComponents\liblsl\liblsl.csproj">
-      <Project>{4721756b-3baf-423a-8c35-15696d07a51f}</Project>
-      <Name>liblsl</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\BrainHatComponents\LoggingInterfaces\LoggingInterfaces.csproj">
-      <Project>{974ad5ad-919d-4045-b30c-027a51ac4f91}</Project>
+      <Project>{eae81bba-a0c2-4e59-85f6-270e3f6fb6fa}</Project>
       <Name>LoggingInterfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\BrainHatComponents\PlatformHelper\PlatformHelper.csproj">
-      <Project>{0efa34b4-9f21-4ff5-8a77-35b2e55a66da}</Project>
+      <Project>{32d36a3e-c2f0-49ff-8741-3e4ffe6bf7ac}</Project>
       <Name>PlatformHelper</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\BrainHatComponents\WiringPiWrapper\WiringPiWrapper.csproj">
@@ -159,9 +156,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Accord.Math">
-      <Version>3.8.0</Version>
-    </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>12.0.3</Version>
     </PackageReference>
