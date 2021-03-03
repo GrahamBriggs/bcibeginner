@@ -54,11 +54,10 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
+  
+    <Target Name="SpicNSpan" AfterTargets="Clean"> <!-- common vars https://msdn.microsoft.com/en-us/library/c02as0cs.aspx?f=255&MSPPError=-2147217396 -->
+         <RemoveDir Directories="$(TargetDir)" /> <!-- bin -->
+         <RemoveDir Directories="$(ProjectDir)$(BaseIntermediateOutputPath)" /> <!-- obj -->
   </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  
 </Project>
