@@ -7,3 +7,6 @@
 [submodule "BrainHatComponents/liblsl-Csharp"]
 	path = BrainHatComponents/liblsl-Csharp
 	url = https://github.com/GrahamBriggs/liblsl-Csharp.git
+[submodule "BrainHatComponents/EDFlib"]
+	path = BrainHatComponents/EDFlib
+url=https://github.com/GrahamBriggs/EDFlib.git

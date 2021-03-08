@@ -16,3 +16,4 @@ brainHatServer/brainHatSharpGUI/Installer/Output
 CytonRegisters/cytonRegisters/Debug
 ._.gitignore
 *.old
+BrainHatComponents/EDFfile/EDFfile/x64
