@@ -38,8 +38,41 @@ namespace BrainflowDataProcessing
             }
 
             return IsValidFile();
-
         }
+
+        public async Task<bool> ReadFileForHeader(string fileName)
+        {
+            _Samples = new List<IBFSample>();
+            string prevLine = "";
+            using (var fileReader = await FileSystemExtensionMethods.WaitForFileAsync(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var reader = new StreamReader(fileReader))
+            {
+
+                var nextLine = reader.ReadLine();
+                while (nextLine != null)
+                {
+                    if (nextLine.Contains("%") || nextLine.Contains("Sample Index"))
+                    {
+                        ParseHeaderLine(nextLine);
+                    }
+                    else
+                    {
+                        if (_Samples.Count == 0 && !CreateSample(nextLine))
+                            return false;
+                    }
+
+                    prevLine = nextLine;
+                    nextLine = reader.ReadLine();
+                }
+
+                if (!CreateSample(prevLine))
+                    return false;
+            }
+
+            return IsValidFile();
+        }
+
+
 
         bool IsValidFile()
         {

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace BrainflowDataProcessing
 {
-    public class OBCIGuiFormatFileWriter
+    public class OBCIGuiFormatFileWriter : IBrainHatFileWriter
     {
         //  Events
         public event LogEventDelegate Log;

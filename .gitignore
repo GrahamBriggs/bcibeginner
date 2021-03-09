@@ -17,3 +17,5 @@ CytonRegisters/cytonRegisters/Debug
 ._.gitignore
 *.old
 BrainHatComponents/EDFfile/EDFfile/x64
+BrainHatComponents/EDFfile/EDFfileTest/Release
+BrainHatComponents/EDFfile/EDFfileTest/x64

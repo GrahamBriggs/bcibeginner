@@ -1,9 +1,9 @@
-﻿using EDFfileSharp;
+﻿using EDFfile;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
-using static EDFfileSharp.EDFfile;
+using static EDFfile.EDFfile;
 
 namespace EDFFileSharpTests
 {
@@ -11,9 +11,9 @@ namespace EDFFileSharpTests
     public class EdfHeaderTests
     {
         [TestMethod]
-        public async Task EdfFileHeader()
+        public void EdfFileHeader()
         {
-            var fileHandle = edfOpenFileWriteOnly("TestFile0.bdf", 3, 8);
+            var fileHandle = edfOpenFileWriteOnly("EdfFileHeaderTestFile0.bdf", 3, 8);
             edfSetDatarecordDuration(fileHandle, 100000);
             int numChannels = 8;
             int samplesInDataRecord = 10;
@@ -41,7 +41,7 @@ namespace EDFFileSharpTests
             edfSetEquipment(fileHandle, "EquipmentX");
             edfSetRecordingAdditional(fileHandle, "MyField");
 
-            //  write five seconds worth of data
+            // write five seconds worth of data
             for (int i = 0; i < 5; i++)
             {
                 for (int j = 0; j < numChannels; j++)
@@ -56,14 +56,19 @@ namespace EDFFileSharpTests
                 }
             }
 
+            //  close the file
             edfCloseFile(fileHandle);
 
-            await Task.Delay(2000);
+            
+            //  read the file
+            var readFile = edfOpenFileReadOnly("EdfFileHeaderTestFile0.bdf");
+            Assert.IsTrue(readFile >= 0);
 
-            var readFile = edfOpenFileReadOnly("TestFile0.bdf");
-           
+            // get the header json and convert to header object
             var header = JsonConvert.DeserializeObject<EdfHeaderStruct>(edfGetHeaderAsJson(readFile));
+            Assert.IsNotNull(header);
 
+            //  check the header
             Assert.AreEqual(8, header.edfsignals);
             Assert.AreEqual(2021, header.startdate_year);
             Assert.AreEqual(3, header.startdate_month);
@@ -81,6 +86,7 @@ namespace EDFFileSharpTests
             Assert.AreEqual("EquipmentX", header.equipment.Trim());
             Assert.AreEqual("MyField", header.recording_additional.Trim());
 
+            //  check the signal array
             for( int i = 0; i < 8; i++)
             {
                 Assert.AreEqual(10, header.signalparam[i].smp_in_datarecord);

@@ -260,12 +260,23 @@
   <PropertyGroup>
     <PostBuildEvent Condition=" '$(OS)' != 'Unix' ">
 	echo Copying libraries for $(Platform)
+	echo Copying Brainflow
 if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\BrainHatComponents\brainflow\compiled\Release\*32.dll $(ProjectDir)$(OutDir) /y
 if $(Platform) == Win32 xcopy $(ProjectDir)..\..\BrainHatComponents\brainflow\compiled\Release\*32.dll $(ProjectDir)$(OutDir) /y
 if $(Platform) == x64 xcopy $(ProjectDir)..\..\BrainHatComponents\brainflow\compiled\Release\*.dll $(ProjectDir)$(OutDir) /y
+	echo Copying LSL
 if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\lib\lsl\x86\bin\lsl* $(ProjectDir)$(OutDir) /y
 if $(Platform) == Win32 xcopy $(ProjectDir)..\..\lib\lsl\x86\bin\lsl* $(ProjectDir)$(OutDir) /y
 if $(Platform) == x64 xcopy $(ProjectDir)..\..\lib\lsl\x64\bin\lsl* $(ProjectDir)$(OutDir) /y
+	echo Copying EDFfile
+if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\BrainHatComponents\EDFfile\EDFfile\bin\x86\$(Configuration)\*.dll $(ProjectDir)$(OutDir) /y
+if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\BrainHatComponents\EDFfile\EDFfile\bin\x86\$(Configuration)\*.pdb $(ProjectDir)$(OutDir) /y
+if $(Platform) == x64 xcopy $(ProjectDir)..\..\BrainHatComponents\EDFfile\EDFfile\bin\x64\$(Configuration)\*.dll $(ProjectDir)$(OutDir) /y
+
+
+
+
+
 </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>

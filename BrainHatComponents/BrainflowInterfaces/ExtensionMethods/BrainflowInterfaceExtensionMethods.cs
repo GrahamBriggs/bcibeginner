@@ -70,6 +70,30 @@ namespace BrainflowInterfaces
         }
 
         /// <summary>
+        /// Get Accel channel data from enumerable of brainflow sample objects
+        /// </summary>
+        public static double[] GetAcelDataForChannel(this IEnumerable<IBFSample> value, int channel)
+        {
+            return value.Select(x => x.GetAccelDataForChannel(channel)).ToArray();
+        }
+
+        /// <summary>
+        /// Get Other channel data from enumerable of brainflow sample objects
+        /// </summary>
+        public static double[] GetOtherDataForChannel(this IEnumerable<IBFSample> value, int channel)
+        {
+            return value.Select(x => x.GetOtherDataForChannel(channel)).ToArray();
+        }
+
+        /// <summary>
+        /// Get Analog channel data from enumerable of brainflow sample objects
+        /// </summary>
+        public static double[] GetAnalogDataForChannel(this IEnumerable<IBFSample> value, int channel)
+        {
+            return value.Select(x => x.GetAnalogDataForChannel(channel)).ToArray();
+        }
+
+        /// <summary>
         /// Get Exg channel data from enumerable of brainflow sample objects
         /// </summary>
         public static float[] GetFloatExgDataForChannel(this IEnumerable<IBFSample> value, int channel)
@@ -81,6 +105,41 @@ namespace BrainflowInterfaces
            
             return floatValues;
         }
+
+
+        /// <summary>
+        /// Get equipment type description string for boardId
+        /// </summary>
+        public static string GetEquipmentName(this int value)
+        {
+            switch (value)
+            {
+                case 0:
+                    return "Cyton";
+                case 2:
+                    return "Cyton+Daisy";
+            }
+            return "Unknown";
+        }
+
+        /// <summary>
+        /// Get equipment type description string for boardId
+        /// </summary>
+        public static string GetSampleName(this int value)
+        {
+            switch (value)
+            {
+                case 0:
+                    return "Cyton8_BFSample";
+                case 2:
+                    return "Cyton16_BFSample";
+                case 1:
+                    return "Ganglion_BFSample";
+                default:
+                    return "";
+            }
+        }
+
     }
 }
 

@@ -50,6 +50,8 @@
             this.labelBlinkDetector = new System.Windows.Forms.Label();
             this.groupBoxOtherData = new System.Windows.Forms.GroupBox();
             this.labelOtherData = new System.Windows.Forms.Label();
+            this.radioButtonTXT = new System.Windows.Forms.RadioButton();
+            this.radioButtonBDF = new System.Windows.Forms.RadioButton();
             this.groupBoxLogging.SuspendLayout();
             this.groupBoxExgChannels.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -130,6 +132,8 @@
             // 
             this.groupBoxExgChannels.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBoxExgChannels.Controls.Add(this.radioButtonBDF);
+            this.groupBoxExgChannels.Controls.Add(this.radioButtonTXT);
             this.groupBoxExgChannels.Controls.Add(this.labelRecordingDuration);
             this.groupBoxExgChannels.Controls.Add(this.textBoxRecordingName);
             this.groupBoxExgChannels.Controls.Add(this.buttonStartRecording);
@@ -144,7 +148,7 @@
             // labelRecordingDuration
             // 
             this.labelRecordingDuration.AutoSize = true;
-            this.labelRecordingDuration.Location = new System.Drawing.Point(249, 31);
+            this.labelRecordingDuration.Location = new System.Drawing.Point(312, 31);
             this.labelRecordingDuration.Name = "labelRecordingDuration";
             this.labelRecordingDuration.Size = new System.Drawing.Size(88, 13);
             this.labelRecordingDuration.TabIndex = 3;
@@ -152,7 +156,7 @@
             // 
             // textBoxRecordingName
             // 
-            this.textBoxRecordingName.Location = new System.Drawing.Point(115, 28);
+            this.textBoxRecordingName.Location = new System.Drawing.Point(177, 28);
             this.textBoxRecordingName.Name = "textBoxRecordingName";
             this.textBoxRecordingName.Size = new System.Drawing.Size(128, 20);
             this.textBoxRecordingName.TabIndex = 2;
@@ -171,7 +175,7 @@
             // 
             this.labelExgData.AutoSize = true;
             this.labelExgData.Font = new System.Drawing.Font("Courier New", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelExgData.Location = new System.Drawing.Point(6, 68);
+            this.labelExgData.Location = new System.Drawing.Point(6, 74);
             this.labelExgData.Name = "labelExgData";
             this.labelExgData.Size = new System.Drawing.Size(80, 17);
             this.labelExgData.TabIndex = 0;
@@ -297,6 +301,28 @@
             this.labelOtherData.TabIndex = 1;
             this.labelOtherData.Text = "Other Data";
             // 
+            // radioButtonTXT
+            // 
+            this.radioButtonTXT.AutoSize = true;
+            this.radioButtonTXT.Location = new System.Drawing.Point(118, 16);
+            this.radioButtonTXT.Name = "radioButtonTXT";
+            this.radioButtonTXT.Size = new System.Drawing.Size(49, 17);
+            this.radioButtonTXT.TabIndex = 4;
+            this.radioButtonTXT.TabStop = true;
+            this.radioButtonTXT.Text = ".TXT";
+            this.radioButtonTXT.UseVisualStyleBackColor = true;
+            // 
+            // radioButtonBDF
+            // 
+            this.radioButtonBDF.AutoSize = true;
+            this.radioButtonBDF.Location = new System.Drawing.Point(118, 40);
+            this.radioButtonBDF.Name = "radioButtonBDF";
+            this.radioButtonBDF.Size = new System.Drawing.Size(49, 17);
+            this.radioButtonBDF.TabIndex = 5;
+            this.radioButtonBDF.TabStop = true;
+            this.radioButtonBDF.Text = ".BDF";
+            this.radioButtonBDF.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -347,6 +373,8 @@
         private System.Windows.Forms.Label labelOtherData;
         private System.Windows.Forms.Label labelAlpha;
         private System.Windows.Forms.CheckBox checkBoxMuteBeeper;
+        private System.Windows.Forms.RadioButton radioButtonBDF;
+        private System.Windows.Forms.RadioButton radioButtonTXT;
     }
 }
 

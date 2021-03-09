@@ -113,7 +113,7 @@ namespace BrainHatNetwork
 
             SampleSize = 2 + numChannels + numAccelChannels + numOtherChannels + numAnalogChannels;
 
-            StreamInfo = new liblsl.StreamInfo(StreamName(), "BFSample", SampleSize, SampleRate, liblsl.channel_format_t.cf_double64, BrainHatNetwork.NetworkUtilities.GetHostName());
+            StreamInfo = new liblsl.StreamInfo(BoardId.GetSampleName(), "BFSample", SampleSize, SampleRate, liblsl.channel_format_t.cf_double64, BrainHatNetwork.NetworkUtilities.GetHostName());
 
             StreamInfo.desc().append_child_value("manufacturer", "OpenBCI");
             StreamInfo.desc().append_child_value("boardId", $"{BoardId}");
@@ -151,23 +151,7 @@ namespace BrainHatNetwork
 
 
 
-       /// <summary>
-       /// Get stream name for this board ID
-       /// </summary>
-        private string StreamName()
-        {
-            switch (BoardId)
-            {
-                case 0:
-                    return "Cyton8_BFSample";
-                case 2:
-                    return "Cyton16_BFSample";
-                case 1:
-                    return "Ganglion_BFSample";
-                default:
-                    return "BFSample";
-            }
-        }
+     
 
 
         /// <summary>

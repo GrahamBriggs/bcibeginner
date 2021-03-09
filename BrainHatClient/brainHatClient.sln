@@ -34,6 +34,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "brainflow", "..\BrainHatCom
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "liblsl", "..\BrainHatComponents\liblsl-Csharp\liblsl.csproj", "{82BEF4B5-5F28-499B-B3D5-CC802C8519A2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EDFfileCSWrapper", "..\BrainHatComponents\EDFfile\EDFfileCSWrapper\EDFfileCSWrapper.csproj", "{AACF5C25-8C0C-4F32-8334-C73B8DFCD37E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -152,6 +154,18 @@ Global
 		{82BEF4B5-5F28-499B-B3D5-CC802C8519A2}.Release|x64.Build.0 = Release|Any CPU
 		{82BEF4B5-5F28-499B-B3D5-CC802C8519A2}.Release|x86.ActiveCfg = Release|Any CPU
 		{82BEF4B5-5F28-499B-B3D5-CC802C8519A2}.Release|x86.Build.0 = Release|Any CPU
+		{AACF5C25-8C0C-4F32-8334-C73B8DFCD37E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AACF5C25-8C0C-4F32-8334-C73B8DFCD37E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AACF5C25-8C0C-4F32-8334-C73B8DFCD37E}.Debug|x64.ActiveCfg = Debug|x64
+		{AACF5C25-8C0C-4F32-8334-C73B8DFCD37E}.Debug|x64.Build.0 = Debug|x64
+		{AACF5C25-8C0C-4F32-8334-C73B8DFCD37E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AACF5C25-8C0C-4F32-8334-C73B8DFCD37E}.Debug|x86.Build.0 = Debug|Any CPU
+		{AACF5C25-8C0C-4F32-8334-C73B8DFCD37E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AACF5C25-8C0C-4F32-8334-C73B8DFCD37E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AACF5C25-8C0C-4F32-8334-C73B8DFCD37E}.Release|x64.ActiveCfg = Release|x64
+		{AACF5C25-8C0C-4F32-8334-C73B8DFCD37E}.Release|x64.Build.0 = Release|x64
+		{AACF5C25-8C0C-4F32-8334-C73B8DFCD37E}.Release|x86.ActiveCfg = Release|Any CPU
+		{AACF5C25-8C0C-4F32-8334-C73B8DFCD37E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

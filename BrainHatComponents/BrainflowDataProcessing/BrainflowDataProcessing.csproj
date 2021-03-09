@@ -44,9 +44,11 @@
     <Compile Include="AlphaWaveDetector.cs" />
     <Compile Include="BandPowerCalculator.cs" />
     <Compile Include="BandPowerMonitor.cs" />
+    <Compile Include="BDFFormatFileWriter.cs" />
     <Compile Include="BlinkDetector.cs" />
     <Compile Include="BrainflowDataProcessor.cs" />
     <Compile Include="BrainflowDataSource.cs" />
+    <Compile Include="BrainHatFileWriterInterface.cs" />
     <Compile Include="Events.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="OBCIGuiFormatFileReader.cs" />
@@ -64,17 +66,21 @@
       <Project>{19d4357f-b416-40d3-99cd-2fcaf56529f6}</Project>
       <Name>brainflow</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EDFfile\EDFfileCSWrapper\EDFfileCSWrapper.csproj">
+      <Project>{aacf5c25-8c0c-4f32-8334-c73b8dfcd37e}</Project>
+      <Name>EDFfileCSWrapper</Name>
+    </ProjectReference>
     <ProjectReference Include="..\LoggingInterfaces\LoggingInterfaces.csproj">
       <Project>{eae81bba-a0c2-4e59-85f6-270e3f6fb6fa}</Project>
       <Name>LoggingInterfaces</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  
-   <Target Name="SpicNSpan" AfterTargets="Clean"> <!-- common vars https://msdn.microsoft.com/en-us/library/c02as0cs.aspx?f=255&MSPPError=-2147217396 -->
-         <RemoveDir Directories="$(TargetDir)" /> <!-- bin -->
-         <RemoveDir Directories="$(ProjectDir)$(BaseIntermediateOutputPath)" /> <!-- obj -->
+  <Target Name="SpicNSpan" AfterTargets="Clean">
+    <!-- common vars https://msdn.microsoft.com/en-us/library/c02as0cs.aspx?f=255&MSPPError=-2147217396 -->
+    <RemoveDir Directories="$(TargetDir)" />
+    <!-- bin -->
+    <RemoveDir Directories="$(ProjectDir)$(BaseIntermediateOutputPath)" />
+    <!-- obj -->
   </Target>
-
-  
 </Project>
