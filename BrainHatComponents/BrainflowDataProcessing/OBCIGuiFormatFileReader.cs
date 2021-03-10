@@ -7,47 +7,46 @@ using System.Threading.Tasks;
 
 namespace BrainflowDataProcessing
 {
-    public class OBCIGuiFormatFileReader
+    public class OBCIGuiFormatFileReader : IBrainHatFileReader
     {
-        public async Task<bool> ReadFile(string fileName)
+        //  Public Properties
+        public int BoardId { get; protected set; }
+
+        public int SampleRate { get; protected set; }
+        
+        public int NumberOfChannels { get; protected set; }
+        
+        public double? StartTime { get; protected set; }
+        
+        public double? EndTime { get; protected set; }
+        
+        public double Duration
         {
-            _Samples = new List<IBFSample>();
-            string prevLine = "";
-            using (var fileReader = await FileSystemExtensionMethods.WaitForFileAsync(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            using (var reader = new StreamReader(fileReader))
+            get
             {
-
-                var nextLine = reader.ReadLine();
-                
-                while (nextLine != null)
-                {
-                    if (nextLine.Contains("%") || nextLine.Contains("Sample Index"))
-                    {
-                        ParseHeaderLine(nextLine);
-                    }
-                    else
-                    {
-                        if (!CreateSample(nextLine))
-                            break;
-                    }
-
-                    nextLine = reader.ReadLine();
-                    if (nextLine != null)
-                        prevLine = nextLine;
-                }
+                if (StartTime.HasValue && EndTime.HasValue)
+                    return EndTime.Value - StartTime.Value;
+                else
+                    return 0.0;
             }
-
-            return IsValidFile();
         }
 
+        public IEnumerable<IBFSample> Samples => _Samples;
+
+        public bool IsValidFile => (BoardId >= 0 && NumberOfChannels > 0 && SampleRate > 0 && StartTime.HasValue && EndTime.HasValue);
+        
+        /// <summary>
+        /// Open the file and read the header, first record and last record (to calculate duration)
+        /// does not save any other samples from the file
+        /// Returns true if the file has valid information
+        /// </summary>
         public async Task<bool> ReadFileForHeader(string fileName)
         {
             _Samples = new List<IBFSample>();
-            string prevLine = "";
             using (var fileReader = await FileSystemExtensionMethods.WaitForFileAsync(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             using (var reader = new StreamReader(fileReader))
             {
-
+                string previousLine = "";
                 var nextLine = reader.ReadLine();
                 while (nextLine != null)
                 {
@@ -57,30 +56,83 @@ namespace BrainflowDataProcessing
                     }
                     else
                     {
-                        if (_Samples.Count == 0 && !CreateSample(nextLine))
-                            return false;
+
+
+                        if (_Samples.Count == 0)
+                        {
+                            var firstSample = CreateSample(nextLine);
+                            if (firstSample != null)
+                                _Samples.Add(firstSample);       //  save the first sample
+                        }
+
+                        if (IsCompleteLine(nextLine))
+                            previousLine = nextLine;
                     }
 
-                    prevLine = nextLine;
                     nextLine = reader.ReadLine();
                 }
 
-                if (!CreateSample(prevLine))
-                    return false;
+                var lastSample = CreateSample(previousLine);
+                if ( lastSample != null )
+                    _Samples.Add(lastSample);   //  save the last sample
             }
 
-            return IsValidFile();
+            return IsValidFile;
         }
 
 
-
-        bool IsValidFile()
+        bool IsCompleteLine(string nextLine)
         {
-            return BoardId >= 0 && NumberOfChannels > 0 && SampleRate > 0 && StartTime.HasValue && EndTime.HasValue;
+            var tokens = nextLine.Split(',');
+            switch ( BoardId )
+            {
+                case 0:
+                    return tokens.Length >= 23;
+                case 2:
+                    return tokens.Length >= 31;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Open the file and read it into memory
+        /// </summary>
+        public async Task<bool> ReadFile(string fileName)
+        {
+            _Samples = new List<IBFSample>();
+            using (var fileReader = await FileSystemExtensionMethods.WaitForFileAsync(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var reader = new StreamReader(fileReader))
+            {
+                var nextLine = reader.ReadLine();
+
+                while (nextLine != null)
+                {
+                    if (nextLine.Contains("%") || nextLine.Contains("Sample Index"))
+                    {
+                        ParseHeaderLine(nextLine);
+                    }
+                    else
+                    {
+                        var newSample = CreateSample(nextLine);
+                        if (newSample == null)
+                            break;
+
+                        _Samples.Add(newSample);
+                    }
+
+                    nextLine = reader.ReadLine();
+                }
+            }
+
+            return IsValidFile;
         }
 
 
-        private bool CreateSample(string nextLine)
+        /// <summary>
+        /// Create a sample from a single line of ascii text
+        /// </summary>
+        private IBFSample CreateSample(string nextLine)
         {
             IBFSample newSample = null;
 
@@ -98,19 +150,23 @@ namespace BrainflowDataProcessing
                     throw new Exception($"Board ID is not set.");
             }
 
+            //  check the timestamp for valid data, this indicates we read a partial line for example the file is actively being written
             if (Math.Abs(newSample.TimeStamp-0) < 0.0000001)
-                return false;
+                return null;
 
+            //  cache the start time of the first record
             if (!StartTime.HasValue)
                 StartTime = newSample.TimeStamp;
+            //  cahce the end time
             EndTime = newSample.TimeStamp;
 
-            _Samples.Add(newSample);
-
-            return true;
+            return newSample;
         }
 
 
+        /// <summary>
+        /// Parse a single line of header text
+        /// </summary>
         private void ParseHeaderLine(string nextLine)
         {
             if (nextLine.Contains("%Number of channels"))
@@ -138,23 +194,7 @@ namespace BrainflowDataProcessing
             }
         }
 
-        public int BoardId { get; protected set; }
-        public int SampleRate { get; protected set; }
-        public int NumberOfChannels { get; protected set; }
-        public double? StartTime { get; protected set; }
-        public double? EndTime { get; protected set; }
-        public double Duration
-        {
-            get
-            {
-                if (StartTime.HasValue && EndTime.HasValue)
-                    return EndTime.Value - StartTime.Value;
-                else
-                    return 0.0;
-            }
-        }
-
-        public IEnumerable<IBFSample> Samples => _Samples;
+      
 
         protected List<IBFSample> _Samples;
     }

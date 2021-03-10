@@ -48,9 +48,12 @@
     <Compile Include="BlinkDetector.cs" />
     <Compile Include="BrainflowDataProcessor.cs" />
     <Compile Include="BrainflowDataSource.cs" />
-    <Compile Include="BrainHatFileWriterInterface.cs" />
+    <Compile Include="BrainHatDataFileInterfaces.cs" />
+    <Compile Include="BrainHatFileReader.cs" />
+    <Compile Include="BrainHatFileWriter.cs" />
     <Compile Include="Events.cs" />
     <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="BDFFormatFileReader.cs" />
     <Compile Include="OBCIGuiFormatFileReader.cs" />
     <Compile Include="OBCIGuiFormatFileWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -74,6 +77,11 @@
       <Project>{eae81bba-a0c2-4e59-85f6-270e3f6fb6fa}</Project>
       <Name>LoggingInterfaces</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>12.0.3</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="SpicNSpan" AfterTargets="Clean">

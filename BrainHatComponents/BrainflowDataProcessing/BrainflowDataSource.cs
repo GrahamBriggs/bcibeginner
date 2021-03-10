@@ -2,8 +2,10 @@
 using LoggingInterfaces;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace BrainflowDataProcessing
 {
@@ -32,16 +34,19 @@ namespace BrainflowDataProcessing
         public int NumberOfChannels { get; protected set; }
         public int SampleRate { get; protected set; }
 
-        public void LoadOpenBciGuiTxtFile(string fileName)
+        public async Task<bool> LoadDataFile(string fileName)
         {
-            OBCIGuiFormatFileReader reader = new OBCIGuiFormatFileReader();
-            reader.ReadFile(fileName);
+            BrainHatFileReader reader = new BrainHatFileReader();
+            if ( await reader.LoadDataFileAsync(fileName) )
+            {
+                BoardId = reader.BoardId;
+                NumberOfChannels = reader.NumberOfChannels;
+                SampleRate = reader.SampleRate;
+                UnfilteredData = new List<IBFSample>(reader.Samples);
+                return true;
+            }
 
-            BoardId = reader.BoardId;
-            NumberOfChannels = reader.NumberOfChannels;
-            SampleRate = reader.SampleRate;
-
-            UnfilteredData = new List<IBFSample>(reader.Samples);
+            return false;
         }
 
         /// <summary>

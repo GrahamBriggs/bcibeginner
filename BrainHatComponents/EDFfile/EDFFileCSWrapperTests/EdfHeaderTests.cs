@@ -31,7 +31,7 @@ namespace EDFFileSharpTests
             }
 
             edfSetStartDatetime(fileHandle, 2021, 03, 07, 12, 13, 14);
-            edfSetPatientName(fileHandle, "PatientX");
+            edfSetPatientName(fileHandle, "PatientXSomeReallyLongEightyCharStringHere");
             edfSetPatientCode(fileHandle, "PatientCodeX");
             edfSetPatientYChromosome(fileHandle, 1);
             edfSetPatientBirthdate(fileHandle, 2021, 03, 07);
@@ -39,7 +39,7 @@ namespace EDFFileSharpTests
             edfSetAdminCode(fileHandle, "AdminCodeX");
             edfSetTechnician(fileHandle, "TechX");
             edfSetEquipment(fileHandle, "EquipmentX");
-            edfSetRecordingAdditional(fileHandle, "MyField");
+            edfSetRecordingAdditional(fileHandle, "Cyton8BFSampleReallyLongString");
 
             // write five seconds worth of data
             for (int i = 0; i < 5; i++)
@@ -84,7 +84,7 @@ namespace EDFFileSharpTests
             Assert.AreEqual("AdminCodeX", header.admincode.Trim());
             Assert.AreEqual("TechX", header.technician.Trim());
             Assert.AreEqual("EquipmentX", header.equipment.Trim());
-            Assert.AreEqual("MyField", header.recording_additional.Trim());
+            Assert.AreEqual("Cyton8BFSample", header.recording_additional.Trim());
 
             //  check the signal array
             for( int i = 0; i < 8; i++)

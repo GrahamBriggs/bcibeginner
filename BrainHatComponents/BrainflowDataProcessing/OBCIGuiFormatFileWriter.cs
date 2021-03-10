@@ -16,24 +16,25 @@ namespace BrainflowDataProcessing
         //  Events
         public event LogEventDelegate Log;
 
+        public int BoardId { get; protected set; }
+
+        public int SampleRate { get; protected set; }
+
         public bool IsLogging => FileWriterCancelTokenSource != null;
 
 
         /// <summary>
         /// Start the file writer
         /// </summary>
-        public async Task StartWritingToFileAsync(string fileNameRoot, int boardId, int sampleRate)
+        public async Task StartWritingToFileAsync(string path, string fileNameRoot)
         {
             FileNameRoot = fileNameRoot;
-            BoardId = boardId;
-            SampleRate = sampleRate;
 
             await StopWritingToFileAsync();
             Data.RemoveAll();
 
             var timeNow = DateTimeOffset.Now;
-            FileName = Path.Combine(Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "brainHatRecordings"), $"{FileNameRoot}_{timeNow.Year}{timeNow.Month.ToString("D02")}{timeNow.Day.ToString("D02")}-{timeNow.Hour.ToString("D02")}{timeNow.Minute.ToString("D02")}{timeNow.Second.ToString("D02")}.txt");
-
+            FileName = Path.Combine(path, $"{FileNameRoot}_{timeNow.Year}{timeNow.Month.ToString("D02")}{timeNow.Day.ToString("D02")}-{timeNow.Hour.ToString("D02")}{timeNow.Minute.ToString("D02")}{timeNow.Second.ToString("D02")}.txt");
 
             FileWriterCancelTokenSource = new CancellationTokenSource();
             FileWritingTask = RunFileWriter(FileWriterCancelTokenSource.Token);
@@ -53,7 +54,7 @@ namespace BrainflowDataProcessing
             {
                 FileWriterCancelTokenSource.Cancel();
                 await FileWritingTask;
-                FileName = "";
+
                 FileWriterCancelTokenSource = null;
                 FileWritingTask = null;
             }
@@ -94,10 +95,13 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Constructor
         /// </summary>
-        public OBCIGuiFormatFileWriter()
+        public OBCIGuiFormatFileWriter(int boardId, int sampleRate)
         {
             Data = new ConcurrentQueue<IBFSample>();
             NotifyAddedData = new SemaphoreSlim(0);
+
+            BoardId = boardId;
+            SampleRate = sampleRate;
 
             FileName = "";
             FileTimer = new Stopwatch();
@@ -114,8 +118,7 @@ namespace BrainflowDataProcessing
 
         //  File Name Root
         string FileNameRoot;
-        int BoardId;
-        int SampleRate;
+      
 
         //OpenBCI_GUI$BoardCytonSerialDaisy
         //OpenBCI_GUI$BoardCytonSerial
@@ -201,7 +204,7 @@ namespace BrainflowDataProcessing
                     finally
                     {
                         file.Close();
-                        FileTimer.Reset();
+                        FileTimer.Stop();
                     }
                 }
             }

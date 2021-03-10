@@ -18,6 +18,10 @@ namespace BrainflowDataProcessing
         //  Events
         public event LogEventDelegate Log;
 
+        public int BoardId { get; protected set; }
+
+        public int SampleRate { get; protected set; }
+
         //  Public Properties
         public bool IsLogging => FileWriterCancelTokenSource != null;
 
@@ -29,16 +33,13 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Start the file writer
         /// </summary>
-        public async Task StartWritingToFileAsync(string fileNameRoot, int boardId, int sampleRate)
+        public async Task StartWritingToFileAsync(string path, string fileNameRoot)
         {
-            BoardId = boardId;
-            SampleRate = sampleRate;
-
             await StopWritingToFileAsync();
             Data.RemoveAll();
 
             var timeNow = DateTimeOffset.Now;
-            FileName = Path.Combine(Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "brainHatRecordings"), $"{fileNameRoot}_{timeNow.Year}{timeNow.Month.ToString("D02")}{timeNow.Day.ToString("D02")}-{timeNow.Hour.ToString("D02")}{timeNow.Minute.ToString("D02")}{timeNow.Second.ToString("D02")}.bdf");
+            FileName = Path.Combine(path, $"{fileNameRoot}_{timeNow.Year}{timeNow.Month.ToString("D02")}{timeNow.Day.ToString("D02")}-{timeNow.Hour.ToString("D02")}{timeNow.Minute.ToString("D02")}{timeNow.Second.ToString("D02")}.bdf");
 
             FileWriterCancelTokenSource = new CancellationTokenSource();
             FileWritingTask = RunFileWriter(FileWriterCancelTokenSource.Token);
@@ -54,7 +55,7 @@ namespace BrainflowDataProcessing
             {
                 FileWriterCancelTokenSource.Cancel();
                 await FileWritingTask;
-                FileName = "";
+
                 FileWriterCancelTokenSource = null;
                 FileWritingTask = null;
             }
@@ -98,10 +99,13 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Constructor
         /// </summary>
-        public BDFFormatFileWriter()
+        public BDFFormatFileWriter(int boardId, int sampleRate)
         {
             Data = new ConcurrentQueue<IBFSample>();
             NotifyAddedData = new SemaphoreSlim(0);
+
+            BoardId = boardId;
+            SampleRate = sampleRate;
 
             FileName = "";
             FileTimer = new Stopwatch();
@@ -122,8 +126,7 @@ namespace BrainflowDataProcessing
         protected Stopwatch FileTimer { get; set; }
 
         //  Board propertites
-        int BoardId;
-        int SampleRate;
+        
 
         //  Signal Properties
         int NumberOfExgChannels;
@@ -186,7 +189,7 @@ namespace BrainflowDataProcessing
                 {
                     int test = edfCloseFile(FileHandle);
                 }
-                FileTimer.Reset();
+                FileTimer.Stop();
             }
         }
 

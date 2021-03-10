@@ -37,7 +37,7 @@ int main()
 		}
 	}*/
 
-	for (int number = 0; number < 2; number++)
+	for (int number = 0; number < 1; number++)
 	{
 		auto fileHandle = edfOpenFileWriteOnly(format("TestFile%d.bdf", number).c_str(), 3, 8);
 		edfSetDatarecordDuration(fileHandle, 100000);
@@ -65,7 +65,7 @@ int main()
 		edfSetAdminCode(fileHandle, "AdminCodeX");
 		edfSetTechnician(fileHandle, "TechX");
 		edfSetEquipment(fileHandle, format("EquipmentX%d",number).c_str());
-		edfSetRecordingAdditional(fileHandle, "MyField");
+		edfSetRecordingAdditional(fileHandle, "Cyton8_BFSample");
 
 		//  write three seconds worth of data
 		for (int i = 0; i < 1000; i++)
@@ -88,6 +88,12 @@ int main()
 
 
 		edfCloseFile(fileHandle);
+
+		fileHandle = edfOpenFileReadOnly("TestFile%d.bdf");
+
+		auto header = edfGetHeaderAsJson(fileHandle);
+
+		int i = 0;
 	}
 
 	this_thread::sleep_for(std::chrono::seconds(2));
