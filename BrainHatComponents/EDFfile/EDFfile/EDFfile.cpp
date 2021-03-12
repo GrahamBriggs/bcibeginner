@@ -403,6 +403,23 @@ int edfSetStartDatetime(int fileHandle, int year, int month, int day, int hour, 
 
 
 /// <summary>
+/// Set start time subsecond
+/// </summary>
+int  edfSetSubsecondStarttime(int fileHandle, int subsecond)
+{
+	auto fileOpen = OpenFiles.find(fileHandle);
+	if (fileOpen == OpenFiles.end())
+		return -1;
+	
+	auto res = edf_set_subsecond_starttime(fileHandle, subsecond);
+	if (res == 0)
+	{
+		OpenFiles[fileHandle]->starttime_subsecond = subsecond;
+	}
+}
+
+
+/// <summary>
 /// Set patient name string
 /// </summary>
 int edfSetPatientName(int fileHandle, const char* patientName)
@@ -474,7 +491,6 @@ int edfSetPatientBirthdate(int fileHandle, int year, int month, int day)
 }
 
 
-
 /// <summary>
 /// Set patient additional string
 /// </summary>
@@ -491,7 +507,6 @@ int edfSetPatientAdditional(int fileHandle, const char* patientAdditional)
     }
     return res;
 }
-
 
 
 /// <summary>
@@ -512,7 +527,6 @@ int edfSetAdminCode(int fileHandle, const char* adminCode)
 }
 
 
-
 /// <summary>
 /// Set technician string
 /// </summary>
@@ -531,7 +545,6 @@ int edfSetTechnician(int fileHandle, const char* technician)
 }
 
 
-
 /// <summary>
 /// Set equipment string
 /// </summary>
@@ -548,7 +561,6 @@ int edfSetEquipment(int fileHandle, const char* equipment)
     }
     return res;
 }
-
 
 
 /// <summary>
@@ -595,7 +607,6 @@ int edfBlockWritePhysicalSamples(int fileHandle, double* buffer)
 }
 
 
-
 /// <summary>
 /// Write digial samples
 /// </summary>
@@ -620,7 +631,6 @@ int edfBlockWriteDigitalSamples(int fileHandle, int* buffer)
 
     return edf_blockwrite_digital_samples(fileHandle, buffer);
 }
-
 
 
 #pragma endregion 

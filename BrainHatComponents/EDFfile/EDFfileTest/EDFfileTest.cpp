@@ -91,7 +91,12 @@ int main()
 
 		fileHandle = edfOpenFileReadOnly("TestFile%d.bdf");
 
-		auto header = edfGetHeaderAsJson(fileHandle);
+		auto headerSize = edfGetHeaderAsJson(fileHandle, 0, 0x00);
+		char* header = new char[headerSize];
+		edfGetHeaderAsJson(fileHandle, headerSize, header);
+
+		delete header;
+
 
 		int i = 0;
 	}

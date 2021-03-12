@@ -21,6 +21,7 @@ public:
 	double SampleIndex;
 	double TimeStamp;
 	
+	
 	virtual int GetNumberOfExgChannels() = 0;
 	virtual double GetExg(int channel) = 0;
 	
@@ -33,6 +34,23 @@ public:
 	virtual int GetNumberOfAnalogChannels() = 0;
 	virtual double GetAnalog(int channel) = 0;
 	
+	//  Sample Size is:
+	//		- Sample Index
+	//		- Number of EXG Channels
+	//		- Number of Accelerometer Channels
+	//		- Number of Other Channels
+	//		- Number of Analog Channels
+	//		- Time Stamp
+	virtual inline int SampleSize()
+	{
+		return (
+			1 +
+			GetNumberOfExgChannels() +
+			GetNumberOfAccelChannels() + 
+			GetNumberOfOtherChannels() + 
+			GetNumberOfAnalogChannels() + 
+			1);
+	}
 
 
 	virtual void AsRawSample(double* sample) = 0;

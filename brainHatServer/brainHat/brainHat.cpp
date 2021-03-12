@@ -11,10 +11,12 @@
 #include "BoardDataReader.h"
 #include "CommandServer.h"
 #include "OpenBciDataFile.h"
+#include "BDFFileWriter.h"
 #include "BoardFileSimulator.h"
 #include "TimeExtensions.h"
 #include "Parser.h"
 #include "UriParser.h"
+#include "BrainHatFileWriter.h"
 
 
 
@@ -44,7 +46,8 @@ string DemoFileName = "";
 BoardFileSimulator DemoFileReader(BoardConnectionStateChanged, NewSample);
 
 //  File Recorder
-OpenBCIFileRecorder FileRecorder;
+BrainHatFileWriter* FileWriter;
+bool IsRecording() {return FileWriter != NULL && FileWriter->IsRecording();}
 
 //  Program functions
 bool ParseArguments(int argc, char *argv[]);
@@ -147,8 +150,8 @@ void NewSample(BFSample* sample)
 	//  broadcast it
 	DataBroadcaster.AddData(sample->Copy());
 	
-	if (FileRecorder.IsRecording())
-		FileRecorder.AddData(sample->Copy());
+	if (IsRecording())
+		FileWriter->AddData(sample->Copy());
 	
 	//  done with this sample
 	delete sample;
@@ -206,20 +209,42 @@ bool HandleServerRequest(string request)
 	{
 		auto fileName = requestParser.GetArg("filename");
 		auto enable = requestParser.GetArg("enable");
-		
+	
 		if (enable == "true")
 		{
-			if (FileRecorder.IsRecording())
+			if (FileWriter != NULL)
 			{
-				FileRecorder.Cancel();
+				FileWriter->Cancel();
+				delete FileWriter;
+				FileWriter = NULL;
 			}
 			
-			FileRecorder.StartRecording(fileName, Board_Id, DataSource->GetSampleRate());
+			auto formatType = requestParser.GetArg("format");
+			
+			int format = 1;
+			if (formatType.compare("txt") == 0)
+				format = 0;
+			
+			switch (format)
+			{
+			case 0:
+				FileWriter = new OpenBCIFileWriter();
+				break;
+			case 1:
+				FileWriter = new BDFFileWriter();
+				break;
+				
+			default :
+				return false;
+			}
+			
+			
+			FileWriter->StartRecording(fileName, Board_Id, DataSource->GetSampleRate());
 		}
 		else if (enable == "false")
 		{
-			if (FileRecorder.IsRecording())
-				FileRecorder.Cancel();
+			if (IsRecording())
+				FileWriter->Cancel();
 		}
 		
 		return true;

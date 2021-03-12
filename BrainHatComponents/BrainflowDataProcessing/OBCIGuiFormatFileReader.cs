@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -46,7 +47,7 @@ namespace BrainflowDataProcessing
             using (var fileReader = await FileSystemExtensionMethods.WaitForFileAsync(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             using (var reader = new StreamReader(fileReader))
             {
-                string previousLine = "";
+                int lineCount = 0;
                 var nextLine = reader.ReadLine();
                 while (nextLine != null)
                 {
@@ -56,25 +57,25 @@ namespace BrainflowDataProcessing
                     }
                     else
                     {
-
-
                         if (_Samples.Count == 0)
                         {
                             var firstSample = CreateSample(nextLine);
                             if (firstSample != null)
+                            {
                                 _Samples.Add(firstSample);       //  save the first sample
+                            }
                         }
 
-                        if (IsCompleteLine(nextLine))
-                            previousLine = nextLine;
+                        lineCount++;
                     }
 
                     nextLine = reader.ReadLine();
                 }
 
-                var lastSample = CreateSample(previousLine);
-                if ( lastSample != null )
-                    _Samples.Add(lastSample);   //  save the last sample
+                if (_Samples.Count > 0)
+                {
+                    EndTime = _Samples.First().TimeStamp + lineCount / SampleRate;
+                }
             }
 
             return IsValidFile;

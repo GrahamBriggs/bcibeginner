@@ -32,7 +32,7 @@ namespace brainHatSharpGUI
             BrainflowBoard = null;
             LoggingWindow = null;
 
-            FileWriter = new OBCIGuiFormatFileWriter();
+            FileWriter = new BrainHatFileWriter();
         }
 
        
@@ -42,7 +42,7 @@ namespace brainHatSharpGUI
         LSLDataBroadcast LslBroadcast;
         TcpipCommandServer CommandServer;
         StatusMonitor MonitorStatus;
-        OBCIGuiFormatFileWriter FileWriter;
+        BrainHatFileWriter FileWriter;
         ConfigurationWindow ConfigWindow = null;
         LogWindow LoggingWindow = null;
 
@@ -60,8 +60,8 @@ namespace brainHatSharpGUI
             }).Wait();
 
             SetComPortComboBox();
-
             SetBoardIdRadioButton();
+            SetBrainflowStreamingUi();
 
             EnableConnectionButtons(true);
             buttonConfigureBoard.Enabled = false;
@@ -132,6 +132,13 @@ namespace brainHatSharpGUI
             }
         }
 
+        private void SetBrainflowStreamingUi()
+        {
+            checkBoxUseBFStream.Checked = Properties.Settings.Default.UseBFStream;
+            textBoxIpAddress.Text = Properties.Settings.Default.IPAddress;
+            textBoxIpPort.Text = Properties.Settings.Default.IPPort.ToString();
+        }
+
 
         /// <summary>
         /// Enable buttons based on connection state
@@ -142,6 +149,9 @@ namespace brainHatSharpGUI
             radioButtonDaisy.Enabled = enable;
             comboBoxComPort.Enabled = enable;
             buttonRefresh.Enabled = enable;
+            checkBoxUseBFStream.Enabled = enable;
+            textBoxIpAddress.Enabled = enable;
+            textBoxIpPort.Enabled = enable;
         }
 
 
@@ -151,6 +161,28 @@ namespace brainHatSharpGUI
         /// </summary>
         private BrainFlowInputParams SaveConnectionSettings()
         {
+            SaveUiInputToProperties();
+
+            BrainFlowInputParams startupParams = new BrainFlowInputParams()
+            {
+                serial_port = Properties.Settings.Default.ComPort,
+            };
+
+            if (checkBoxUseBFStream.Checked)
+            {
+                startupParams.ip_address = Properties.Settings.Default.IPAddress;
+                startupParams.ip_port = Properties.Settings.Default.IPPort;
+            }
+
+            return startupParams;
+        }
+
+
+        /// <summary>
+        /// Get the input from the UI and save it to properties
+        /// </summary>
+        private void SaveUiInputToProperties()
+        {
             if (radioButtonCyton.Checked)
                 Properties.Settings.Default.BoardId = 0;
             else if (radioButtonDaisy.Checked)
@@ -158,11 +190,16 @@ namespace brainHatSharpGUI
 
             Properties.Settings.Default.ComPort = (string)comboBoxComPort.SelectedItem;
 
-            BrainFlowInputParams startupParams = new BrainFlowInputParams()
+            Properties.Settings.Default.UseBFStream = checkBoxUseBFStream.Checked;
+            Properties.Settings.Default.IPAddress = textBoxIpAddress.Text;
+            if (int.TryParse(textBoxIpPort.Text, out var port))
+                Properties.Settings.Default.IPPort = port;
+            else
             {
-                serial_port = Properties.Settings.Default.ComPort,
-            };
-            return startupParams;
+                Properties.Settings.Default.IPPort = 6677;
+                textBoxIpAddress.Text = "6677";
+            }
+            Properties.Settings.Default.Save();
         }
 
 
@@ -286,9 +323,18 @@ namespace brainHatSharpGUI
                         e.Status.SampleRate = BrainflowBoard.SampleRate;
                         e.Status.BoardId = BrainflowBoard.BoardId;
                     }
-                    e.Status.RecordingDataBrainHat = FileWriter.IsLogging;
-                    e.Status.RecordingFileNameBrainHat = Path.GetFileName(FileWriter.FileName);
-                    e.Status.RecordingDurationBrainHat = FileWriter.FileDuration;
+                    if (FileWriter.IsLogging)
+                    {
+                        e.Status.RecordingDataBrainHat = FileWriter.IsLogging;
+                        e.Status.RecordingFileNameBrainHat = Path.GetFileName(FileWriter.FileName);
+                        e.Status.RecordingDurationBrainHat = FileWriter.FileDuration;
+                    }
+                    else
+                    {
+                        e.Status.RecordingDataBrainHat = false;
+                        e.Status.RecordingFileNameBrainHat = "";
+                        e.Status.RecordingDurationBrainHat = 0.0;
+                    }
 
 
                     BroadcastStatus.QueueStringToBroadcast($"networkstatus?hostname={e.Status.HostName}&status={JsonConvert.SerializeObject(e.Status)}\n");
@@ -384,6 +430,7 @@ namespace brainHatSharpGUI
             {
                 var enable = bool.Parse(args.GetArg("enable"));
                 var fileName = args.GetArg("filename");
+                var formatType = args.GetArg("format");
                 if (BrainflowBoard == null)
                 {
                     return $"NAK?response=Board is not reading data.";
@@ -394,12 +441,27 @@ namespace brainHatSharpGUI
                     {
                         return $"NAK?response=You must close the current recording file before starting a new one.";
                     }
-                    await FileWriter.StartWritingToFileAsync(fileName, BrainflowBoard.BoardId, BrainflowBoard.SampleRate);
+                    
+
+                    FileWriterType format = FileWriterType.Bdf;
+                    switch ( formatType )
+                    {
+                        case "txt":
+                            format = FileWriterType.OpenBciTxt;
+                            break;
+                        case "bdf":
+                            format = FileWriterType.Bdf;
+                            break;
+                    }
+
+                    var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "brainHatRecordings");
+                    await FileWriter.StartWritingToFileAsync(path,fileName, BrainflowBoard.BoardId, BrainflowBoard.SampleRate, format); 
+
                     return $"ACK?response=File {Path.GetFileName(FileWriter.FileName)} started.";
                 }
                 else
                 {
-                    if (!FileWriter.IsLogging)
+                    if (FileWriter != null && !FileWriter.IsLogging)
                     {
                         return $"NAK?response=No recording in progress.";
                     }

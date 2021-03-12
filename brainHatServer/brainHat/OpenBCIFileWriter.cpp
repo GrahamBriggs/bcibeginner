@@ -1,79 +1,43 @@
 #include <list>
-#include <unistd.h>
-#include <iostream>
 #include "brainHat.h"
-#include "OpenBCIFileRecorder.h"
+#include "OpenBCIFileWriter.h"
 #include "StringExtensions.h"
 #include "TimeExtensions.h"
-#include "wiringPi.h"
-#include "json.hpp"
-#include "NetworkAddresses.h"
 #include "BFSample.h"
-#include "BrainHatServerStatus.h"
-#include "NetworkExtensions.h"
-#include <lsl_cpp.h>
 #include <iomanip>
-#include <sstream>
-#include <dirent.h>
-#include <errno.h>
 #include "FileExtensions.h"
 
 using namespace std;
-using json = nlohmann::json;
-using namespace lsl;
+
 
 
 
 
 //  Constructor
 //
-OpenBCIFileRecorder::OpenBCIFileRecorder()
+OpenBCIFileWriter::OpenBCIFileWriter()
 {
-	Recording = false;
+	
 }
 
 
 //  Destructor
 //
-OpenBCIFileRecorder::~OpenBCIFileRecorder()
+OpenBCIFileWriter::~OpenBCIFileWriter()
 {
 	
 }
 
-
-// Start recording, opens the file and kicks off a thread to write to the file
-//
-bool OpenBCIFileRecorder::StartRecording(string fileName, int boardId, int sampleRate)
-{	
-	if (OpenFile(fileName))
-	{
-		BoardId = boardId;
-		SampleRate = sampleRate;
-	
-		WroteHeader = false;
-		Recording = true;
-		ElapsedTime.Start();
-		Thread::Start();
-		return true;
-	}
-	
-	return false;
-}
 
 
 //  Cancel thread, close the file
 //
-void OpenBCIFileRecorder::Cancel()
+void OpenBCIFileWriter::CloseFile()
 {
-	Thread::Cancel();	
-	Recording = false;
 	RecordingFile.close();
-	Logging.AddLog("OpenBCIFileRecorder", "Cancel", format("Closed recording file %s.", RecordingFileName.c_str()), LogLevelInfo);
+	Logging.AddLog("OpenBCIFileWriter", "Cancel", format("Closed recording file %s.", RecordingFileName.c_str()), LogLevelInfo);
 }
 
-
-//  Recording folder
-#define RECORDINGFOLDER ("/home/pi/bhRecordings/")
 
 
 // Format string description for this board type
@@ -92,104 +56,43 @@ string FileBoardDescription(int boardId)
 }
 
 
-//  Check that the recording folder exists, if not create it
-//
-bool CheckRecordingFolder()
-{
-	//  check to see that our recording folder exists
-	DIR* dir = opendir(RECORDINGFOLDER);
-	if (dir) 	
-	{
-		closedir(dir);
-	}
-	else if (ENOENT == errno) 
-	{
-		//  does not exist, make it
-		if(!MakePath(RECORDINGFOLDER))
-		{
-			Logging.AddLog("OpenBCIFileRecorder", "OpenFile", format("Failed to create directory %s", RECORDINGFOLDER), LogLevelError);
-			return false;
-		}
-	}
-	else 
-	{
-		//  some other directory error
-		Logging.AddLog("OpenBCIFileRecorder", "OpenFile", "Directory error opening recording file.", LogLevelError);
-		return false;
-	}
-	
-	return true;
-}	
 	
 	
 //  Open the  file
 //
-bool OpenBCIFileRecorder::OpenFile(string fileName)
+bool OpenBCIFileWriter::OpenFile(string fileName)
 {
 	if (!CheckRecordingFolder())
 		return false;
 	
-	timeval tv;
-	gettimeofday(&tv, NULL);
-	tm* logTime = localtime(&(tv.tv_sec));
-
-	//  create file name from test name and start time
-	ostringstream os;		
-	os << fileName << "_" << setfill('0') << setw(2) << logTime->tm_hour << setw(2) << logTime->tm_min  << setw(2) << logTime->tm_sec << ".txt";	
-	RecordingFileName = os.str();	
-	os.str("");
-	os << RECORDINGFOLDER << RecordingFileName;	
-	auto fullPath = os.str();
+	SetFilePath(fileName, "txt");
 	
 	//  open the file
 	{
 		LockMutex lockFile(RecordingFileMutex);
 			
 		//  open log file
-		RecordingFile.open(os.str());
+		RecordingFile.open(RecordingFileFullPath);
 		if (RecordingFile.is_open())
 		{
-			Logging.AddLog("OpenBCIFileRecorder", "OpenFile", format("Opened recording file %s.", fullPath.c_str()), LogLevelInfo);
+			Logging.AddLog("OpenBCIFileWriter", "OpenFile", format("Opened recording file %s.", RecordingFileFullPath.c_str()), LogLevelInfo);
 			return true;
 		}
 		else
 		{
-			Logging.AddLog("OpenBCIFileRecorder", "OpenFile", format("Failed to open recording file %s.", fullPath.c_str()), LogLevelError);
+			Logging.AddLog("OpenBCIFileWriter", "OpenFile", format("Failed to open recording file %s.", RecordingFileFullPath.c_str()), LogLevelError);
 			return false;
 		}
 	}
 }
 
 
-//  Add data to the queue
-//
-void OpenBCIFileRecorder::AddData(BFSample* data)
-{
-	if (!Recording)
-		return;
-	
-	{
-		LockMutex lockQueue(QueueMutex);
-		SamplesQueue.push(data);
-	}
-}
 
-
-//  Run function
-//
-void OpenBCIFileRecorder::RunFunction()
-{
-	while (ThreadRunning)
-	{		
-		Sleep(10);
-		WriteDataToFile();
-	}
-}
 
 
 //  Write all of the available data in the queue to the file
 //
-void OpenBCIFileRecorder::WriteDataToFile()
+void OpenBCIFileWriter::WriteDataToFile()
 {
 	//  empty the queue and put the samples to send into a list
 	list<BFSample*> samples;
@@ -220,7 +123,7 @@ void OpenBCIFileRecorder::WriteDataToFile()
 
 //  Write the header to the file
 //
-void OpenBCIFileRecorder::WriteHeader(BFSample* firstSample)
+void OpenBCIFileWriter::WriteHeader(BFSample* firstSample)
 {
 	{
 		LockMutex lockFile(RecordingFileMutex);
@@ -257,7 +160,7 @@ void OpenBCIFileRecorder::WriteHeader(BFSample* firstSample)
 
 //  Write a sample to the file
 //
-void OpenBCIFileRecorder::WriteSample(BFSample* sample)
+void OpenBCIFileWriter::WriteSample(BFSample* sample)
 {
 	{
 		LockMutex lockFile(RecordingFileMutex);

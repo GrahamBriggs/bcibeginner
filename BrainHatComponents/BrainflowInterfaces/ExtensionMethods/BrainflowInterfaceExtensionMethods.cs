@@ -130,11 +130,29 @@ namespace BrainflowInterfaces
             switch (value)
             {
                 case 0:
-                    return "Cyton8BFSample";
+                    return "Cyton8_BFSample";
                 case 2:
-                    return "Cyton16BFSample";
+                    return "Cyton16_BFSample";
                 case 1:
-                    return "GanglionBFSample";
+                    return "Ganglion_BFSample";
+                default:
+                    return "";
+            }
+        }
+
+        /// <summary>
+        /// Get equipment type description string for boardId
+        /// </summary>
+        public static string GetSampleNameShort(this int value)
+        {
+            switch (value)
+            {
+                case 0:
+                    return "CY08";
+                case 2:
+                    return "CY16";
+                case 1:
+                    return "GAN4";
                 default:
                     return "";
             }
@@ -148,16 +166,14 @@ namespace BrainflowInterfaces
         {
             switch (value)
             {
-                case "Cyton8":
+                case "CY08":
                 case "Cyton8_BFSample":
-                case "Cyton8BFSample":
                     return 0;
-                case "Cyton16":
+                case "CY16":
                 case "Cyton16_BFSample":
-                case "Cyton16BFSample":
                     return 2;
+                case "GAN4":
                 case "Ganglion_BFSample":
-                case "GanglionBFSample":
                     return 1;
                 default:
                     return -99;

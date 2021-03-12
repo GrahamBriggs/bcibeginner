@@ -12,12 +12,17 @@
 
   <ItemGroup>
     <ProjectReference Include="..\brainflow\csharp-package\brainflow\brainflow\brainflowNetStandard.csproj" />
+    <ProjectReference Include="..\EDFfile\EDFfileCSWrapper\EDFfileCSWrapperNetStandard.csproj" />
     <ProjectReference Include="..\LoggingInterfaces\LoggingInterfacesNetStandard.csproj" />
     <ProjectReference Include="..\BrainflowInterfaces\BrainflowInterfacesNetStandard.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Events\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
 </Project>

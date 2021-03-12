@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using BrainflowInterfaces;
 using BrainHatNetwork;
 using System.Media;
+using System.IO;
 
 namespace BrainHatClient
 {
@@ -21,8 +22,7 @@ namespace BrainHatClient
 
 
         //  File writer
-        OBCIGuiFormatFileWriter TxtFileWriter;
-        BDFFormatFileWriter BdfFileWriter;
+        BrainHatFileWriter FileWriter;
 
         /// <summary>
         /// Constructor
@@ -53,8 +53,7 @@ namespace BrainHatClient
             AlphaDetector.DetectedBrainWave += OnAlphaDetectorDetectedBrainWave;
 
             //  create a file writer to record raw data
-            BdfFileWriter = new BDFFormatFileWriter();
-            TxtFileWriter = new OBCIGuiFormatFileWriter();
+            FileWriter = new BrainHatFileWriter();
 
             //  init the blink counter
             BlinkLeftCount = 0;
@@ -98,7 +97,7 @@ namespace BrainHatClient
         protected override async void OnFormClosing(FormClosingEventArgs e)
         {
             //  can not close when we are logging
-            if ( BdfFileWriter.IsLogging || TxtFileWriter.IsLogging )
+            if ( FileWriter.IsLogging )
             {
                 MessageBox.Show("You must end recording to the file before you can close this window.", "brainHat", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 e.Cancel = true;
@@ -121,8 +120,6 @@ namespace BrainHatClient
         /// </summary>
         private void ConnectToUiEvents()
         {
-            DataProcessor.NewSample += BdfFileWriter.AddData;
-            DataProcessor.NewSample += TxtFileWriter.AddData;
             DataProcessor.CurrentDataStateReported += OnHatDataProcessorCurrentState;
             BlinkDetector.DetectedBlink += OnBlinkDetected;
 
@@ -136,8 +133,6 @@ namespace BrainHatClient
         /// </summary>
         private void DisconnectFromUiEvents()
         {
-            DataProcessor.NewSample -= BdfFileWriter.AddData;
-            DataProcessor.NewSample -= TxtFileWriter.AddData;
             DataProcessor.CurrentDataStateReported -= OnHatDataProcessorCurrentState;
             BlinkDetector.DetectedBlink -= OnBlinkDetected;
 
@@ -456,22 +451,20 @@ namespace BrainHatClient
         {
             buttonStartRecording.Enabled = false;
 
-            if (BdfFileWriter.IsLogging || TxtFileWriter.IsLogging)
+            if (FileWriter.IsLogging)
             {
-                if (BdfFileWriter.IsLogging)
-                    await BdfFileWriter.StopWritingToFileAsync();
-                if (TxtFileWriter.IsLogging)
-                    await TxtFileWriter.StopWritingToFileAsync();
-                
+                await FileWriter.StopWritingToFileAsync();
+                DataProcessor.NewSample -= FileWriter.AddData;
+
                 buttonStartRecording.Text = "Start Recording";
                 labelRecordingDuration.Text = "";
             }
             else
             {
-                if ( radioButtonTXT.Checked )
-                    await TxtFileWriter.StartWritingToFileAsync(textBoxRecordingName.Text, ConnectedServer.BoardId, ConnectedServer.SampleRate);
-                else
-                    await BdfFileWriter.StartWritingToFileAsync(textBoxRecordingName.Text, ConnectedServer.BoardId, ConnectedServer.SampleRate);
+                var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "brainHatRecordings");
+                var format = radioButtonTXT.Checked ? FileWriterType.OpenBciTxt : FileWriterType.Bdf;
+                await FileWriter.StartWritingToFileAsync(path, textBoxRecordingName.Text, ConnectedServer.BoardId, ConnectedServer.SampleRate,format );
+                DataProcessor.NewSample += FileWriter.AddData;
 
                 buttonStartRecording.Text = "Stop Recording";
                 RecordingStartTime = DateTimeOffset.UtcNow;
@@ -492,7 +485,7 @@ namespace BrainHatClient
                 {
                     await Task.Delay(250, cancelToken);
 
-                    if (BdfFileWriter.IsLogging || TxtFileWriter.IsLogging)
+                    if (FileWriter.IsLogging)
                         labelRecordingDuration.Text = $"Logging {(DateTimeOffset.UtcNow - RecordingStartTime).Value.TotalSeconds.ToString("N2")} seconds.";
                 }
             }

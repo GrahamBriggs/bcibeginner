@@ -15,7 +15,7 @@ OBJCOPY := objcopy
 PREPROCESSOR_MACROS := DEBUG=1
 INCLUDE_DIRS := 
 LIBRARY_DIRS := 
-LIBRARY_NAMES := Brainflow DataHandler BoardController pthread wiringPi lsl
+LIBRARY_NAMES := Brainflow DataHandler BoardController pthread wiringPi lsl EDFfile
 ADDITIONAL_LINKER_INPUTS := 
 MACOS_FRAMEWORKS := 
 LINUX_PACKAGES := 

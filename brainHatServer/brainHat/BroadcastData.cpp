@@ -190,9 +190,9 @@ void BroadcastData::BroadcastDataToLslOutlet()
 	}
 	
 	//  monitor performance, generate warning any time the queue is backed up more than two reads (we are reading at 20 hz)
-	if(queueCount > SampleRate / 10)
+	if(queueCount > SampleRate )
 	{
-		Logging.AddLog("BroadcastData", "BroadcastDataToLslOutlet", format("Broadcast is more than two reads behind. Queue size %d", queueCount), LogLevelWarn);
+		Logging.AddLog("BroadcastData", "BroadcastDataToLslOutlet", format("Broadcast is more than one second behind. Queue size %d", queueCount), LogLevelWarn);
 	}
 }
 

@@ -45,7 +45,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <NMakeIncludeSearchPath>$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat1\0000\include\c++\8;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat1\0000\include\arm-linux-gnueabihf\c++\8;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat1\0000\include\c++\8\backward;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat1\0001\include;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat1\0003\include;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat1\0002\include-fixed;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat1\0000\include\arm-linux-gnueabihf;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat1\0000\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat2\0000\include\c++\8;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat2\0000\include\arm-linux-gnueabihf\c++\8;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat2\0000\include\c++\8\backward;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat2\0003\include;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat2\0002\include;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat2\0004\include-fixed;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat2\0000\include\arm-linux-gnueabihf;$(LOCALAPPDATA)\VisualGDB\RemoteSourceCache\brainHat2\0000\include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
     <NMakeForcedIncludes>$(ProjectDir)\gcc_Debug.h;$(VISUALGDB_DIR)\gcc_compat.h;$(NMakeForcedIncludes)</NMakeForcedIncludes>
     <NMakeForcedIncludes>$(ProjectDir)\gcc_Debug.h;$(VISUALGDB_DIR)\gcc_compat.h;$(NMakeForcedIncludes)</NMakeForcedIncludes>
     <NMakeBuildCommandLine>"$(VISUALGDB_DIR)\VisualGDB.exe" /build "$(ProjectPath)" "/solution:$(SolutionPath)"  "/config:$(Configuration)" "/platform:$(Platform)"</NMakeBuildCommandLine>
@@ -72,15 +72,17 @@
   <ItemDefinitionGroup>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BDFFileWriter.h" />
     <ClInclude Include="BFCyton16.h" />
     <ClInclude Include="BoardDataSource.h" />
+    <ClInclude Include="BrainHatFileWriter.h" />
     <ClInclude Include="BrainHatServerStatus.h" />
     <ClInclude Include="BroadcastStatus.h" />
     <ClInclude Include="CommandServer.h" />
     <ClInclude Include="BoardFileSimulator.h" />
     <ClInclude Include="brainHat.h" />
     <ClInclude Include="FileExtensions.h" />
-    <ClInclude Include="OpenBCIFileRecorder.h" />
+    <ClInclude Include="OpenBCIFileWriter.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="NetworkAddresses.h" />
@@ -102,12 +104,14 @@
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <ItemGroup>
+    <ClCompile Include="BDFFileWriter.cpp" />
     <ClCompile Include="BoardDataSource.cpp" />
+    <ClCompile Include="BrainHatFileWriter.cpp" />
     <ClCompile Include="BroadcastStatus.cpp" />
     <ClCompile Include="CommandServer.cpp" />
     <ClCompile Include="BoardFileSimulator.cpp" />
     <ClCompile Include="brainHat.cpp" />
-    <ClCompile Include="OpenBCIFileRecorder.cpp" />
+    <ClCompile Include="OpenBCIFileWriter.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="NetworkExtensions.cpp" />
     <ClCompile Include="Parser.cpp" />

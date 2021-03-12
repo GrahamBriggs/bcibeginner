@@ -510,7 +510,14 @@ namespace brainHatSharpGUI
         {
             if (!StreamRunning)
             {
-                await Task.Run(() => { TheBoard.start_stream(); });
+                if (InputParams.ip_address.Length > 0)
+                {
+                    await Task.Run(() => { TheBoard.start_stream(50000, $"streaming_board://{InputParams.ip_address}:{InputParams.ip_port}"); });
+                }
+                else
+                {
+                    await Task.Run(() => { TheBoard.start_stream(50000); });
+                }
                 StreamRunning = true;
             }
         }

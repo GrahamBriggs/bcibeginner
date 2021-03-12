@@ -27,13 +27,33 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>bin\x86\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>BrainHatSharpLogo.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -168,12 +188,19 @@
   <PropertyGroup>
     <PostBuildEvent Condition=" '$(OS)' != 'Unix' ">
 	echo Copying libraries for $(Configuration) $(Platform)
-if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\BrainHatComponents\brainflow\compiled\Release\*32.dll $(ProjectDir)$(OutDir) /y
-if $(Platform) == Win32 xcopy $(ProjectDir)..\..\BrainHatComponents\brainflow\compiled\Release\*32.dll $(ProjectDir)$(OutDir) /y
-if $(Platform) == x64 xcopy $(ProjectDir)..\..\BrainHatComponents\brainflow\compiled\Release\*.dll $(ProjectDir)$(OutDir) /y
+	echo Copy brainflow
+if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\lib\brainflow\x86\*.dll $(ProjectDir)$(OutDir) /y
+if $(Platform) == Win32 xcopy $(ProjectDir)..\..\lib\brainflow\x86\*.dll $(ProjectDir)$(OutDir) /y
+if $(Platform) == x64 xcopy $(ProjectDir)..\..\lib\brainflow\x64\*.dll $(ProjectDir)$(OutDir) /y
+	echo Copy lsl
 if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\lib\lsl\x86\bin\lsl* $(ProjectDir)$(OutDir) /y
 if $(Platform) == Win32 xcopy $(ProjectDir)..\..\lib\lsl\x86\bin\lsl* $(ProjectDir)$(OutDir) /y
 if $(Platform) == x64 xcopy $(ProjectDir)..\..\lib\lsl\x64\bin\lsl* $(ProjectDir)$(OutDir) /y
+	echo Copying EDFfile
+if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\lib\EDFfile\x86\EDFfile.dll $(ProjectDir)$(OutDir) /y
+if $(Platform) == AnyCPU xcopy $(ProjectDir)..\..\lib\EDFfile\x86\EDFfile.dll $(ProjectDir)$(OutDir) /y
+if $(Platform) == x64 xcopy $(ProjectDir)..\..\lib\EDFfile\x64\EDFfile.dll $(ProjectDir)$(OutDir) /y
+
 </PostBuildEvent>
   </PropertyGroup>
 </Project>

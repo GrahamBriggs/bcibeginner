@@ -7,24 +7,34 @@ using System.Threading.Tasks;
 
 namespace BrainflowDataProcessing
 {
-    public class BrainHatFileWriter :IBrainHatFileWriter
+    public class BrainHatFileWriter
     {
         //  Events
         public event LogEventDelegate Log;
 
-        public int BoardId => FileWriter.BoardId;
+        public int BoardId => FileWriter != null ? FileWriter.BoardId : -99;
 
-        public int SampleRate => FileWriter.SampleRate;
+        public int SampleRate => FileWriter != null ? FileWriter.SampleRate : 0;
 
-        public bool IsLogging => FileWriter.IsLogging;
+        public bool IsLogging => FileWriter != null ? FileWriter.IsLogging : false;
 
-        public double FileDuration => FileWriter.FileDuration;
+        public double FileDuration => FileWriter != null ? FileWriter.FileDuration : 0;
 
-        public string FileName => Path.GetFileName(FileWriter.FileName);
+        public string FileName => FileWriter != null ? Path.GetFileName(FileWriter.FileName): "";
 
 
-        public async Task StartWritingToFileAsync(string path, string fileNameRoot)
+        public async Task StartWritingToFileAsync(string path, string fileNameRoot, int boardId, int sampleRate, FileWriterType format)
         {
+            switch (format)
+            {
+                case FileWriterType.OpenBciTxt:
+                    FileWriter = new OBCIGuiFormatFileWriter(boardId, sampleRate);
+                    break;
+                case FileWriterType.Bdf:
+                    FileWriter = new BDFFormatFileWriter(boardId, sampleRate);
+                    break;
+            }
+
             await FileWriter.StartWritingToFileAsync(path, fileNameRoot);
         }
 
@@ -49,17 +59,9 @@ namespace BrainflowDataProcessing
         }
 
 
-        public BrainHatFileWriter(int boardId, int sampleRate, int format)
+        public BrainHatFileWriter()
         {
-            switch ( format )
-            {
-                case 0:
-                    FileWriter = new OBCIGuiFormatFileWriter(boardId, sampleRate);
-                    break;
-                case 1:
-                    FileWriter = new BDFFormatFileWriter(boardId, sampleRate);
-                    break;
-            }
+           
         }
 
 

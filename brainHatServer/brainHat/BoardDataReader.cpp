@@ -127,7 +127,19 @@ int BoardDataReader::InitializeBoard()
 	try
 	{
 		Board->prepare_session();
-		Board->start_stream();
+		
+		if (BoardParamaters.ip_address.length() > 0 )
+		{
+			string streamingFormat = format("streaming_board://%s:%d", BoardParamaters.ip_address.c_str(), BoardParamaters.ip_port);
+			char streamingArg[streamingFormat.size()+1];
+			strcpy(streamingArg, streamingFormat.c_str());
+			streamingArg[streamingFormat.size() + 1] = 0x00;
+			Board->start_stream(50000, streamingArg);
+		}
+		else
+		{
+			Board->start_stream(50000);
+		}
 		
 			
 		// for STREAMING_BOARD you have to query information using board id for master board

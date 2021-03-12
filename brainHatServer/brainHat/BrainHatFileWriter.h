@@ -1,54 +1,59 @@
 #pragma once
+#include <string>
 #include <queue>
 #include <condition_variable>
-#include <lsl_cpp.h>
-#include <fstream>
-
 #include "Thread.h"
 #include "BFSample.h"
 #include "TimeExtensions.h"
 
-//  File recording class
-//
-class OpenBCIFileRecorder : public Thread
+#define RECORDINGFOLDER ("/home/pi/bhRecordings/")
+
+bool CheckRecordingFolder();
+
+
+class BrainHatFileWriter : public Thread
 {
-public:
-	OpenBCIFileRecorder();
-	virtual ~OpenBCIFileRecorder();
 	
-	bool StartRecording(std::string fileName, int boardId, int sampleRate);
+public:
+	BrainHatFileWriter();
+	virtual ~BrainHatFileWriter();
+	
+	virtual bool StartRecording(std::string fileName, int boardId, int sampleRate);
+	
 	virtual void Cancel();
 	virtual void RunFunction();
 	
+		
 	void AddData(BFSample* data);
 	
 	bool IsRecording() {return Recording;}
 	double ElapsedRecordingTime() {return ElapsedTime.ElapsedSeconds();}
 	std::string FileName() { return RecordingFileName;}
-
+	
 protected:
-		
+	
+	std::string RecordingFileName;
+	std::string RecordingFileFullPath;
+	
 	int BoardId;
 	int SampleRate;
 	
-	bool OpenFile(std::string fileName);
+	virtual void WriteDataToFile() = 0;
 	
-	std::string RecordingFileName;
+	void SetFilePath(std::string fileRootName, std::string extension);
+	virtual bool OpenFile(std::string fileName) = 0;
+	virtual void CloseFile() = 0;
 	
 	bool WroteHeader;
-	void WriteHeader(BFSample* firstSample);
-	void WriteSample(BFSample* sample);
+
 	
 	bool Recording;
 	std::mutex RecordingFileMutex;
-	std::ofstream RecordingFile;
-	
-	void WriteDataToFile();
 	
 	//  queue lock
 	std::mutex QueueMutex;
 	std::queue<BFSample*> SamplesQueue;
 	
 	ChronoTimer ElapsedTime;
+	
 };
-

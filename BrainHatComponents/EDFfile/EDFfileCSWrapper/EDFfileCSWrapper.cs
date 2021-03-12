@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace EDFfile
 {
@@ -277,6 +274,17 @@ namespace EDFfile
         /// </summary>
         public static int edfSetStartDatetime(int fileHandle, int year, int month, int day, int hour, int minute, int second) { return dll.edfSetStartDatetime(fileHandle, year, month, day, hour, minute, second); }
 
+        /// <summary>
+        /// Sets the subsecond starttime expressed in units of 100 nanoSeconds
+        /// Valid range is 0 to 9999999 inclusive. Default is 0
+        /// This function is optional and can be called only after opening a file in writemode
+        /// and before the first sample write action
+        /// Returns 0 on success, otherwise -1
+        /// It is strongly recommended to use a maximum resolution of no more than 100 micro-Seconds.
+        /// e.g. use 1234000  to set a starttime offset of 0.1234 seconds (instead of 1234567)
+        /// in other words, leave the last 3 digits at zero
+        /// </summary>
+        public static int  edfSetSubsecondStarttime(int fileHandle, int subsecond) { return dll.edfSetSubsecondStarttime(fileHandle, subsecond); }
 
         /// <summary>
         /// Sets the patientname. patientname is a pointer to a null-terminated ASCII-string. 
@@ -518,6 +526,11 @@ namespace EDFfile
 
         [DllImport(libname, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, ExactSpelling = true)]
         public static extern int edfSetStartDatetime(int fileHandle, int year, int month, int day, int hour, int minute, int second);
+
+        [DllImport(libname, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, ExactSpelling = true)]
+        public static extern int edfSetSubsecondStarttime(int fileHandle, int subsecond);
+
+
 
         [DllImport(libname, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, ExactSpelling = true)]
         public static extern int edfSetPatientName(int fileHandle, string patientName); 

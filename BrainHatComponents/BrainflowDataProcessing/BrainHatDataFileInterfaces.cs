@@ -7,6 +7,13 @@ using System.Threading.Tasks;
 
 namespace BrainflowDataProcessing
 {
+    public enum FileWriterType
+    {
+        OpenBciTxt,
+        Bdf,
+    }
+
+
     public interface IBrainHatFileWriter
     {
         bool IsLogging { get; }

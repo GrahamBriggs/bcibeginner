@@ -143,7 +143,7 @@ public:
 		return new Cyton8Sample(this);
 	}
 
-	
+		
 	//  EXG Channels
 	virtual int GetNumberOfExgChannels() { return 8;}
 	//

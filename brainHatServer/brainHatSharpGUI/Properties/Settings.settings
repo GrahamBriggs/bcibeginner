@@ -8,5 +8,14 @@
     <Setting Name="ComPort" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="IPAddress" Type="System.String" Scope="User">
+      <Value Profile="(Default)">225.1.1.1</Value>
+    </Setting>
+    <Setting Name="IPPort" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">6677</Value>
+    </Setting>
+    <Setting Name="UseBFStream" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

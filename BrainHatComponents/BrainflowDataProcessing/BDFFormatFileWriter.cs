@@ -356,15 +356,15 @@ namespace BrainflowDataProcessing
             //  File Header Properties
             //
             edfSetStartDatetime(FileHandle, firstSample.ObservationTime.Year, firstSample.ObservationTime.Month, firstSample.ObservationTime.Day, firstSample.ObservationTime.Hour, firstSample.ObservationTime.Minute, firstSample.ObservationTime.Second);
-            edfSetPatientName(FileHandle, "Set Patient Name");
-            edfSetPatientCode(FileHandle, "Set patient code");
+            edfSetPatientName(FileHandle, "");
+            edfSetPatientCode(FileHandle, "");
             edfSetPatientYChromosome(FileHandle, 1);
             edfSetPatientBirthdate(FileHandle, 2021, 03, 07);
-            edfSetPatientAdditional(FileHandle, "Set patient additional");
-            edfSetAdminCode(FileHandle, "Set Admin Code");
-            edfSetTechnician(FileHandle, "Set Technician");
+            edfSetPatientAdditional(FileHandle, "");
+            edfSetAdminCode(FileHandle, "");
+            edfSetTechnician(FileHandle, "");
             edfSetEquipment(FileHandle, BoardId.GetEquipmentName());
-            edfSetRecordingAdditional(FileHandle, BoardId.GetSampleName());
+            edfSetRecordingAdditional(FileHandle, BoardId.GetSampleNameShort());
 
             //  we are ready to write data
             FileTimer.Restart();

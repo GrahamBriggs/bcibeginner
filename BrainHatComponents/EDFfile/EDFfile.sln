@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EDFFileCSWrapperTests", "ED
 		{4C992308-EF77-4CE2-BA96-36AFA6E80174} = {4C992308-EF77-4CE2-BA96-36AFA6E80174}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EDFFile.Linux", "EDFfile\EDFFile.Linux.vcxproj", "{E94404F5-D57E-4ACD-9921-5F2224D6E9E3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -70,6 +72,14 @@ Global
 		{ABD23F4B-823A-41FE-BADC-86D28C21F752}.Release|x64.Build.0 = Release|x64
 		{ABD23F4B-823A-41FE-BADC-86D28C21F752}.Release|x86.ActiveCfg = Release|Any CPU
 		{ABD23F4B-823A-41FE-BADC-86D28C21F752}.Release|x86.Build.0 = Release|Any CPU
+		{E94404F5-D57E-4ACD-9921-5F2224D6E9E3}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{E94404F5-D57E-4ACD-9921-5F2224D6E9E3}.Debug|x64.ActiveCfg = Debug|Win32
+		{E94404F5-D57E-4ACD-9921-5F2224D6E9E3}.Debug|x86.ActiveCfg = Debug|Win32
+		{E94404F5-D57E-4ACD-9921-5F2224D6E9E3}.Debug|x86.Build.0 = Debug|Win32
+		{E94404F5-D57E-4ACD-9921-5F2224D6E9E3}.Release|Any CPU.ActiveCfg = Release|Win32
+		{E94404F5-D57E-4ACD-9921-5F2224D6E9E3}.Release|x64.ActiveCfg = Release|Win32
+		{E94404F5-D57E-4ACD-9921-5F2224D6E9E3}.Release|x86.ActiveCfg = Release|Win32
+		{E94404F5-D57E-4ACD-9921-5F2224D6E9E3}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
