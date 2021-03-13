@@ -9,9 +9,15 @@ cp ./brainflow/RPi32/inc/* /usr/include
 echo "Copying lsl lib to /usr/lib"
 cp ./lsl/RPi32/lib/liblsl.so.1.14.0 /usr/lib
 
-echo "Making symlinks for liblsl.so.1.14.0"
+echo "Making symlinks for liblsl.so.1.14.0 (if this step fails that is OK, it means the link already exists)"
 ln -s /usr/lib/liblsl.so.1.14.0 /usr/lib/liblsl.so
 
 echo "Copying lsl include to /usr/local/include"
 cp -r ./lsl/RPi32/include /usr/local/
+
+echo "Copying EDFfile lib to /usr/lib"
+cp ./EDFfile/RPi32/lib/*.so /usr/lib
+
+echo "Copying EDFfile include to /usr/include"
+cp ./EDFfile/RPi32/inc/* /usr/include
 

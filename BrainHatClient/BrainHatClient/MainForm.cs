@@ -18,7 +18,7 @@ namespace BrainHatClient
             InitializeComponent();
 
             Logger.LogToFile = true;
-            checkBoxLogging.Checked = true;
+            checkBoxLogging.Checked = false;
 
             SetupDevicesList();
 
@@ -38,6 +38,18 @@ namespace BrainHatClient
             });
         }
 
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            var version = System.Reflection.Assembly.GetAssembly(typeof(Program)).GetName().Version;
+            var date = new DateTime(2000, 1, 1)     // baseline is 01/01/2000
+           .AddDays(version.Build)             // build is number of days after baseline
+           .AddSeconds(version.Revision * 2);    // revision is half the number of seconds into the day
+
+            labelVersion.Text = $"Version: {version.Major.ToString()}.{version.Minor}  {date.ToString("MM/dd/yyyy HH:mm:ss")}";
+
+        }
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
             var task = Task.Run(async () => await BrainHatServers.StopMonitorAsync());
@@ -218,6 +230,7 @@ namespace BrainHatClient
         /// </summary>
         private async void StartLogging()
         {
+            Logger.LogToFile = false;
             await Logger.StartLogging();
         }
 

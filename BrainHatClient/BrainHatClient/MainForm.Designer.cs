@@ -32,6 +32,7 @@ namespace BrainHatClient
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.listViewDevices = new System.Windows.Forms.ListView();
             this.checkBoxLogging = new System.Windows.Forms.CheckBox();
+            this.labelVersion = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // listViewDevices
@@ -59,11 +60,23 @@ namespace BrainHatClient
             this.checkBoxLogging.UseVisualStyleBackColor = true;
             this.checkBoxLogging.CheckedChanged += new System.EventHandler(this.checkBoxLogging_CheckedChanged);
             // 
+            // labelVersion
+            // 
+            this.labelVersion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelVersion.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.labelVersion.Location = new System.Drawing.Point(170, 454);
+            this.labelVersion.Name = "labelVersion";
+            this.labelVersion.Size = new System.Drawing.Size(241, 23);
+            this.labelVersion.TabIndex = 3;
+            this.labelVersion.Text = "label1";
+            this.labelVersion.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(423, 486);
+            this.Controls.Add(this.labelVersion);
             this.Controls.Add(this.checkBoxLogging);
             this.Controls.Add(this.listViewDevices);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -78,5 +91,6 @@ namespace BrainHatClient
 
         private System.Windows.Forms.ListView listViewDevices;
         private System.Windows.Forms.CheckBox checkBoxLogging;
+        private System.Windows.Forms.Label labelVersion;
     }
 }

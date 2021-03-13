@@ -35,7 +35,7 @@ namespace brainHatSharpGUI
             FileWriter = new BrainHatFileWriter();
         }
 
-       
+
         Logging Logger;
         BoardDataReader BrainflowBoard;
         StatusBroadcastServer BroadcastStatus;
@@ -53,11 +53,20 @@ namespace brainHatSharpGUI
         {
             base.OnLoad(e);
 
-            Task.Run(async () => 
-            {
-                await SetupLoggingAsync(); 
-                await StartProgramComponentsAsync();
-            }).Wait();
+
+            var version = System.Reflection.Assembly.GetAssembly(typeof(Program)).GetName().Version;
+            var date = new DateTime(2000, 1, 1)     // baseline is 01/01/2000
+           .AddDays(version.Build)             // build is number of days after baseline
+           .AddSeconds(version.Revision * 2);    // revision is half the number of seconds into the day
+
+            labelVersion.Text = $"Version: {version.Major.ToString()}.{version.Minor}  {date.ToString("MM/dd/yyyy HH:mm:ss")}";
+
+
+            Task.Run(async () =>
+                {
+                    await SetupLoggingAsync();
+                    await StartProgramComponentsAsync();
+                }).Wait();
 
             SetComPortComboBox();
             SetBoardIdRadioButton();
@@ -299,11 +308,11 @@ namespace brainHatSharpGUI
                 BrainflowBoard.BoardReadData += OnBrainflowBoardReadData;
 
                 //  update the UI
-                groupBoxBoard.Invoke(new Action(() => 
-                { 
-                    groupBoxBoard.Text = " <<<  Connected to Board   >>> "; 
-                    buttonStart.Text = "Stop Server"; 
-                    buttonConfigureBoard.Enabled = true; 
+                groupBoxBoard.Invoke(new Action(() =>
+                {
+                    groupBoxBoard.Text = " <<<  Connected to Board   >>> ";
+                    buttonStart.Text = "Stop Server";
+                    buttonConfigureBoard.Enabled = true;
                 }));
             }
         }
@@ -441,10 +450,10 @@ namespace brainHatSharpGUI
                     {
                         return $"NAK?response=You must close the current recording file before starting a new one.";
                     }
-                    
+
 
                     FileWriterType format = FileWriterType.Bdf;
-                    switch ( formatType )
+                    switch (formatType)
                     {
                         case "txt":
                             format = FileWriterType.OpenBciTxt;
@@ -455,7 +464,7 @@ namespace brainHatSharpGUI
                     }
 
                     var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "brainHatRecordings");
-                    await FileWriter.StartWritingToFileAsync(path,fileName, BrainflowBoard.BoardId, BrainflowBoard.SampleRate, format); 
+                    await FileWriter.StartWritingToFileAsync(path, fileName, BrainflowBoard.BoardId, BrainflowBoard.SampleRate, format);
 
                     return $"ACK?response=File {Path.GetFileName(FileWriter.FileName)} started.";
                 }
@@ -558,7 +567,7 @@ namespace brainHatSharpGUI
 
 
 
-#endregion
+        #endregion
 
     }
 }

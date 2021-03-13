@@ -44,13 +44,14 @@ namespace brainHatSharpGUI
             this.radioButtonCyton = new System.Windows.Forms.RadioButton();
             this.buttonViewLogs = new System.Windows.Forms.Button();
             this.buttonConfigureBoard = new System.Windows.Forms.Button();
+            this.labelVersion = new System.Windows.Forms.Label();
             this.groupBoxBoard.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonStart
             // 
             this.buttonStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonStart.Location = new System.Drawing.Point(406, 26);
+            this.buttonStart.Location = new System.Drawing.Point(376, 44);
             this.buttonStart.Name = "buttonStart";
             this.buttonStart.Size = new System.Drawing.Size(109, 23);
             this.buttonStart.TabIndex = 0;
@@ -63,9 +64,9 @@ namespace brainHatSharpGUI
             this.comboBoxComPort.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.comboBoxComPort.FormattingEnabled = true;
-            this.comboBoxComPort.Location = new System.Drawing.Point(215, 19);
+            this.comboBoxComPort.Location = new System.Drawing.Point(187, 19);
             this.comboBoxComPort.Name = "comboBoxComPort";
-            this.comboBoxComPort.Size = new System.Drawing.Size(153, 21);
+            this.comboBoxComPort.Size = new System.Drawing.Size(159, 21);
             this.comboBoxComPort.TabIndex = 1;
             // 
             // groupBoxBoard
@@ -84,7 +85,7 @@ namespace brainHatSharpGUI
             this.groupBoxBoard.Controls.Add(this.comboBoxComPort);
             this.groupBoxBoard.Location = new System.Drawing.Point(12, 12);
             this.groupBoxBoard.Name = "groupBoxBoard";
-            this.groupBoxBoard.Size = new System.Drawing.Size(374, 145);
+            this.groupBoxBoard.Size = new System.Drawing.Size(356, 145);
             this.groupBoxBoard.TabIndex = 2;
             this.groupBoxBoard.TabStop = false;
             this.groupBoxBoard.Text = "Connect to Board";
@@ -92,7 +93,7 @@ namespace brainHatSharpGUI
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(227, 116);
+            this.label3.Location = new System.Drawing.Point(199, 116);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(26, 13);
             this.label3.TabIndex = 10;
@@ -101,7 +102,7 @@ namespace brainHatSharpGUI
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(195, 85);
+            this.label2.Location = new System.Drawing.Point(167, 85);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(58, 13);
             this.label2.TabIndex = 9;
@@ -109,22 +110,22 @@ namespace brainHatSharpGUI
             // 
             // textBoxIpPort
             // 
-            this.textBoxIpPort.Location = new System.Drawing.Point(268, 113);
+            this.textBoxIpPort.Location = new System.Drawing.Point(240, 113);
             this.textBoxIpPort.Name = "textBoxIpPort";
-            this.textBoxIpPort.Size = new System.Drawing.Size(100, 20);
+            this.textBoxIpPort.Size = new System.Drawing.Size(106, 20);
             this.textBoxIpPort.TabIndex = 8;
             // 
             // textBoxIpAddress
             // 
-            this.textBoxIpAddress.Location = new System.Drawing.Point(268, 82);
+            this.textBoxIpAddress.Location = new System.Drawing.Point(240, 82);
             this.textBoxIpAddress.Name = "textBoxIpAddress";
-            this.textBoxIpAddress.Size = new System.Drawing.Size(100, 20);
+            this.textBoxIpAddress.Size = new System.Drawing.Size(106, 20);
             this.textBoxIpAddress.TabIndex = 7;
             // 
             // checkBoxUseBFStream
             // 
             this.checkBoxUseBFStream.AutoSize = true;
-            this.checkBoxUseBFStream.Location = new System.Drawing.Point(18, 84);
+            this.checkBoxUseBFStream.Location = new System.Drawing.Point(6, 84);
             this.checkBoxUseBFStream.Name = "checkBoxUseBFStream";
             this.checkBoxUseBFStream.Size = new System.Drawing.Size(155, 17);
             this.checkBoxUseBFStream.TabIndex = 6;
@@ -134,9 +135,9 @@ namespace brainHatSharpGUI
             // buttonRefresh
             // 
             this.buttonRefresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonRefresh.Location = new System.Drawing.Point(297, 46);
+            this.buttonRefresh.Location = new System.Drawing.Point(251, 46);
             this.buttonRefresh.Name = "buttonRefresh";
-            this.buttonRefresh.Size = new System.Drawing.Size(71, 23);
+            this.buttonRefresh.Size = new System.Drawing.Size(95, 23);
             this.buttonRefresh.TabIndex = 5;
             this.buttonRefresh.Text = "Refresh";
             this.buttonRefresh.UseVisualStyleBackColor = true;
@@ -145,7 +146,7 @@ namespace brainHatSharpGUI
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(156, 24);
+            this.label1.Location = new System.Drawing.Point(128, 24);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(53, 13);
             this.label1.TabIndex = 4;
@@ -154,7 +155,7 @@ namespace brainHatSharpGUI
             // radioButtonDaisy
             // 
             this.radioButtonDaisy.AutoSize = true;
-            this.radioButtonDaisy.Location = new System.Drawing.Point(18, 46);
+            this.radioButtonDaisy.Location = new System.Drawing.Point(6, 46);
             this.radioButtonDaisy.Name = "radioButtonDaisy";
             this.radioButtonDaisy.Size = new System.Drawing.Size(84, 17);
             this.radioButtonDaisy.TabIndex = 3;
@@ -165,7 +166,7 @@ namespace brainHatSharpGUI
             // radioButtonCyton
             // 
             this.radioButtonCyton.AutoSize = true;
-            this.radioButtonCyton.Location = new System.Drawing.Point(18, 20);
+            this.radioButtonCyton.Location = new System.Drawing.Point(6, 20);
             this.radioButtonCyton.Name = "radioButtonCyton";
             this.radioButtonCyton.Size = new System.Drawing.Size(52, 17);
             this.radioButtonCyton.TabIndex = 2;
@@ -176,7 +177,7 @@ namespace brainHatSharpGUI
             // buttonViewLogs
             // 
             this.buttonViewLogs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonViewLogs.Location = new System.Drawing.Point(406, 90);
+            this.buttonViewLogs.Location = new System.Drawing.Point(376, 108);
             this.buttonViewLogs.Name = "buttonViewLogs";
             this.buttonViewLogs.Size = new System.Drawing.Size(109, 23);
             this.buttonViewLogs.TabIndex = 3;
@@ -187,7 +188,7 @@ namespace brainHatSharpGUI
             // buttonConfigureBoard
             // 
             this.buttonConfigureBoard.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonConfigureBoard.Location = new System.Drawing.Point(406, 58);
+            this.buttonConfigureBoard.Location = new System.Drawing.Point(376, 76);
             this.buttonConfigureBoard.Name = "buttonConfigureBoard";
             this.buttonConfigureBoard.Size = new System.Drawing.Size(109, 23);
             this.buttonConfigureBoard.TabIndex = 4;
@@ -195,11 +196,21 @@ namespace brainHatSharpGUI
             this.buttonConfigureBoard.UseVisualStyleBackColor = true;
             this.buttonConfigureBoard.Click += new System.EventHandler(this.buttonConfigureBoard_Click);
             // 
+            // labelVersion
+            // 
+            this.labelVersion.Location = new System.Drawing.Point(9, 158);
+            this.labelVersion.Name = "labelVersion";
+            this.labelVersion.Size = new System.Drawing.Size(309, 23);
+            this.labelVersion.TabIndex = 5;
+            this.labelVersion.Text = "label4";
+            this.labelVersion.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(527, 167);
+            this.ClientSize = new System.Drawing.Size(495, 182);
+            this.Controls.Add(this.labelVersion);
             this.Controls.Add(this.buttonConfigureBoard);
             this.Controls.Add(this.buttonViewLogs);
             this.Controls.Add(this.groupBoxBoard);
@@ -229,6 +240,7 @@ namespace brainHatSharpGUI
         private System.Windows.Forms.TextBox textBoxIpPort;
         private System.Windows.Forms.TextBox textBoxIpAddress;
         private System.Windows.Forms.CheckBox checkBoxUseBFStream;
+        private System.Windows.Forms.Label labelVersion;
     }
 }
 

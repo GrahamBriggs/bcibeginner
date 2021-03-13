@@ -22,9 +22,10 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppDefaultGroup}
-OutputBaseFilename=setup
+OutputBaseFilename=brainHatClient_setup
 Compression=lzma
 SolidCompression=yes
+ArchitecturesInstallIn64BitMode=x64
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

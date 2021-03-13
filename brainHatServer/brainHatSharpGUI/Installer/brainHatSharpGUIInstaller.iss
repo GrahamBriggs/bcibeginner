@@ -25,6 +25,7 @@ DefaultGroupName={#MyAppDefaultGroup}
 OutputBaseFilename=brainHatSharpGUI_setup
 Compression=lzma
 SolidCompression=yes
+ArchitecturesInstallIn64BitMode=x64
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
