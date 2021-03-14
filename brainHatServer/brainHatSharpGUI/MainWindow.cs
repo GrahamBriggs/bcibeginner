@@ -59,7 +59,7 @@ namespace brainHatSharpGUI
            .AddDays(version.Build)             // build is number of days after baseline
            .AddSeconds(version.Revision * 2);    // revision is half the number of seconds into the day
 
-            labelVersion.Text = $"Version: {version.Major.ToString()}.{version.Minor}  {date.ToString("MM/dd/yyyy HH:mm:ss")}";
+            labelVersion.Text = $"Version: {version.Major.ToString()}.{version.Minor}  {date.ToString("MM/dd/yyyy HH:mm:ss")} {PlatformHelper.PlatformHelper.GetLibraryEnvironment()}";
 
 
             Task.Run(async () =>
