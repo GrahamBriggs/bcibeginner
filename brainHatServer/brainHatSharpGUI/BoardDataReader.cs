@@ -184,9 +184,6 @@ namespace brainHatSharpGUI
         }
 
 
-       
-
-
         /// <summary>
         /// Set Board Channels
         /// </summary>
@@ -412,20 +409,7 @@ namespace brainHatSharpGUI
         DateTimeOffset LastReportTime { get; set; }
 
 
-        /// <summary>
-        /// Connect (reconnect) to board function
-        /// </summary>
-        private async Task EstablishConnectionWithBoardAsync()
-        {
-            if (!BoardReady)
-            {
-                await InitializeBoardAsync();
-
-                if (!BoardReady)
-                    await Task.Delay(1000);
-            }
-        }
-
+       
 
         /// <summary>
         /// Init the board session
@@ -481,14 +465,15 @@ namespace brainHatSharpGUI
                 {
                     Log?.Invoke(this, new LogEventArgs(this, "ReleaseBoardAsync", $"Releasing board.", LogLevel.DEBUG));
 
-                    if (StreamRunning)
-                        await StopStreamingAsync();
+                    await StopStreamingAsync();
                     TheBoard.release_session();
                 }
 
                 InvalidReadCounter = 0;
             }
         }
+
+
 
 
         /// <summary>
@@ -523,68 +508,22 @@ namespace brainHatSharpGUI
         }
 
 
-
         /// <summary>
-        /// Configure board 
-        /// send raw ascii characters to the board and return the response
+        /// Connect (reconnect) to board function
         /// </summary>
-        protected string ConfigureBoard(string command)
+        private async Task EstablishConnectionWithBoardAsync()
         {
-            Log?.Invoke(this, new LogEventArgs(this, "ConfigureBoard", $"Sending {command} to board.", LogLevel.DEBUG));
-
-            try
+            if (!BoardReady)
             {
-                if (TheBoard.is_prepared())
-                {
-                    return TheBoard.config_board(command);
-                }
-            }
-            catch (Exception e)
-            {
-                Log?.Invoke(this, new LogEventArgs(this, "ConfigureBoard", e, LogLevel.ERROR));
-            }
+                await InitializeBoardAsync();
 
-            return "";
+                if (!BoardReady)
+                    await Task.Delay(1000);
+            }
         }
 
 
-        private bool GetBoardRegistersString(out string config)
-        {
-            config = "";
-            var registerSettings = ConfigureBoard("?");
-            if (!ValidateRegisterSettingsString(registerSettings))
-            {
-                config = registerSettings;
-                return false;
-            }
-
-            var version = ConfigureBoard("V");
-            if (!ValidateFirmwareString(version))
-            {
-                config = registerSettings;
-                return false;
-            }
-
-            config = $"Firmware: {version}{registerSettings}";
-            return true;
-        }
-
-        private bool ValidateRegisterSettingsString(string registerSettings)
-        {
-            if (registerSettings.Length > "Board ADS Registers".Length)
-            {
-                if (registerSettings.Trim('\r', '\n').Substring(0, "Board ADS Registers".Length) == "Board ADS Registers" && registerSettings.Substring(registerSettings.Length - 3, "$$$".Length) == "$$$")
-                    return true;
-            }
-            return false;
-        }
-
-        private bool ValidateFirmwareString(string firmware)
-        {
-            if (firmware.Length > 3 && firmware.Substring(0, 1) == "v" && firmware.Substring(firmware.Length - 3, "$$$".Length) == "$$$")
-                return true;
-            return false;
-        }
+      
 
 
         /// <summary>
@@ -608,7 +547,7 @@ namespace brainHatSharpGUI
                     {
                         //  board was connected, but it has not given any data for a while, release it to attempt reconnect
                         Log?.Invoke(this, new LogEventArgs(this, "RunBoardDataReaderAsync", $"Not receiving data from the board. Attempt to receonnect.", LogLevel.WARN));
-                        ReleaseBoardAsync();
+                        await ReleaseBoardAsync();
                         await Task.Delay(TimeSpan.FromSeconds(1));
                         continue;
                     }
@@ -777,6 +716,70 @@ namespace brainHatSharpGUI
                     break;
             }
         }
+
+
+        /// <summary>
+        /// Configure board 
+        /// send raw ascii characters to the board and return the response
+        /// </summary>
+        protected string ConfigureBoard(string command)
+        {
+            Log?.Invoke(this, new LogEventArgs(this, "ConfigureBoard", $"Sending {command} to board.", LogLevel.DEBUG));
+
+            try
+            {
+                if (TheBoard.is_prepared())
+                {
+                    return TheBoard.config_board(command);
+                }
+            }
+            catch (Exception e)
+            {
+                Log?.Invoke(this, new LogEventArgs(this, "ConfigureBoard", e, LogLevel.ERROR));
+            }
+
+            return "";
+        }
+
+
+        private bool GetBoardRegistersString(out string config)
+        {
+            config = "";
+            var registerSettings = ConfigureBoard("?");
+            if (!ValidateRegisterSettingsString(registerSettings))
+            {
+                config = registerSettings;
+                return false;
+            }
+
+            var version = ConfigureBoard("V");
+            if (!ValidateFirmwareString(version))
+            {
+                config = registerSettings;
+                return false;
+            }
+
+            config = $"Firmware: {version}{registerSettings}";
+            return true;
+        }
+
+        private bool ValidateRegisterSettingsString(string registerSettings)
+        {
+            if (registerSettings.Length > "Board ADS Registers".Length)
+            {
+                if (registerSettings.Trim('\r', '\n').Substring(0, "Board ADS Registers".Length) == "Board ADS Registers" && registerSettings.Substring(registerSettings.Length - 3, "$$$".Length) == "$$$")
+                    return true;
+            }
+            return false;
+        }
+
+        private bool ValidateFirmwareString(string firmware)
+        {
+            if (firmware.Length > 3 && firmware.Substring(0, 1) == "v" && firmware.Substring(firmware.Length - 3, "$$$".Length) == "$$$")
+                return true;
+            return false;
+        }
+
 
 
         /// <summary>

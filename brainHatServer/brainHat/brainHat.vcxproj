@@ -75,12 +75,14 @@
     <ClInclude Include="BDFFileWriter.h" />
     <ClInclude Include="BFCyton16.h" />
     <ClInclude Include="BoardDataSource.h" />
+    <ClInclude Include="BrainflowConfiguration.h" />
     <ClInclude Include="BrainHatFileWriter.h" />
     <ClInclude Include="BrainHatServerStatus.h" />
     <ClInclude Include="BroadcastStatus.h" />
     <ClInclude Include="CommandServer.h" />
     <ClInclude Include="BoardFileSimulator.h" />
     <ClInclude Include="brainHat.h" />
+    <ClInclude Include="CytonBoardSettings.h" />
     <ClInclude Include="FileExtensions.h" />
     <ClInclude Include="OpenBCIFileWriter.h" />
     <ClInclude Include="json.hpp" />
@@ -111,6 +113,7 @@
     <ClCompile Include="CommandServer.cpp" />
     <ClCompile Include="BoardFileSimulator.cpp" />
     <ClCompile Include="brainHat.cpp" />
+    <ClCompile Include="CytonBoardSettings.cpp" />
     <ClCompile Include="OpenBCIFileWriter.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="NetworkExtensions.cpp" />

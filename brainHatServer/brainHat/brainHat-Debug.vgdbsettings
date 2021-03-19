@@ -3,7 +3,12 @@
   <ConfigurationName>Debug</ConfigurationName>
   <Project xsi:type="com.visualgdb.project.linux">
     <CustomSourceDirectories>
-      <Directories />
+      <Directories>
+        <SourceDirMappingEntry>
+          <RemoteDir>/home/pi/Source/bcibeginner/BrainHatComponents/brainflow/cpp-package/src</RemoteDir>
+          <LocalDir>C:\Users\grahambriggs\source\tpc_bci\bciBeginner\BrainHatComponents\brainflow\cpp-package\src</LocalDir>
+        </SourceDirMappingEntry>
+      </Directories>
       <PathStyle>RemoteUnix</PathStyle>
     </CustomSourceDirectories>
     <AutoProgramSPIFFSPartition>true</AutoProgramSPIFFSPartition>
@@ -113,14 +118,14 @@
     <AdditionalGDBSettings>
       <Features>
         <DisableAutoDetection>false</DisableAutoDetection>
-        <UseFrameParameter>false</UseFrameParameter>
-        <SimpleValuesFlagSupported>false</SimpleValuesFlagSupported>
-        <ListLocalsSupported>false</ListLocalsSupported>
-        <ByteLevelMemoryCommandsAvailable>false</ByteLevelMemoryCommandsAvailable>
-        <ThreadInfoSupported>false</ThreadInfoSupported>
-        <PendingBreakpointsSupported>false</PendingBreakpointsSupported>
-        <SupportTargetCommand>false</SupportTargetCommand>
-        <ReliableBreakpointNotifications>false</ReliableBreakpointNotifications>
+        <UseFrameParameter>true</UseFrameParameter>
+        <SimpleValuesFlagSupported>true</SimpleValuesFlagSupported>
+        <ListLocalsSupported>true</ListLocalsSupported>
+        <ByteLevelMemoryCommandsAvailable>true</ByteLevelMemoryCommandsAvailable>
+        <ThreadInfoSupported>true</ThreadInfoSupported>
+        <PendingBreakpointsSupported>true</PendingBreakpointsSupported>
+        <SupportTargetCommand>true</SupportTargetCommand>
+        <ReliableBreakpointNotifications>true</ReliableBreakpointNotifications>
       </Features>
       <EnableSmartStepping>false</EnableSmartStepping>
       <FilterSpuriousStoppedNotifications>false</FilterSpuriousStoppedNotifications>

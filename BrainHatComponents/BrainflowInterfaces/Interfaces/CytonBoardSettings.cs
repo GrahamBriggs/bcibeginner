@@ -65,27 +65,22 @@ namespace BrainflowInterfaces
         {
             _Channels.Add(channel);
         }
-        public void UpdateChannelBias(int channelNumber, bool bias)
-        {
-            var channel = _Channels.Where(x => x.ChannelNumber == channelNumber).FirstOrDefault();
-            if (channel != null)
-                channel.Bias = bias;
-        }
+        
     }
 
-    public interface IBrainHatBoardSettings
+    public interface ICytonBoards
     {
         IEnumerable<ICytonBoardSettings> Boards { get; }
     }
     //
-    public class BrainHatBoardSettingsImplementation : IBrainHatBoardSettings
+    public class CytonBoardsImplementation : ICytonBoards
     {
-        public BrainHatBoardSettingsImplementation()
+        public CytonBoardsImplementation()
         {
             _Boards = new List<CytonBoardSettingsImplementation>();
         }
 
-        public BrainHatBoardSettingsImplementation(string registerReport)
+        public CytonBoardsImplementation(string registerReport)
         {
             registerReport = registerReport.Replace('\r', ' ');
             registerReport = registerReport.Replace(" ", String.Empty);

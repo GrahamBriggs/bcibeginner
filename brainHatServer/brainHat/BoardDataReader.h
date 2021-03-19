@@ -26,6 +26,7 @@ public:
 protected:
 	
 	virtual void Init();
+	void InitializeDataReadCounters();
 	
 	virtual std::string ReportSource();
 	

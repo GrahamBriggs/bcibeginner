@@ -49,6 +49,7 @@ void BoardDataReader::Init()
 	Board = NULL;
 	BoardOn = true;
 	IsConnected = false;
+	StreamRunning = false;
 	ConnectionChangedCallback  = NULL;
 	ConnectionChangedDelegate = NULL;
 	InvalidSampleCounter = 0;
@@ -64,6 +65,9 @@ string BoardDataReader::ReportSource()
 	return format("Board id %d at %d Hz.", BoardId, SampleRate);
 }
 
+
+//  Board object is created and session is prepared
+//
 bool BoardDataReader::BoardReady()
 {
 	return (Board != NULL && Board->is_prepared());
@@ -76,13 +80,13 @@ int BoardDataReader::Start(int board_id, struct BrainFlowInputParams params)
 {
 	BoardParamaters = params;
 	BoardId = board_id;
+	
 	LastSampleIndex = -1;
 	
-	int res = InitializeBoard();
 	
 	BoardDataSource::Start();
 	
-	return res;
+	return 0;
 }
 
 
@@ -105,8 +109,11 @@ int BoardDataReader::InitializeBoard()
 	
 	ReleaseBoard();
 	
+	bool newConnection = SampleRate < 0;
 	Board = new BoardShim(BoardId, BoardParamaters);
-	BoardShim::set_log_level(LogLevel::LogLevelError);
+	BoardShim::set_log_level(LogLevel::LogLevelOff);
+	DataRows = BoardShim::get_num_rows(BoardId);
+	SampleRate = BoardShim::get_sampling_rate(BoardId);
 	
 	try
 	{
@@ -114,16 +121,10 @@ int BoardDataReader::InitializeBoard()
 		
 		StartStreaming();
 		
-		bool newConnection = SampleRate < 0;
-			
-		LastSampleIndex = -1;
-		LastTimeStampSync = -1;
-		ReadTimer.Start();
-		usleep(3 * USLEEP_SEC);
-		DataRows = BoardShim::get_num_rows(BoardId);
-		SampleRate = BoardShim::get_sampling_rate(BoardId);
-			
-		InspectDataStreamLogTimer.Start(); 
+		InitializeDataReadCounters();
+		
+		usleep(5 * USLEEP_SEC);
+
 		ConnectionChanged(newConnection ? New : Connected ,BoardId, SampleRate);
 		DiscardFirstChunk();
 		IsConnected = true;
@@ -133,12 +134,23 @@ int BoardDataReader::InitializeBoard()
 	{
 		Logging.AddLog("BoardDataReader", "InitializeBoard", format("Failed to connect to board. Error %d %s.", err.exit_code, err.what()), IsConnected ?  LogLevelError : LogLevelDebug);
 		res = err.exit_code;
-		ReleaseBoard();
+		if (Board->is_prepared())
+		{
+			Board->release_session();
+		}
 	}
 	
 	return res;
 }
 
+
+void BoardDataReader::InitializeDataReadCounters()
+{
+	LastSampleIndex = -1;
+	LastTimeStampSync = -1;
+	ReadTimer.Start();
+	InspectDataStreamLogTimer.Start(); 
+}
 
 
 //  Release Board
@@ -147,9 +159,18 @@ void BoardDataReader::ReleaseBoard()
 {
 	if (Board != NULL)
 	{
-		if (Board->is_prepared())
+		
+		try
 		{
-			Board->release_session();
+			if (Board->is_prepared()) 
+			{
+				StopStreaming();
+				Board->release_session();
+			}
+		}
+		catch (const BrainFlowException &err)
+		{
+			Logging.AddLog("BoardDataReader", "ReleaseBoard", format("Failed to release to board. Error %d %s.", err.exit_code, err.what()), LogLevelError);
 		}
 		
 		delete Board;
@@ -167,20 +188,27 @@ void BoardDataReader::StartStreaming()
 {
 	if (! StreamRunning)
 	{
-		if (BoardParamaters.ip_address.length() > 0)
+		try
 		{
-			string streamingFormat = format("streaming_board://%s:%d", BoardParamaters.ip_address.c_str(), BoardParamaters.ip_port);
-			char streamingArg[streamingFormat.size() + 1];
-			strcpy(streamingArg, streamingFormat.c_str());
-			streamingArg[streamingFormat.size() + 1] = 0x00;
-			Board->start_stream(50000, streamingArg);
+			if (BoardParamaters.ip_address.length() > 0) 
+			{
+				string streamingFormat = format("streaming_board://%s:%d", BoardParamaters.ip_address.c_str(), BoardParamaters.ip_port);
+				char streamingArg[streamingFormat.size() + 1];
+				strcpy(streamingArg, streamingFormat.c_str());
+				streamingArg[streamingFormat.size() + 1] = 0x00;
+				Board->start_stream(50000, streamingArg);
+			}
+			else
+			{
+				Board->start_stream(50000);
+			}
+			
+			StreamRunning = true;
 		}
-		else
+		catch (const BrainFlowException &err)
 		{
-			Board->start_stream(50000);
+			Logging.AddLog("BoardDataReader", "StartStreaming", format("Failed to start stream. Error %d %s.", err.exit_code, err.what()), LogLevelError);
 		}
-		
-		StreamRunning = true;
 	}
 }
 
@@ -189,8 +217,15 @@ void BoardDataReader::StopStreaming()
 {
 	if (StreamRunning)
 	{
-		StreamRunning = false;
-		Board->stop_stream();
+		try
+		{
+			Board->stop_stream();
+			StreamRunning = false;
+		}
+		catch (const BrainFlowException &err)
+		{
+			Logging.AddLog("BoardDataReader", "StopStreaming", format("Failed to release to board. Error %d %s.", err.exit_code, err.what()), LogLevelError);
+		}
 	}
 }
 
@@ -202,10 +237,7 @@ void BoardDataReader::EstablishConnectionWithBoard()
 {
 	if (!BoardReady())
 	{
-		if (IsConnected)
-			Logging.AddLog("BoardDataReader", "EstablishConnectionWithBoard", "Lost connection to the board. Attempting to reconnect", LogLevelError);
-
-		if (!InitializeBoard())
+		if (InitializeBoard() != 0)
 			usleep(3*USLEEP_SEC);
 	}
 }
@@ -242,7 +274,7 @@ void BoardDataReader::RunFunction()
 			else if((InvalidSampleCounter * SENSOR_SLEEP) > 3000)
 			{
 				//  have not received fresh samples in a while, release board and reinitialize
-				Logging.AddLog("BoardDataReader", "RunFunction", "Too long without valid sample", LogLevelError);
+				Logging.AddLog("BoardDataReader", "RunFunction", "Too long without valid sample. Reconnecting to board.", LogLevelError);
 				ReleaseBoard();
 				usleep(1*USLEEP_SEC);
 				continue;
@@ -274,7 +306,6 @@ void BoardDataReader::RunFunction()
 			Logging.AddLog("BoardDataReader", "RunFunction", err.what(), LogLevelError);
 			
 			ReleaseBoard();
-			
 			usleep(3*USLEEP_SEC);
 		}
 	}
@@ -354,17 +385,25 @@ void BoardDataReader::CalculateReadingTimeThisChunk(double** chunk, int samples,
 
 void BoardDataReader::DiscardFirstChunk()
 {
-	int sampleCount = 0;
-	auto chunk = Board->get_board_data(&sampleCount);
-					
-	if (chunk != NULL)
+	try
 	{
-		for (int i = 0; i < DataRows; i++)
+		int sampleCount = 0;
+	
+		auto chunk = Board->get_board_data(&sampleCount);
+					
+		if (chunk != NULL)
 		{
-			delete[] chunk[i];
+			for (int i = 0; i < DataRows; i++)
+			{
+				delete[] chunk[i];
+			}
 		}
+		delete[] chunk;
 	}
-	delete[] chunk;
+	catch (const BrainFlowException &err)
+	{
+		Logging.AddLog("BoardDataReader", "DiscardFirstChunk", format("Failed to read data from board. Error %d %s.", err.exit_code, err.what()), LogLevelError);
+	}
 }
 
 

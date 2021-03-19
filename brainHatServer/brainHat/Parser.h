@@ -30,6 +30,7 @@ public:
 	//  returns the remaining buffer as a string
 	std::string GetRemainingBuffer();
 	
+	
 
 protected:
 

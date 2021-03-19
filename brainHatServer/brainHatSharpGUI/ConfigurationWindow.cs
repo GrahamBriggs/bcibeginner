@@ -138,7 +138,7 @@ namespace brainHatSharpGUI
         {
             try
             {
-                BoardSettings = new BrainHatBoardSettingsImplementation(configString);
+                BoardSettings = new CytonBoardsImplementation(configString);
             }
             catch (Exception)
             {
@@ -149,7 +149,7 @@ namespace brainHatSharpGUI
         
 
         BoardDataReader Board;
-        BrainHatBoardSettingsImplementation BoardSettings;
+        CytonBoardsImplementation BoardSettings;
 
        
 

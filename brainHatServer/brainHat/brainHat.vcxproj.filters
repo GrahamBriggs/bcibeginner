@@ -87,6 +87,9 @@
     <ClCompile Include="BrainHatFileWriter.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
+    <ClCompile Include="CytonBoardSettings.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
@@ -171,6 +174,12 @@
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="BrainHatFileWriter.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="CytonBoardSettings.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="BrainflowConfiguration.h">
       <Filter>Header files</Filter>
     </ClInclude>
   </ItemGroup>
