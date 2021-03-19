@@ -61,7 +61,8 @@ bool BDFFileWriter::OpenFile(string fileName)
 		return false;
 		
 	SetFilePath(fileName, "bdf");
-
+	
+	return true;
 }
 
 

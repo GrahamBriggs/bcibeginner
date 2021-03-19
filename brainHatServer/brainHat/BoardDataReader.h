@@ -31,6 +31,8 @@ protected:
 	
 	BoardShim* Board;
 	struct BrainFlowInputParams BoardParamaters;
+	bool BoardReady();
+	bool IsConnected;
 
 	//  read data on a timer
 	ChronoTimer ReadTimer;
@@ -39,12 +41,16 @@ protected:
 	void CalculateReadingTimeThisChunk(double** chunk, int samples, double& period, double& oldestSampleTime);
 	int	 InitializeBoard();
 	void ReleaseBoard();
-	void ReconnectToBoard();
+	void EstablishConnectionWithBoard();
 	void DiscardFirstChunk();
+	
+	bool StreamRunning;
+	void StartStreaming();
+	void StopStreaming();
 	
 	//  Count invalid points for reconnection trigger
 	int InvalidSampleCounter;
-	bool IsConnected;
+	
 	
 	//  Process the chunk read from the board
 	void ProcessData(double **data_buf, int sampleCount);

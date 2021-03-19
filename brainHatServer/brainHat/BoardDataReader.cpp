@@ -64,6 +64,11 @@ string BoardDataReader::ReportSource()
 	return format("Board id %d at %d Hz.", BoardId, SampleRate);
 }
 
+bool BoardDataReader::BoardReady()
+{
+	return (Board != NULL && Board->is_prepared());
+}
+
 
 //  Thread Start
 //
@@ -91,27 +96,6 @@ void BoardDataReader::Cancel()
 }
 
 
-//  Release Board
-//  stops the session and deletes the board if it is initialized
-void BoardDataReader::ReleaseBoard()
-{
-	if (Board != NULL)
-	{
-		if (Board->is_prepared())
-		{
-			Board->stop_stream();
-			Board->release_session();
-		}
-		
-		delete Board;
-		Board = NULL;
-		InvalidSampleCounter = 0;
-		ConnectionChanged(Disconnected, BoardId, SampleRate);
-	}
-	
-	IsConnected = false;
-}
-
 
 //  Initialize Board
 //  creates a new Brainflow board object and starts streaming data
@@ -128,26 +112,7 @@ int BoardDataReader::InitializeBoard()
 	{
 		Board->prepare_session();
 		
-		if (BoardParamaters.ip_address.length() > 0 )
-		{
-			string streamingFormat = format("streaming_board://%s:%d", BoardParamaters.ip_address.c_str(), BoardParamaters.ip_port);
-			char streamingArg[streamingFormat.size()+1];
-			strcpy(streamingArg, streamingFormat.c_str());
-			streamingArg[streamingFormat.size() + 1] = 0x00;
-			Board->start_stream(50000, streamingArg);
-		}
-		else
-		{
-			Board->start_stream(50000);
-		}
-		
-			
-		// for STREAMING_BOARD you have to query information using board id for master board
-		// because for STREAMING_BOARD data format is determined by master board!
-		if(BoardId == (int)BoardIds::STREAMING_BOARD)
-		{
-			BoardId = std::stoi(BoardParamaters.other_info);
-		}	
+		StartStreaming();
 		
 		bool newConnection = SampleRate < 0;
 			
@@ -168,43 +133,80 @@ int BoardDataReader::InitializeBoard()
 	{
 		Logging.AddLog("BoardDataReader", "InitializeBoard", format("Failed to connect to board. Error %d %s.", err.exit_code, err.what()), IsConnected ?  LogLevelError : LogLevelDebug);
 		res = err.exit_code;
-		if (Board->is_prepared())
-		{
-			Board->release_session();
-		}
+		ReleaseBoard();
 	}
 	
 	return res;
 }
 
-void BoardDataReader::DiscardFirstChunk()
+
+
+//  Release Board
+//  stops the session and deletes the board if it is initialized
+void BoardDataReader::ReleaseBoard()
 {
-	int sampleCount = 0;
-	auto chunk = Board->get_board_data(&sampleCount);
-					
-	if (chunk != NULL)
+	if (Board != NULL)
 	{
-		for (int i = 0; i < DataRows; i++)
+		if (Board->is_prepared())
 		{
-			delete[] chunk[i];
+			Board->release_session();
 		}
+		
+		delete Board;
+		Board = NULL;
+		InvalidSampleCounter = 0;
+		ConnectionChanged(Disconnected, BoardId, SampleRate);
 	}
-	delete[] chunk;
+	
+	IsConnected = false;
 }
+
+
+
+void BoardDataReader::StartStreaming()
+{
+	if (! StreamRunning)
+	{
+		if (BoardParamaters.ip_address.length() > 0)
+		{
+			string streamingFormat = format("streaming_board://%s:%d", BoardParamaters.ip_address.c_str(), BoardParamaters.ip_port);
+			char streamingArg[streamingFormat.size() + 1];
+			strcpy(streamingArg, streamingFormat.c_str());
+			streamingArg[streamingFormat.size() + 1] = 0x00;
+			Board->start_stream(50000, streamingArg);
+		}
+		else
+		{
+			Board->start_stream(50000);
+		}
+		
+		StreamRunning = true;
+	}
+}
+
+
+void BoardDataReader::StopStreaming()
+{
+	if (StreamRunning)
+	{
+		StreamRunning = false;
+		Board->stop_stream();
+	}
+}
+
 
 
 //  Reconnect to Board
 //  tries to restart board streaming
-void BoardDataReader::ReconnectToBoard()
+void BoardDataReader::EstablishConnectionWithBoard()
 {
-	if ( IsConnected )
-		Logging.AddLog("BoardDataReader", "ReconnectToBoard", "Lost connection to the board. Attempting to reconnect", LogLevelError);
-	
-	ReleaseBoard();
-	
-	if (InitializeBoard() != 0)
+	if (!BoardReady())
 	{
-		Sleep(3000);
+		if (IsConnected)
+			Logging.AddLog("BoardDataReader", "EstablishConnectionWithBoard", "Lost connection to the board. Attempting to reconnect", LogLevelError);
+
+		if (!InitializeBoard())
+			usleep(3*USLEEP_SEC);
 	}
 }
 	
@@ -219,20 +221,30 @@ void BoardDataReader::RunFunction()
 	int res = 0;
 	int sampleCount = 0;
 	
-	while (Board != NULL && ThreadRunning)
+	while (ThreadRunning)
 	{
 		if (!BoardOn)
 		{
-			Sleep(1000);
+			usleep(1*USLEEP_SEC);
 			continue;
 		}
 		
 		try
 		{
-			//  approximately three seconds without data will trigger reconnect
-			if(!Board->is_prepared() || (InvalidSampleCounter * SENSOR_SLEEP) > 3000)
+			//  make sure we are connected to the board
+			EstablishConnectionWithBoard();
+			
+			if( !BoardReady() || !StreamRunning )
 			{
-				ReconnectToBoard();
+				usleep(1*USLEEP_SEC); //  if we are not prepared, or if the stream is disabled, wait a bit and try again
+				continue;
+			}
+			else if((InvalidSampleCounter * SENSOR_SLEEP) > 3000)
+			{
+				//  have not received fresh samples in a while, release board and reinitialize
+				Logging.AddLog("BoardDataReader", "RunFunction", "Too long without valid sample", LogLevelError);
+				ReleaseBoard();
+				usleep(1*USLEEP_SEC);
 				continue;
 			}
 			
@@ -261,9 +273,9 @@ void BoardDataReader::RunFunction()
 		{
 			Logging.AddLog("BoardDataReader", "RunFunction", err.what(), LogLevelError);
 			
-			//  this is the error code thrown when board read fails due to power outage
-			if(err.exit_code == 15)
-				ReleaseBoard();
+			ReleaseBoard();
+			
+			usleep(3*USLEEP_SEC);
 		}
 	}
 }
@@ -339,5 +351,20 @@ void BoardDataReader::CalculateReadingTimeThisChunk(double** chunk, int samples,
 	
 }
 
+
+void BoardDataReader::DiscardFirstChunk()
+{
+	int sampleCount = 0;
+	auto chunk = Board->get_board_data(&sampleCount);
+					
+	if (chunk != NULL)
+	{
+		for (int i = 0; i < DataRows; i++)
+		{
+			delete[] chunk[i];
+		}
+	}
+	delete[] chunk;
+}
 
 

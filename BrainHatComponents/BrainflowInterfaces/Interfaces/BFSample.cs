@@ -37,19 +37,19 @@ namespace BrainflowInterfaces
 
     public static class BFSample
     {
-        public static IBFSample MakeNewSample(IBFSample sample)
+        public static IBFSample MakeNewSample(this IBFSample value)
         {
-            if (sample is BFCyton8Sample cyton8Sample)
+            if (value is BFCyton8Sample cyton8Sample)
                 return new BFCyton8Sample(cyton8Sample);
-            else if (sample is BFCyton16Sample cyton16Sample)
+            else if (value is BFCyton16Sample cyton16Sample)
                 return new BFCyton16Sample(cyton16Sample);
             else
                 return null;    // TODO - ganglion
         }
 
-        public static IBFSample MakeNewSample(int boardId)
+        public static IBFSample MakeNewSample(this int value)
         {
-            switch (boardId)
+            switch (value)
             {
                 case 0:
                     return new BFCyton8Sample();

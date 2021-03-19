@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 
+
 namespace BrainflowInterfaces
 {
     public static class BFCollectionMethods
     {
         public static int SampleIndexDifference(this double value, int lastIndex)
         {
-            var index = (int)value;
+            var index = (int)(value + 0.5);
 
             if ( index > lastIndex )
             {
@@ -22,6 +23,12 @@ namespace BrainflowInterfaces
             {
                 return 0;
             }
+        }
+
+        public static int SampleIndexDifference(this double value, double lastIndex)
+        {
+            int lastIndexInt = (int)(lastIndex + 0.5);
+            return value.SampleIndexDifference(lastIndexInt);
         }
 
         public static int SampleIndexDecrement(this double value, int boardId)
@@ -39,6 +46,29 @@ namespace BrainflowInterfaces
                 case 2: //  Cyton+Daisy
                     if (index == 0)
                         return 254;
+                    else
+                        return index - 2;
+
+                default:
+                    return 0;       //  TODO ganglion
+            }
+        }
+
+        public static int SampleIndexIncrement(this double value, int boardId)
+        {
+            var index = (int)(value + 0.5);
+
+            switch (boardId)
+            {
+                case 0: //  Cyton
+                    if (index == 255)
+                        return 0;
+                    else
+                        return index - 1;
+
+                case 2: //  Cyton+Daisy
+                    if (index == 254)
+                        return 0;
                     else
                         return index - 2;
 
