@@ -17,18 +17,23 @@ namespace brainHatSharpGUI
         public event LogEventDelegate Log;
 
         // Public Interface
-        #region PublicINterface
+        #region PublicInterface
+
+        /// <summary>
+        /// Start data broadcast server
+        /// </summary>
         public async Task StartDataBroadcastServerAsync()
         {
             await StopDataBroadcastServerAsync();
 
             CancelTokenSource = new CancellationTokenSource();
             RunTask = RunDataBroadcastServerAsync(CancelTokenSource.Token);
-
         }
 
 
-
+        /// <summary>
+        /// Stop data broadcast server
+        /// </summary>
         public async Task StopDataBroadcastServerAsync()
         {
             if (CancelTokenSource != null)
@@ -44,6 +49,10 @@ namespace brainHatSharpGUI
             }
         }
 
+
+        /// <summary>
+        /// Queue a string to broadcast
+        /// </summary>
         public void QueueStringToBroadcast(string broadcast)
         {
             if (RunTask != null)
@@ -72,6 +81,10 @@ namespace brainHatSharpGUI
         protected SemaphoreSlim NotifyDataToBroadcast { get; set; }
         ConcurrentQueue<string> StringsToBroadcast { get; set; }
 
+
+        /// <summary>
+        /// Run function
+        /// </summary>
         private async Task RunDataBroadcastServerAsync(CancellationToken cancelToken)
         {
             try

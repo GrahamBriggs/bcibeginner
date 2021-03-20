@@ -126,7 +126,7 @@ int BoardDataReader::GetSrb1(int board)
 
 
 //  Public function to set SRB1 state
-bool BoardDataReader::SetSrb1(int board, bool enable)
+bool BoardDataReader::RequestSetSrb1(int board, bool enable)
 {
 	if (!BoardSettings.HasValidSettings() && BoardSettings.Boards.size() < board)
 		return false;
@@ -156,7 +156,7 @@ bool BoardDataReader::SetSrb1(int board, bool enable)
 
 
 //  Public funciton to toggle streaming
-bool BoardDataReader::EnableStreaming(bool enable)
+bool BoardDataReader::RequestEnableStreaming(bool enable)
 {
 	if ( (enable && ! StreamRunning) || (!enable && StreamRunning))
 		RequestToggleStreaming = true;
@@ -174,6 +174,7 @@ int BoardDataReader::InitializeBoard()
 	int res = 0;
 	
 	ReleaseBoard();
+	RequestToggleStreaming = false;
 	
 	bool newConnection = SampleRate < 0;
 	Board = new BoardShim(BoardId, BoardParamaters);
@@ -184,7 +185,7 @@ int BoardDataReader::InitializeBoard()
 	try
 	{
 		Board->prepare_session();
-		Board->config_board("s");
+		Board->config_board((char*)"s");
 		
 		if (!GetBoardConfiguration())
 		{

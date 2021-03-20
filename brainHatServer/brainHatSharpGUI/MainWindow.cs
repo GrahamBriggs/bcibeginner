@@ -331,6 +331,9 @@ namespace brainHatSharpGUI
                     {
                         e.Status.SampleRate = BrainflowBoard.SampleRate;
                         e.Status.BoardId = BrainflowBoard.BoardId;
+                        e.Status.IsStreaming = BrainflowBoard.IsStreaming;
+                        e.Status.CytonSRB1 = BrainflowBoard.CytonSRB1;
+                        e.Status.DaisySRB1 = BrainflowBoard.DaisySRB1;
                     }
                     if (FileWriter.IsLogging)
                     {
@@ -416,6 +419,12 @@ namespace brainHatSharpGUI
                     case "recording":
                         return await ProcessSetRecording(args);
 
+                    case "srbset":
+                        return ProcessSrbSet(args);
+
+                    case "streamset":
+                        return ProcessStreamSet(args);
+
                     default:
                         break;
                 }
@@ -427,6 +436,38 @@ namespace brainHatSharpGUI
 
             Logger.AddLog(new LogEventArgs(this, "CommandServerProcessRequest", $"Invalid request {request}", LogLevel.WARN));
             return $"NAK?response=Invalid request&time={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}\n";
+        }
+
+        private string ProcessStreamSet(UriArgParser args)
+        {
+            try
+            {
+                var enable = bool.Parse(args.GetArg("enable"));
+                BrainflowBoard.RequestEnableStreaming(enable);
+                return $"ACK?response=Request enable stream {enable}";
+            }
+            catch (Exception e)
+            {
+                Logger.AddLog(new LogEventArgs(this, "ProcessStreamSet", e, LogLevel.ERROR));
+            }
+            return  $"NAK?response=bad arguments";
+
+        }
+
+        private string ProcessSrbSet(UriArgParser args)
+        {
+            try
+            {
+                var enable = bool.Parse(args.GetArg("enable"));
+                var board = int.Parse(args.GetArg("board"));
+                BrainflowBoard.RequestSetSrb1(board, enable);
+                return $"ACK?response=Request set SRB1 {enable}";
+            }
+            catch (Exception e)
+            {
+                Logger.AddLog(new LogEventArgs(this, "ProcessSrbSet", e, LogLevel.ERROR));
+            }
+            return $"NAK?response=bad arguments";
         }
 
 

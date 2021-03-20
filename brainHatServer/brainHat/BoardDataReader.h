@@ -27,8 +27,8 @@ public:
 	virtual int GetSrb1(int board);
 	virtual bool GetIsStreamRunning() { return StreamRunning;}
 	
-	virtual bool SetSrb1(int board, bool enable);
-	virtual bool EnableStreaming(bool enable);
+	virtual bool RequestSetSrb1(int board, bool enable);
+	virtual bool RequestEnableStreaming(bool enable);
 	
 protected:
 	

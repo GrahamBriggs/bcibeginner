@@ -125,9 +125,9 @@ namespace brainHatSharpGUI
         }
 
 
-        private async void ConfigurationWindow_FormClosing(object sender, FormClosingEventArgs e)
+        private void ConfigurationWindow_FormClosing(object sender, FormClosingEventArgs e)
         {
-            await Board.StartStreamAsync();
+            Board.RequestEnableStreaming(true);
         }
 
 
@@ -138,7 +138,8 @@ namespace brainHatSharpGUI
         {
             try
             {
-                BoardSettings = new CytonBoardsImplementation(configString);
+                BoardSettings = new CytonBoardsImplementation();
+                BoardSettings.LoadFromRegistersString(configString);
             }
             catch (Exception)
             {
@@ -335,10 +336,10 @@ namespace brainHatSharpGUI
         /// <summary>
         /// Start stream button
         /// </summary>
-        private async void buttonStartStream_Click(object sender, EventArgs e)
+        private void buttonStartStream_Click(object sender, EventArgs e)
         {
             EnableSettingsButtons(false);
-            await Board.StartStreamAsync();
+            Board.RequestEnableStreaming(true);
             EnableSettingsButtons(true);
         }
 

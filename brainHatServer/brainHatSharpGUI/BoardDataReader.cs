@@ -3,6 +3,7 @@ using BrainflowDataProcessing;
 using BrainflowInterfaces;
 using LoggingInterfaces;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -43,7 +44,32 @@ namespace brainHatSharpGUI
         //  Properties
         public int BoardReadDelayMilliseconds { get; set; }
 
-    
+       
+        public bool IsStreaming => StreamRunning;
+
+        public SrbSet CytonSRB1
+        {
+            get
+            {
+                if (TheBoard != null && BoardSettings != null && BoardSettings.IsValid)
+                    return BoardSettings.Boards[0].Srb1Set ? SrbSet.Connected : SrbSet.Disconnected;
+                else
+                    return SrbSet.Unknown;
+            }
+        }
+
+        public SrbSet DaisySRB1
+        {
+            get
+            {
+                if (TheBoard != null && BoardSettings != null && BoardSettings.IsValid && BoardSettings.Boards.Length > 0)
+                    return BoardSettings.Boards[1].Srb1Set ? SrbSet.Connected : SrbSet.Disconnected;
+                else
+                    return SrbSet.Unknown;
+            }
+        }
+
+
         // Public Interface
         #region PublicInterface
 
@@ -67,8 +93,8 @@ namespace brainHatSharpGUI
             LastReadingTimestamp = -1.0;
             LastSampleIndex = -1;
             CountMissingIndex = 0;
+            RequestToggleStreamingMode = false;
         }
-
 
 
         /// <summary>
@@ -92,31 +118,28 @@ namespace brainHatSharpGUI
         }
 
 
-        public bool IsStreaming => StreamRunning;
-
         /// <summary>
-        /// Start the board data stream
+        /// Request toggle streaming mode
         /// </summary>
-        public async Task StartStreamAsync()
+        public void RequestEnableStreaming(bool enable)
         {
-            if (!StreamRunning)
-            {
-                Log?.Invoke(this, new LogEventArgs(this, "StartStreamAsync", $"Starting stream.", LogLevel.DEBUG));
-                await StartStreamingAsync();
-            }
+            if ((enable && !StreamRunning) || (!enable && StreamRunning))
+                RequestToggleStreamingMode = true;
         }
 
 
         /// <summary>
-        /// Stop the board data stream
+        /// Request set SRB1 for board
         /// </summary>
-        public async Task StopStreamAsync()
+        public bool RequestSetSrb1(int board, bool enable)
         {
-            if (StreamRunning)
-            {
-                Log?.Invoke(this, new LogEventArgs(this, "StopStreamAsync", $"Stopping stream.", LogLevel.DEBUG));
-                await StopStreamingAsync();
-            }
+            if (!BoardSettings.IsValid && BoardSettings.Boards.Count() < board)
+                return false;
+
+            var channel = BoardSettings.Boards[board].Channels[0];
+            var setSrb1String = FormatSetSrb1String(channel, enable);
+            CommandsQueue.Enqueue(setSrb1String);
+            return true;
         }
 
 
@@ -126,40 +149,22 @@ namespace brainHatSharpGUI
         public async Task<bool> StopStreamAndEmptyBufferAsnyc()
         {
             Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", $"Stopping stream.", LogLevel.DEBUG));
-            await StopStreamingAsync();
-            //  read any data out of the buffer
-            int retries = 0;
-            while (retries < 5)
+
+            RequestEnableStreaming(false);
+
+            int waitCount = 0;
+            while (StreamRunning && waitCount < 10)
             {
-                var discard = TheBoard.get_board_data();
-                if (discard.GetLength(1) == 0)
-                    break;
-                await Task.Delay(200);
-                retries++;
+                await Task.Delay(100);
+                waitCount++;
             }
-            if ( retries == 5 )
-                Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", $"Read {retries} chunks from the buffer before empty.", LogLevel.WARN));
-
-            await Task.Delay(2000);
-
-            retries = 0;
-            while (retries < 5)
+            if (StreamRunning)
             {
-                var test = ConfigureBoard("V");
-                if (ValidateFirmwareString(test))
-                {
-                    return true;
-                }
-                else
-                {
-                    Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", $"Flushing buffer: {test}", retries == 0 ? LogLevel.TRACE : LogLevel.WARN));
-                }
-                retries++;
-                await Task.Delay(1000);
+                Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", $"Unable to stop stream", LogLevel.ERROR));
+                return false;
             }
 
-            Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", $"Failed to verify empty serial buffer.", LogLevel.ERROR));
-            return false;
+            return await EmptyReadBufferAsync();
         }
 
 
@@ -235,6 +240,7 @@ namespace brainHatSharpGUI
 
         /// <summary>
         /// Set Board Channels
+        /// pass in channel settings for any board channel to set SRB1 and keep the other channel settings unchanged
         /// </summary>
         public async Task<bool> SetImpedanceModeAsync(IEnumerable<int> channels, ICytonChannelSettings settings)
         {
@@ -282,7 +288,9 @@ namespace brainHatSharpGUI
         }
 
 
-
+        /// <summary>
+        /// Set SRB1 value for the board
+        /// </summary>
         public async Task<bool> SetSrb1Async(ICytonChannelSettings settings, bool connect)
         {
             if (await SettingsLock.WaitAsync(0))
@@ -291,11 +299,11 @@ namespace brainHatSharpGUI
                 {
                     Log?.Invoke(this, new LogEventArgs(this, "SetSrb1Async", $"{(connect ? "Connecting" : "Disconnecting")} SRB1 for {(settings.ChannelNumber < 9 ? "Cyton" : "Daisy")}.", LogLevel.DEBUG));
 
-                    string settingsString = $"x{settings.ChannelNumber.ChannelSetCharacter()}{settings.PowerDown.BoolCharacter()}{(int)(settings.Gain)}{(int)(settings.InputType)}{settings.Bias.BoolCharacter()}{settings.Srb2.BoolCharacter()}{(connect ? "1" : "0")}X";
+                    string settingsString = FormatSetSrb1String(settings, connect);
 
                     var response = ConfigureBoard(settingsString);
                     Log?.Invoke(this, new LogEventArgs(this, "SetSrb1Async", $"Response:{response}.", LogLevel.DEBUG));
-                    
+
                     return true;
                 }
                 finally
@@ -308,6 +316,15 @@ namespace brainHatSharpGUI
                 Log?.Invoke(this, new LogEventArgs(this, "SetSrb1Async", $"Another process is busy with the settings.", LogLevel.WARN));
                 return false;
             }
+        }
+
+
+        /// <summary>
+        /// Format the set SRB1 string
+        /// </summary>
+        private static string FormatSetSrb1String(ICytonChannelSettings settings, bool connect)
+        {
+            return $"x{settings.ChannelNumber.ChannelSetCharacter()}{settings.PowerDown.BoolCharacter()}{(int)(settings.Gain)}{(int)(settings.InputType)}{settings.Bias.BoolCharacter()}{settings.Srb2.BoolCharacter()}{(connect ? "1" : "0")}X";
         }
 
 
@@ -375,7 +392,9 @@ namespace brainHatSharpGUI
 
         public BoardDataReader()
         {
-            BoardShim.set_log_level((int)LogLevels.LEVEL_DEBUG);
+            BoardShim.set_log_level((int)LogLevels.LEVEL_OFF);
+
+            CommandsQueue = new ConcurrentQueue<string>();
 
             BoardReadDelayMilliseconds = 50;    //  default 20 hz
 
@@ -398,18 +417,29 @@ namespace brainHatSharpGUI
         public int SampleRate { get; private set; }
         protected int TimeStampIndex { get; set; }
         protected BrainFlowInputParams InputParams { get; private set; }
-        private int InvalidReadCounter { get; set; }
+        CytonBoardsImplementation BoardSettings;
 
         private bool StreamRunning;
+        private bool RequestToggleStreamingMode;
 
         //  Some properties to manage and inspect the data stream
         double LastReadingTimestamp { get; set; }
         int ReadCounter { get; set; }
         int ReadCounterLastReport { get; set; }
         DateTimeOffset LastReportTime { get; set; }
+        int LastSampleIndex;
+        int CountMissingIndex;
+        private int InvalidReadCounter { get; set; }
+
+        //  Queue for remote commands to the board
+        ConcurrentQueue<string> CommandsQueue;
 
 
-       
+        /// <summary>
+        /// Board is initialized and prepared for commands or streaming
+        /// </summary>
+        private bool BoardReady => TheBoard != null && TheBoard.is_prepared();
+
 
         /// <summary>
         /// Init the board session
@@ -421,19 +451,25 @@ namespace brainHatSharpGUI
                 Log?.Invoke(this, new LogEventArgs(this, "InitializeBoardAsync", $"Initializaing board", LogLevel.DEBUG));
 
                 await ReleaseBoardAsync();
+                RequestToggleStreamingMode = false;
 
                 TheBoard = new BoardShim(BoardId, InputParams);
                 SampleRate = BoardShim.get_sampling_rate(BoardId);
                 TimeStampIndex = BoardShim.get_timestamp_channel(BoardId);
-                TheBoard.prepare_session();
-                await StartStreamingAsync();
 
-                // for STREAMING_BOARD you have to query information using board id for master board
-                // because for STREAMING_BOARD data format is determined by master board!
-                if (BoardId == (int)brainflow.BoardIds.STREAMING_BOARD)
+                TheBoard.prepare_session();
+                TheBoard.config_board("s");
+
+                string registerSettings;
+                if ( ! GetBoardRegistersString(out registerSettings) )
                 {
-                    BoardId = int.Parse(InputParams.other_info);
+                    throw new Exception("Unable to get board register settings");
                 }
+
+                BoardSettings = new CytonBoardsImplementation();
+                BoardSettings.LoadFromRegistersString(registerSettings);
+
+                await StartStreamingAsync();
 
                 await Task.Delay(TimeSpan.FromSeconds(5));
 
@@ -451,8 +487,6 @@ namespace brainHatSharpGUI
             }
         }
 
-      
-
 
         /// <summary>
         /// Release the board session
@@ -468,12 +502,9 @@ namespace brainHatSharpGUI
                     await StopStreamingAsync();
                     TheBoard.release_session();
                 }
-
                 InvalidReadCounter = 0;
             }
         }
-
-
 
 
         /// <summary>
@@ -484,9 +515,11 @@ namespace brainHatSharpGUI
             if (StreamRunning)
             {
                 StreamRunning = false;
+                Log?.Invoke(this, new LogEventArgs(this, "StopStreamingAsync", $"Stopping data stream.", LogLevel.DEBUG));
                 await Task.Run(() => { TheBoard.stop_stream(); });
             }
         }
+
 
         /// <summary>
         /// Start the active session streaming data
@@ -497,10 +530,13 @@ namespace brainHatSharpGUI
             {
                 if (InputParams.ip_address.Length > 0)
                 {
-                    await Task.Run(() => { TheBoard.start_stream(50000, $"streaming_board://{InputParams.ip_address}:{InputParams.ip_port}"); });
+                    var configString = $"streaming_board://{InputParams.ip_address}:{InputParams.ip_port}";
+                    Log?.Invoke(this, new LogEventArgs(this, "StartStreamingAsync", $"Starting data stream: {configString}", LogLevel.DEBUG));
+                    await Task.Run(() => { TheBoard.start_stream(50000, configString); });
                 }
                 else
                 {
+                    Log?.Invoke(this, new LogEventArgs(this, "StartStreamingAsync", $"Starting data stream.", LogLevel.DEBUG));
                     await Task.Run(() => { TheBoard.start_stream(50000); });
                 }
                 StreamRunning = true;
@@ -522,8 +558,50 @@ namespace brainHatSharpGUI
             }
         }
 
+       
+        /// <summary>
+        /// Are we ready to read the board
+        /// </summary>
+        private async Task<bool> PreparedToReadBoard()
+        {
+            await EstablishConnectionWithBoardAsync();
 
-      
+            if (!BoardReady)
+            {
+                //  board is not ready, wait a second before trying again
+                await Task.Delay(TimeSpan.FromSeconds(1));
+                return false;
+            }
+            else if ( RequestToggleStreamingMode )
+            {
+                if (StreamRunning)
+                    await StopStreamingAsync();
+                else
+                    await StartStreamingAsync();
+                RequestToggleStreamingMode = false;
+                return false;
+            }
+            else if ( CommandsQueue.Count > 0 )
+            {
+                await ProcessCommandsQueue();
+                return false;
+            }
+            else if ( ! StreamRunning )
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1));
+                return false;
+            }
+            else if (InvalidReadCounter > InvalidReadCounterTimeout)
+            {
+                //  board was connected, but it has not given any data for a while, release it to attempt reconnect
+                Log?.Invoke(this, new LogEventArgs(this, "PreparedToReadBoard", $"Not receiving data from the board. Attempt to receonnect.", LogLevel.WARN));
+                await ReleaseBoardAsync();
+                await Task.Delay(TimeSpan.FromSeconds(1));
+                return false;
+            }
+
+            return true;
+        }
 
 
         /// <summary>
@@ -535,22 +613,10 @@ namespace brainHatSharpGUI
             {
                 while (!cancelToken.IsCancellationRequested)
                 {
-                    await EstablishConnectionWithBoardAsync();
+                    
 
-                    if (!BoardReady || !StreamRunning)
-                    {
-                        //  board is not ready, wait a second before trying again
-                        await Task.Delay(TimeSpan.FromSeconds(1));
+                    if (! await PreparedToReadBoard())
                         continue;
-                    }
-                    else if (InvalidReadCounter > InvalidReadCounterTimeout)
-                    {
-                        //  board was connected, but it has not given any data for a while, release it to attempt reconnect
-                        Log?.Invoke(this, new LogEventArgs(this, "RunBoardDataReaderAsync", $"Not receiving data from the board. Attempt to receonnect.", LogLevel.WARN));
-                        await ReleaseBoardAsync();
-                        await Task.Delay(TimeSpan.FromSeconds(1));
-                        continue;
-                    }
 
                     List<IBFSample> data = ReadDataFromBoard();
                     BoardReadData?.Invoke(this, new BFChunkEventArgs(data));
@@ -685,9 +751,6 @@ namespace brainHatSharpGUI
         }
 
 
-        int LastSampleIndex;
-        int CountMissingIndex;
-
         /// <summary>
         /// Check the sample index sequence
         /// log a warning if sample index is missing
@@ -719,6 +782,93 @@ namespace brainHatSharpGUI
 
 
         /// <summary>
+        /// Process remote commands queue to send config strings to the board
+        /// </summary>
+        private async Task ProcessCommandsQueue()
+        {
+            if (CommandsQueue.Count > 0)
+            {
+                var wasStreaming = StreamRunning;
+                try
+                {
+                    await StopStreamingAsync();
+
+                    BoardSettings.Invalidate();
+
+                    if (!await EmptyReadBufferAsync())
+                    {
+                        Log?.Invoke(this, new LogEventArgs(this, "ProcessCommandsQueue", $"Failed to emtpy buffer.", LogLevel.ERROR));
+                        return;
+                    }
+
+                    while (!CommandsQueue.IsEmpty)
+                    {
+                        CommandsQueue.TryDequeue(out var nextCommand);
+                        Log?.Invoke(this, new LogEventArgs(this, "ProcessCommandsQueue", $"Send command to board: {nextCommand}", LogLevel.INFO));
+                        ConfigureBoard(nextCommand);
+                        await Task.Delay(50);
+                    }
+
+                    var registersString = await GetBoardConfigurationAsync();
+                    BoardSettings.LoadFromRegistersString(registersString);
+                }
+                catch ( Exception e)
+                {
+                    Log?.Invoke(this, new LogEventArgs(this, "ProcessCommandsQueue", e, LogLevel.ERROR));
+                }
+                finally
+                {
+                    if (wasStreaming)
+                        await StartStreamingAsync();
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Empty the read buffer of any characters to prepare for configure_board, 
+        /// make sure buffer is empty by confirming clean response to the firmware V command
+        /// </summary>
+        /// <returns></returns>
+        private async Task<bool> EmptyReadBufferAsync()
+        {
+            //  read any data out of the buffer
+            int retries = 0;
+            while (retries < 5)
+            {
+                var discard = TheBoard.get_board_data();
+                if (discard.GetLength(1) == 0)
+                    break;
+                await Task.Delay(200);
+                retries++;
+            }
+            if (retries == 5)
+                Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", $"Read {retries} chunks from the buffer before empty.", LogLevel.WARN));
+
+            await Task.Delay(2000);
+
+            retries = 0;
+            while (retries < 5)
+            {
+                var test = ConfigureBoard("V");
+                if (ValidateFirmwareString(test))
+                {
+                    return true;
+                }
+                else
+                {
+                    Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", $"Flushing buffer: {test}", retries == 0 ? LogLevel.TRACE : LogLevel.WARN));
+                }
+                retries++;
+                await Task.Delay(1000);
+            }
+
+            Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", $"Failed to verify empty serial buffer.", LogLevel.ERROR));
+            return false;
+        }
+
+
+        /// <summary>
         /// Configure board 
         /// send raw ascii characters to the board and return the response
         /// </summary>
@@ -742,6 +892,9 @@ namespace brainHatSharpGUI
         }
 
 
+        /// <summary>
+        /// Get the board registers (settings) string
+        /// </summary>
         private bool GetBoardRegistersString(out string config)
         {
             config = "";
@@ -763,6 +916,10 @@ namespace brainHatSharpGUI
             return true;
         }
 
+
+        /// <summary>
+        /// Check the registers string to make sure it is not corrupted
+        /// </summary>
         private bool ValidateRegisterSettingsString(string registerSettings)
         {
             if (registerSettings.Length > "Board ADS Registers".Length)
@@ -773,21 +930,16 @@ namespace brainHatSharpGUI
             return false;
         }
 
+
+        /// <summary>
+        /// Check the firmware string to make sure it is not corrupted
+        /// </summary>
         private bool ValidateFirmwareString(string firmware)
         {
             if (firmware.Length > 3 && firmware.Substring(0, 1) == "v" && firmware.Substring(firmware.Length - 3, "$$$".Length) == "$$$")
                 return true;
             return false;
         }
-
-
-
-        /// <summary>
-        /// Board is initialized and in streaming mode
-        /// </summary>
-        private bool BoardReady => TheBoard != null && TheBoard.is_prepared();
-
-
 
 
         #endregion

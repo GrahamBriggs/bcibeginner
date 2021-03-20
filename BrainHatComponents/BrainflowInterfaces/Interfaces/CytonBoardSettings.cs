@@ -78,7 +78,8 @@ namespace BrainflowInterfaces
 
     public interface ICytonBoards
     {
-        IEnumerable<ICytonBoardSettings> Boards { get; }
+        ICytonBoardSettings[] Boards { get; }
+        bool IsValid { get; }
     }
     //
     public class CytonBoardsImplementation : ICytonBoards
@@ -88,7 +89,16 @@ namespace BrainflowInterfaces
             _Boards = new List<CytonBoardSettingsImplementation>();
         }
 
-        public CytonBoardsImplementation(string registerReport)
+        protected List<CytonBoardSettingsImplementation> _Boards;
+        public ICytonBoardSettings[] Boards => _Boards.ToArray();
+
+        public bool IsValid => _Boards.Count > 0;
+
+        public void Invalidate()
+        {
+            _Boards = new List<CytonBoardSettingsImplementation>();
+        }
+        public void LoadFromRegistersString(string registerReport)
         {
             registerReport = registerReport.Replace('\r', ' ');
             registerReport = registerReport.Replace(" ", String.Empty);
@@ -217,8 +227,8 @@ namespace BrainflowInterfaces
             }
         }
 
-        protected List<CytonBoardSettingsImplementation> _Boards;
-        public IEnumerable<ICytonBoardSettings> Boards => _Boards;
+        
+        
 
     }
 
