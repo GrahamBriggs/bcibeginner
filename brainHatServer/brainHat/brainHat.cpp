@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 	if (!ParseArguments(argc, argv))
 		return -1;
 		
-	BoardShim::set_log_level(5);
+	BoardShim::set_log_level(6);
 	
 	//  start program threads
 	Logging.Start();
@@ -258,11 +258,11 @@ bool HandleSrbSetRequest(UriArgParser& requestParser)
 	int board = ParseInt(requestParser.GetArg("board"));
 	if (enable == "TRUE" && board > -1)
 	{
-		DataSource->SetSrb1(board, true);
+		DataSource->RequestSetSrb1(board, true);
 	}
 	else if (enable == "FALSE" && board > -1)
 	{
-		DataSource->SetSrb1(board, false);
+		DataSource->RequestSetSrb1(board, false);
 	}
 	else
 	{
@@ -279,11 +279,11 @@ bool HandleSetStreamRequest(UriArgParser& requestParser)
 	toUpper(enable);
 	if (enable == "TRUE")
 	{
-		DataSource->EnableStreaming(true);
+		DataSource->RequestEnableStreaming(true);
 	}
 	else if (enable == "FALSE")
 	{
-		DataSource->EnableStreaming(false);
+		DataSource->RequestEnableStreaming(false);
 	}
 	else
 	{
