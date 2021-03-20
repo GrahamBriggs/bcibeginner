@@ -67,6 +67,8 @@ int main(int argc, char *argv[])
 	if (!ParseArguments(argc, argv))
 		return -1;
 		
+	BoardShim::set_log_level(5);
+	
 	//  start program threads
 	Logging.Start();
 	ComServer.Start();

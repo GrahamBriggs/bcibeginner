@@ -13,7 +13,7 @@
 #include "BFCyton8.h"
 #include "BFCyton16.h"
 #include "CytonBoardConfiguration.h"
-
+#include "board_controller.h"
 #define SENSOR_SLEEP (50)
 
 using namespace std;
@@ -28,6 +28,8 @@ void DeleteChunk(double** chunk, int rows);
 //
 BoardDataReader::BoardDataReader(ConnectionChangedCallbackFn connectionChangedFn, NewSampleCallbackFn newSampleFn)
 {
+	
+	
 	Init();
 
 	ConnectionChangedCallback = connectionChangedFn;
@@ -178,7 +180,7 @@ int BoardDataReader::InitializeBoard()
 	
 	bool newConnection = SampleRate < 0;
 	Board = new BoardShim(BoardId, BoardParamaters);
-	BoardShim::set_log_level(LogLevel::LogLevelOff);
+	
 	DataRows = BoardShim::get_num_rows(BoardId);
 	SampleRate = BoardShim::get_sampling_rate(BoardId);
 	
@@ -569,7 +571,7 @@ bool BoardDataReader::GetBoardConfiguration()
 bool BoardDataReader::GetRegistersString(std::string& registersString)
 {
 	registersString = "";
-	auto getRegisters = Board->config_board("?");
+	auto getRegisters = Board->config_board((char*)"?");
 	if (!ValidateRegisterSettingsString(getRegisters))
 	{
 		Logging.AddLog("BoardDataReader", "GetRegistersString", format("Invalid registers string %s", getRegisters.c_str()), LogLevelError);
@@ -577,7 +579,7 @@ bool BoardDataReader::GetRegistersString(std::string& registersString)
 		return false;
 	}
 
-	auto version = Board->config_board("V");
+	auto version = Board->config_board((char*)"V");
 	if (!ValidateFirmwareString(version))
 	{
 		Logging.AddLog("BoardDataReader", "GetRegistersString", format("Invalid firmware string %s", version.c_str()), LogLevelError);
