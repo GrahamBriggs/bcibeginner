@@ -179,7 +179,7 @@
     <ClInclude Include="CytonBoardSettings.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="BrainflowConfiguration.h">
+    <ClInclude Include="CytonBoardConfiguration.h">
       <Filter>Header files</Filter>
     </ClInclude>
   </ItemGroup>

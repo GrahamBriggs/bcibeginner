@@ -322,6 +322,9 @@ namespace BrainHatNetwork
                         server.TimeStamp = serverStatus.TimeStamp;
                         serverStatus.OffsetTime = DateTimeOffset.UtcNow - serverStatus.TimeStamp;
                         server.OffsetTime = serverStatus.OffsetTime;
+                        server.CytonSRB1 = serverStatus.CytonSRB1;
+                        server.DaisySRB1 = serverStatus.DaisySRB1;
+                        server.IsStreaming = serverStatus.IsStreaming;
 
                         //  set raw data status for the event message
                         serverStatus.ReceivingRaw = server.ReceivingRaw;

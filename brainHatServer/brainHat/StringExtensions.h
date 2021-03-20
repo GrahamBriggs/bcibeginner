@@ -30,11 +30,20 @@ inline std::string format(const char* fmt, ...) {
 	return ret;
 }
 
+
 inline void toUpper(std::string& value)
 {
 	std::transform(value.begin(), value.end(), value.begin(),::toupper);
 }
 
+
+inline void removeTrailingCharacters(std::string &str, const char charToRemove) {
+	str.erase(str.find_last_not_of(charToRemove) + 1, std::string::npos);
+}
+
+inline void removeLeadingCharacters(std::string &str, const char charToRemove) {
+	str.erase(0, std::min(str.find_first_not_of(charToRemove), str.size() - 1));
+}
 
 //  function is useful to parse an entire string into vector of substrings at once
 inline void Tokenize(const std::string& str, std::vector<std::string>& tokens, const std::string& delimiters /*= " "*/)

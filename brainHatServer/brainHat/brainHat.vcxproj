@@ -75,7 +75,7 @@
     <ClInclude Include="BDFFileWriter.h" />
     <ClInclude Include="BFCyton16.h" />
     <ClInclude Include="BoardDataSource.h" />
-    <ClInclude Include="BrainflowConfiguration.h" />
+    <ClInclude Include="CytonBoardConfiguration.h" />
     <ClInclude Include="BrainHatFileWriter.h" />
     <ClInclude Include="BrainHatServerStatus.h" />
     <ClInclude Include="BroadcastStatus.h" />

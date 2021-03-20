@@ -9,6 +9,7 @@
 #include "board_shim.h"
 #include "BFSample.h"
 #include "TimeExtensions.h"
+#include "CytonBoardSettings.h"
 
 
 class BoardDataReader : public BoardDataSource
@@ -23,37 +24,54 @@ public:
 	
 	virtual void RunFunction();
 
-protected:
+	virtual int GetSrb1(int board);
+	virtual bool GetIsStreamRunning() { return StreamRunning;}
 	
-	virtual void Init();
-	void InitializeDataReadCounters();
+	virtual bool SetSrb1(int board, bool enable);
+	virtual bool EnableStreaming(bool enable);
+	
+protected:
 	
 	virtual std::string ReportSource();
 	
+	virtual void Init();
+
+	//  The Board
 	BoardShim* Board;
 	struct BrainFlowInputParams BoardParamaters;
-	bool BoardReady();
-	bool IsConnected;
-
-	//  read data on a timer
-	ChronoTimer ReadTimer;
-	
-	BFSample* ParseRawData(double** data, int sample);
-	void CalculateReadingTimeThisChunk(double** chunk, int samples, double& period, double& oldestSampleTime);
-	int	 InitializeBoard();
-	void ReleaseBoard();
-	void EstablishConnectionWithBoard();
-	void DiscardFirstChunk();
-	
 	bool StreamRunning;
+	bool IsConnected;
+	bool RequestToggleStreaming;
+	//
+	bool BoardReady();
+	int	 InitializeBoard();
+	void InitializeDataReadCounters();
+	void ReleaseBoard();
+	void DiscardFirstChunk();
 	void StartStreaming();
 	void StopStreaming();
 	
-	//  Count invalid points for reconnection trigger
+	//  Run function reading loop
+	ChronoTimer ReadTimer;
 	int InvalidSampleCounter;
-	
-	
-	//  Process the chunk read from the board
+	//
+	void EstablishConnectionWithBoard();
+	bool PreparedToReadBoard();
 	void ProcessData(double **data_buf, int sampleCount);
+	BFSample* ParseRawData(double** data, int sample);
+	void CalculateReadingTimeThisChunk(double** chunk, int samples, double& period, double& oldestSampleTime);
+	
+	
+	//  Board hardware settings and configuration commands
+	std::timed_mutex CommandsQueueLock;
+	std::queue<std::string> CommandsQueue;
+	void ProcessCommandsQueue();
+	//
+	bool GetBoardConfiguration();
+	bool GetRegistersString(std::string& registersString);
+	bool ValidateRegisterSettingsString(std::string registerSettings);
+	bool ValidateFirmwareString(std::string firmware);	
+	CytonBoards BoardSettings;
+	
 
 };

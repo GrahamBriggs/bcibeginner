@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using BrainflowInterfaces;
 
 namespace BrainHatNetwork
 {
@@ -13,9 +12,6 @@ namespace BrainHatNetwork
         string IpAddress { get; }
         int DataPort { get; }
         int LogPort { get; }
-
-
-       
     }
 
 
@@ -24,6 +20,9 @@ namespace BrainHatNetwork
         int BoardId { get; }
         int SampleRate { get; }
         int NumberOfChannels { get; }
+        SrbSet CytonSRB1 { get; }
+        SrbSet DaisySRB1 { get; }
+        bool IsStreaming { get; }
 
         bool RecordingDataBrainHat { get; }
         bool RecordingDataBoard { get; }
@@ -70,6 +69,9 @@ namespace BrainHatNetwork
         public int BoardId { get; set; }
         public int SampleRate { get; set; }
         public int NumberOfChannels => brainflow.BoardShim.get_exg_channels(BoardId).Length;
+        public SrbSet CytonSRB1 { get; set; }
+        public SrbSet DaisySRB1 { get; set; }
+        public bool IsStreaming { get; set; }
 
         public bool RecordingDataBrainHat { get; set; }
         public bool RecordingDataBoard { get; set; }

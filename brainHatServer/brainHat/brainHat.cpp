@@ -197,15 +197,9 @@ void BoardConnectionStateChanged(BoardConnectionStates state, int boardId, int s
 }
 
 
-
-//  Handle callback from ComServer to process a request
-//
-bool HandleServerRequest(string request)
+bool HandleRecordingRequest(UriArgParser& requestParser)
 {
-	UriArgParser requestParser(request);
-	
-	//  request to start recording
-	if (DataSource != NULL && requestParser.GetRequest() == "recording")
+	if (DataSource != NULL)
 	{
 		auto fileName = requestParser.GetArg("filename");
 		auto enable = requestParser.GetArg("enable");
@@ -248,6 +242,74 @@ bool HandleServerRequest(string request)
 		}
 		
 		return true;
+	}
+	
+	return false;
+}
+
+
+
+bool HandleSrbSetRequest(UriArgParser& requestParser)
+{
+	auto enable = requestParser.GetArg("enable");
+	toUpper(enable);
+	int board = ParseInt(requestParser.GetArg("board"));
+	if (enable == "TRUE" && board > -1)
+	{
+		DataSource->SetSrb1(board, true);
+	}
+	else if (enable == "FALSE" && board > -1)
+	{
+		DataSource->SetSrb1(board, false);
+	}
+	else
+	{
+		return false;
+	}
+	
+	return true;
+}
+
+
+bool HandleSetStreamRequest(UriArgParser& requestParser)
+{
+	auto enable = requestParser.GetArg("enable");
+	toUpper(enable);
+	if (enable == "TRUE")
+	{
+		DataSource->EnableStreaming(true);
+	}
+	else if (enable == "FALSE")
+	{
+		DataSource->EnableStreaming(false);
+	}
+	else
+	{
+		return false;
+	}
+	
+	return true;
+}
+
+
+//  Handle callback from ComServer to process a request
+//
+bool HandleServerRequest(string request)
+{
+	UriArgParser requestParser(request);
+	
+	if (requestParser.GetRequest() == "recording")
+	{
+		//  request to start recording
+		return HandleRecordingRequest(requestParser);
+	}
+	else if (requestParser.GetRequest() == "srbset")
+	{
+		return HandleSrbSetRequest(requestParser);
+	}
+	else if (requestParser.GetRequest() == "streamset")
+	{
+		return HandleSetStreamRequest(requestParser);
 	}
 	else
 	{

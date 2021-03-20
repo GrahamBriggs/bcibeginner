@@ -5,6 +5,14 @@ using System.Text;
 
 namespace BrainflowInterfaces
 {
+    public enum SrbSet
+    {
+        Unknown = -1,
+        Disconnected,
+        Connected,
+    }
+
+
     public interface ICytonChannelSettings
     {
         int ChannelNumber { get; set; }

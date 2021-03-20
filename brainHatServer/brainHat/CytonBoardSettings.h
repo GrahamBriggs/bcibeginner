@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 
-#include "BrainflowConfiguration.h"
+#include "CytonBoardConfiguration.h"
 
 
 //  Individual Cyton Channel Settings
@@ -47,53 +47,15 @@ public:
 	CytonBoards();
 
 	virtual ~CytonBoards();
-	
+
 	bool ReadFromRegisterString(std::string registerReport);
 	bool ValidateBoardChannels();
 
 	std::vector<CytonBoardSettings*> Boards;
 	
+	bool HasValidSettings() { return Boards.size() > 0;}
+	
 	void ClearBoards();
 };
 
 
-
-//  Helper Functions
-//
-
-//  Get the index of the bit number or register report comma delimited string
-inline int IndexOfBit(int bitNumber) {	return 10 - bitNumber; }
-
-
-//  Get the channel gain from register report row data
-inline ChannelGain GetChannelGain(std::vector<std::string> value)
-{
-	if (value.size() == 11)
-	{
-		int channelGain = 0;
-		channelGain += value[IndexOfBit(4)] == "1" ? 1 : 0;
-		channelGain += value[IndexOfBit(5)] == "1" ? 2 : 0;
-		channelGain += value[IndexOfBit(6)] == "1" ? 4 : 0;
-
-		return (ChannelGain)channelGain;
-	}
-
-	return ChannelGain::x1;
-}
-
-
-//  Get the channel input type from register report row data
-inline AdsChannelInputType GetChannelInputType(std::vector<std::string> value)
-{
-	if (value.size() == 11)
-	{
-		int channelInputType = 0;
-		channelInputType += value[IndexOfBit(0)] == "1" ? 1 : 0;
-		channelInputType += value[IndexOfBit(1)] == "1" ? 2 : 0;
-		channelInputType += value[IndexOfBit(2)] == "1" ? 4 : 0;
-
-		return (AdsChannelInputType)channelInputType;
-	}
-
-	return AdsChannelInputType::Normal;
-}

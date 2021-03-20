@@ -15,6 +15,9 @@ public:
 	//
 	int BoardId;
 	int SampleRate;
+	int CytonSRB1;
+	int DaisySRB1;
+	bool IsStreaming;
 	//
 	bool RecordingDataBrainHat;
 	bool RecordingDataBoard;
@@ -36,6 +39,9 @@ public:
 		LogPort = 0;
 		BoardId = -99;
 		SampleRate = 0;
+		CytonSRB1 = -1;
+		DaisySRB1 = -1;
+		IsStreaming = false;
 		RecordingDataBrainHat = false;
 		RecordingDataBoard = false;
 		RecordingFileNameBrainHat = "";
@@ -58,6 +64,9 @@ public:
 		j["LogPort"] = LogPort;
 		j["BoardId"] = BoardId;
 		j["SampleRate"] = SampleRate;
+		j["CytonSRB1"] = CytonSRB1;
+		j["DaisySRB1"] = DaisySRB1;
+		j["IsStreaming"] = IsStreaming;
 		j["RecordingDataBrainHat"] = RecordingDataBrainHat;
 		j["RecordingDataBoard"] = RecordingDataBoard;
 		j["RecordingFileNameBrainHat"] = RecordingFileNameBrainHat;

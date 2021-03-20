@@ -337,8 +337,6 @@ void BDFFileWriter::WriteChunk(vector<BFSample*> chunk)
 		for (auto it = chunk.begin(); it != chunk.end(); ++it)
 		{
 			delete *it;
-		}	
-		
-		Logging.AddLog("BDFFileWriter", "WriteChunk", "Wrote chunk", LogLevelTrace);
+		}
 	}
 }

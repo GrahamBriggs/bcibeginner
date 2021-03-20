@@ -69,9 +69,8 @@ void CytonBoards::ClearBoards()
 //
 bool CytonBoards::ReadFromRegisterString(string registerReport)
 {
-	registerReport = registerReport.replace(registerReport.begin(), registerReport.end(), '\r', ' ');
-	auto end_pos = remove(registerReport.begin(), registerReport.end(), ' ');
-	registerReport.erase(end_pos, registerReport.end());
+	registerReport.erase(remove(registerReport.begin(), registerReport.end(), '\r'), registerReport.end());
+	registerReport.erase(remove(registerReport.begin(), registerReport.end(), ' '), registerReport.end());
 	
 	int boardChannelOffset = 0;
 	
@@ -88,7 +87,7 @@ bool CytonBoards::ReadFromRegisterString(string registerReport)
 	for (auto it = lines.begin(); it != lines.end(); ++it)
 	{
 		auto nextLine = *it;
-		if (nextLine.find("ADSRegisters") >= 0)
+		if (nextLine.find("ADSRegisters") != string::npos)
 		{
 			if (Boards.size() > 0)
 			{
@@ -110,8 +109,7 @@ bool CytonBoards::ReadFromRegisterString(string registerReport)
 			if (columns.size() == 11)
 			{
 				auto newChannel = new CytonChannelSettings();
-				Boards.back()->AddChannel(newChannel);
-					
+				
 				newChannel->ChannelNumber = ParseInt(nextLine.substr(CH.length(), 1)) + boardChannelOffset;
                            
 				if (Boards.back()->Channels.size() > 0)
@@ -120,6 +118,7 @@ bool CytonBoards::ReadFromRegisterString(string registerReport)
 					{
 						Logging.AddLog("CytonBoardSettings", "ReadFromRegisterString", "Board channels are not sequential.", LogLevelError);
 						ClearBoards();
+						delete newChannel;
 						return false;
 					}
 				}
@@ -128,9 +127,7 @@ bool CytonBoards::ReadFromRegisterString(string registerReport)
 				newChannel->Gain = GetChannelGain(columns);
 				newChannel->InputType = GetChannelInputType(columns);
 				newChannel->Srb2 = columns[IndexOfBit(3)] == "1" ? true : false;
-
 				Boards.back()->AddChannel(newChannel);
-
 			}
 		}
 		else if (nextLine.length() > BIAS_SENSP.length() && nextLine.substr(0, BIAS_SENSP.length()).compare(BIAS_SENSP) == 0)

@@ -120,6 +120,9 @@ void BroadcastStatus::BroadcastStatusOverMulticast()
 	{
 		status.BoardId = DataSource->GetBoardId();
 		status.SampleRate = DataSource->GetSampleRate();
+		status.CytonSRB1 = DataSource->GetSrb1(0);
+		status.DaisySRB1 = DataSource->GetSrb1(1);
+		status.IsStreaming = DataSource->GetIsStreamRunning();
 	}
 	
 	status.UnixTimeMillis = GetUnixTimeMilliseconds();

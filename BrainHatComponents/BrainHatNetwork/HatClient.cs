@@ -41,6 +41,12 @@ namespace BrainHatNetwork
 
         public int NumberOfChannels => brainflow.BoardShim.get_exg_channels(BoardId).Length;
 
+        public SrbSet CytonSRB1 { get; set; }
+
+        public SrbSet DaisySRB1 { get; set; }
+        
+        public bool IsStreaming { get; set; }
+
         public bool RecordingDataBrainHat { get; set; }
 
         public bool RecordingDataBoard { get; set; }
