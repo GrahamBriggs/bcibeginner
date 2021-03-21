@@ -49,7 +49,6 @@ void BrainHatFileWriter::Cancel()
 	Thread::Cancel();	
 	Recording = false;
 	CloseFile();
-	Logging.AddLog("OpenBCIFileWriter", "Cancel", format("Closed recording file %s.", RecordingFileName.c_str()), LogLevelInfo);
 }
 
 

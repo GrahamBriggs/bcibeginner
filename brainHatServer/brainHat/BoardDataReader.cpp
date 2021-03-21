@@ -28,8 +28,6 @@ void DeleteChunk(double** chunk, int rows);
 //
 BoardDataReader::BoardDataReader(ConnectionChangedCallbackFn connectionChangedFn, NewSampleCallbackFn newSampleFn)
 {
-	
-	
 	Init();
 
 	ConnectionChangedCallback = connectionChangedFn;
@@ -177,15 +175,11 @@ int BoardDataReader::InitializeBoard()
 	
 	ReleaseBoard();
 	RequestToggleStreaming = false;
-	
-	bool newConnection = SampleRate < 0;
-	Board = new BoardShim(BoardId, BoardParamaters);
-	
-	DataRows = BoardShim::get_num_rows(BoardId);
-	SampleRate = BoardShim::get_sampling_rate(BoardId);
-	
+		
 	try
 	{
+		Board = new BoardShim(BoardId, BoardParamaters);
+	
 		Board->prepare_session();
 		Board->config_board((char*)"s");
 		
@@ -198,6 +192,10 @@ int BoardDataReader::InitializeBoard()
 			}
 			return -1;
 		}
+		
+		bool newConnection = SampleRate < 0;
+		DataRows = BoardShim::get_num_rows(BoardId);
+		SampleRate = BoardShim::get_sampling_rate(BoardId);
 		
 		StartStreaming();
 		
