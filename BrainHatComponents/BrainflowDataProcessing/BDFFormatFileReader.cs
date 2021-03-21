@@ -185,6 +185,7 @@ namespace BrainflowDataProcessing
             NumberOfChannels = BoardId == 0 ? 8 : 16;   //  TODO ganglion
                                                        
             var date = new DateTime(header.startdate_year, header.startdate_month, header.startdate_day, header.starttime_hour, header.starttime_minute, header.starttime_second);
+            date = date.AddMilliseconds(header.starttime_subsecond / 10_000);
             StartTime = new DateTimeOffset(date.ToUniversalTime(), TimeSpan.FromHours(0)).ToUnixTimeInDoubleSeconds();
 
             EndTime = StartTime + (header.datarecords_in_file * (header.datarecord_duration * 1.0E-7));

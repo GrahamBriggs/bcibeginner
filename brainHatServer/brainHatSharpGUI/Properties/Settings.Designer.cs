@@ -82,5 +82,17 @@ namespace brainHatSharpGUI.Properties {
                 this["UseBFStream"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool LogToFile {
+            get {
+                return ((bool)(this["LogToFile"]));
+            }
+            set {
+                this["LogToFile"] = value;
+            }
+        }
     }
 }

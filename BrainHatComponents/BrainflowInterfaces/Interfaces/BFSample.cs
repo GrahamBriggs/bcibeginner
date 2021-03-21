@@ -6,7 +6,7 @@ namespace BrainflowInterfaces
 {
     public interface IBFSample
     {
-        double SampleIndex { get; }
+        double SampleIndex { get; set; }
 
         double TimeStamp { get; set; }
 

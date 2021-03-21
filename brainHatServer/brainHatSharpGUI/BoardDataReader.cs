@@ -458,10 +458,12 @@ namespace brainHatSharpGUI
                 TimeStampIndex = BoardShim.get_timestamp_channel(BoardId);
 
                 TheBoard.prepare_session();
+                await Task.Delay(TimeSpan.FromSeconds(1));
                 TheBoard.config_board("s");
+                
 
                 BoardSettings = new CytonBoardsImplementation();
-                if ( ! await LoadBoardRegistersSettings(0) )
+                if ( ! await LoadBoardRegistersSettings(1) )
                 {
                     throw new Exception("Unable to get board register settings");
                 }

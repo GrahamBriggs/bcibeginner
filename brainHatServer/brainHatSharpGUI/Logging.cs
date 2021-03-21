@@ -12,6 +12,7 @@ using BrainHatNetwork;
 using LoggingInterfaces;
 using Newtonsoft.Json;
 
+
 namespace brainHatSharpGUI
 {
     /// <summary>
@@ -27,12 +28,15 @@ namespace brainHatSharpGUI
         //  Set the desired log level
         public LogLevel LogLevelDisplay { get; set; }
 
+        public bool LogToFile { get; set; }
         /// <summary>
         /// Start the logging queue
         /// </summary>
         public async Task StartLogging()
         {
             await StopLogging();
+
+            LogToFile = true;
 
             LogsQueue.RemoveAll();
 
@@ -186,6 +190,8 @@ namespace brainHatSharpGUI
                 //  send event
                 LoggedEvents?.Invoke(this, allEvents);
 
+                LogToLog4(allEvents);
+
                 //  broadcast to listeners
                 foreach (var nextLog in allEvents)
                 {
@@ -239,7 +245,53 @@ namespace brainHatSharpGUI
             return logsList;
         }
 
+        /// <summary>
+        /// Logging using Log4 framework to generate log files
+        /// </summary>
+        private static readonly log4net.ILog logSystem = log4net.LogManager.GetLogger("SystemLogger");
 
-     
+        /// <summary>
+        /// Log to the Log4 Framework
+        /// </summary>
+        private void LogToLog4(IEnumerable<LogEventArgs> logs)
+        {
+            if (LogToFile)
+            {
+                foreach (var log in logs)
+                {
+                    switch (log.Level)
+                    {
+                        case LogLevel.VERBOSE:
+                                logSystem.Debug(log.FormatLogForFile());
+                            break;
+                        case LogLevel.TRACE:
+                                logSystem.Debug(log.FormatLogForFile());
+                            break;
+                        case LogLevel.DEBUG:
+                            logSystem.Debug(log.FormatLogForFile());
+                            break;
+
+                        case LogLevel.INFO:
+                            logSystem.Info(log.FormatLogForFile());
+                            break;
+
+                        case LogLevel.WARN:
+                            logSystem.Warn(log.FormatLogForFile());
+                            break;
+
+                        case LogLevel.ERROR:
+                            logSystem.Error(log.FormatLogForFile());
+                            break;
+
+                        default:
+                        case LogLevel.FATAL:
+                            logSystem.Fatal(log.FormatLogForFile());
+                            break;
+                    }
+                }
+            }
+        }
+
+
     }
 }

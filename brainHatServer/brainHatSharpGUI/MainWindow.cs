@@ -76,6 +76,8 @@ namespace brainHatSharpGUI
             EnableConnectionButtons(true);
             buttonConfigureBoard.Enabled = false;
 
+            checkBoxLogToFile.Checked = Properties.Settings.Default.LogToFile;
+
             Logger.AddLog(this, new LogEventArgs(this, "OnLoad", $"Program started.", LogLevel.INFO));
         }
 
@@ -237,7 +239,7 @@ namespace brainHatSharpGUI
 
                 await StartBoard(startupParams);
 
-                Logger.AddLog(this, new LogEventArgs(this, "buttonStart_Click", $"Started board {Properties.Settings.Default.BoardId} on {Properties.Settings.Default.ComPort}.", LogLevel.INFO));
+                Logger.AddLog(this, new LogEventArgs(this, "buttonStart_Click", $"Started server {Properties.Settings.Default.BoardId} on {Properties.Settings.Default.ComPort}.", LogLevel.INFO));
             }
             else
             {
@@ -246,6 +248,8 @@ namespace brainHatSharpGUI
                     MessageBox.Show("You must close the configuration window before stopping the server.", "brainHat", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
+
+                Logger.AddLog(this, new LogEventArgs(this, "buttonStart_Click", $"Stopping server.", LogLevel.INFO));
 
                 await ShutDownBoard();
 
@@ -552,8 +556,9 @@ namespace brainHatSharpGUI
         private async Task SetupLoggingAsync()
         {
             Logger = new Logging();
+            Logger.LogToFile = Properties.Settings.Default.LogToFile;
             Logger.LoggedEvents += OnLoggedEvents;
-            Logger.LogLevelDisplay = LogLevel.TRACE;
+            Logger.LogLevelDisplay = LogLevel.VERBOSE;
             await Logger.StartLogging();
         }
 
@@ -607,9 +612,16 @@ namespace brainHatSharpGUI
             LoggingWindow = null;
         }
 
-
+        private void checkBoxLogToFile_CheckedChanged(object sender, EventArgs e)
+        {
+            Logger.LogToFile = checkBoxLogToFile.Checked;
+            Properties.Settings.Default.LogToFile = Logger.LogToFile;
+            Properties.Settings.Default.Save();
+        }
 
         #endregion
+
+
 
     }
 }

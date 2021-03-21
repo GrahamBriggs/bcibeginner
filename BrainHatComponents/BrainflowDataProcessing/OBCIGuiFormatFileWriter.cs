@@ -152,6 +152,8 @@ namespace BrainflowDataProcessing
                 using (var fileStream = await FileSystemExtensionMethods.WaitForFileAsync(FileName, FileMode.Create, FileAccess.Write, FileShare.Read))
                 using (System.IO.StreamWriter file = new System.IO.StreamWriter(fileStream))
                 {
+                    Log?.Invoke(this, new LogEventArgs(this, "RunFileWriter", $"Started recording file {FileName}.", LogLevel.INFO));
+
                     //  write header
                     file.WriteLine("%OpenBCI Raw EEG Data");
                     file.WriteLine($"%Number of channels = {brainflow.BoardShim.get_exg_channels(BoardId).Length}");
@@ -205,6 +207,7 @@ namespace BrainflowDataProcessing
                     {
                         file.Close();
                         FileTimer.Stop();
+                        Log?.Invoke(this, new LogEventArgs(this, "RunFileWriter", $"Closed recording file {FileName}.", LogLevel.INFO));
                     }
                 }
             }

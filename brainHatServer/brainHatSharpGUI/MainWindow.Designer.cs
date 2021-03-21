@@ -45,6 +45,7 @@ namespace brainHatSharpGUI
             this.buttonViewLogs = new System.Windows.Forms.Button();
             this.buttonConfigureBoard = new System.Windows.Forms.Button();
             this.labelVersion = new System.Windows.Forms.Label();
+            this.checkBoxLogToFile = new System.Windows.Forms.CheckBox();
             this.groupBoxBoard.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -205,11 +206,22 @@ namespace brainHatSharpGUI
             this.labelVersion.Text = "label4";
             this.labelVersion.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
+            // checkBoxLogToFile
+            // 
+            this.checkBoxLogToFile.AutoSize = true;
+            this.checkBoxLogToFile.Location = new System.Drawing.Point(376, 138);
+            this.checkBoxLogToFile.Name = "checkBoxLogToFile";
+            this.checkBoxLogToFile.Size = new System.Drawing.Size(75, 17);
+            this.checkBoxLogToFile.TabIndex = 6;
+            this.checkBoxLogToFile.Text = "Log to File";
+            this.checkBoxLogToFile.UseVisualStyleBackColor = true;
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(495, 182);
+            this.Controls.Add(this.checkBoxLogToFile);
             this.Controls.Add(this.labelVersion);
             this.Controls.Add(this.buttonConfigureBoard);
             this.Controls.Add(this.buttonViewLogs);
@@ -221,6 +233,7 @@ namespace brainHatSharpGUI
             this.groupBoxBoard.ResumeLayout(false);
             this.groupBoxBoard.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -241,6 +254,7 @@ namespace brainHatSharpGUI
         private System.Windows.Forms.TextBox textBoxIpAddress;
         private System.Windows.Forms.CheckBox checkBoxUseBFStream;
         private System.Windows.Forms.Label labelVersion;
+        private System.Windows.Forms.CheckBox checkBoxLogToFile;
     }
 }
 

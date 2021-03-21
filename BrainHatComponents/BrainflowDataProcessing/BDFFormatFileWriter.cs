@@ -37,6 +37,7 @@ namespace BrainflowDataProcessing
         {
             await StopWritingToFileAsync();
             Data.RemoveAll();
+            LastSampleWritten = null;
 
             var timeNow = DateTimeOffset.Now;
             FileName = Path.Combine(path, $"{fileNameRoot}_{timeNow.Year}{timeNow.Month.ToString("D02")}{timeNow.Day.ToString("D02")}-{timeNow.Hour.ToString("D02")}{timeNow.Minute.ToString("D02")}{timeNow.Second.ToString("D02")}.bdf");
@@ -179,22 +180,31 @@ namespace BrainflowDataProcessing
                         while (Data.Count >= SampleRate)
                         {
                             var previousSample = LastSampleWritten;
-                            if (previousSample == null)
-                                previousSample = Data.First();
-
+                            if ( previousSample != null )
+                            {
+                                if ( Math.Abs(previousSample.TimeStamp - Data.First().TimeStamp) > .9)
+                                {
+                                    Log?.Invoke(this, new LogEventArgs(this, "RunFileWriter", $"Gap in data from {previousSample.ObservationTime.ToString("HH:mm:ss.fff")} to {Data.First().ObservationTime.ToString("HH:mm:ss.fff")}", LogLevel.ERROR));
+                                }
+                            }
+                            
                             var data = new List<IBFSample>();
                             while (data.Count < SampleRate)
                             {
                                 var nextValidSample = Data.First();
-                                if ( MissingSample(nextValidSample, previousSample ) )
+                                if (previousSample != null)
                                 {
-                                    data.Add(InterpolateSample(previousSample, nextValidSample));
-                                    //Log?.Invoke(this, new LogEventArgs(this, "RunFileWriter", $"Adding interpolated sample at {data.Last().SampleIndex:N0} {data.Last().TimeStamp:N6}" , LogLevel.WARN));
-                                    previousSample = data.Last();
-                                    continue;
+                                    if (MissingSample(nextValidSample, previousSample))
+                                    {
+                                        data.Add(InterpolateSample(previousSample, nextValidSample));
+                                        Log?.Invoke(this, new LogEventArgs(this, "RunFileWriter", $"Adding interpolated sample {data.Last().SampleIndex:N0} {data.Last().TimeStamp:N6} after {previousSample.SampleIndex:N0} {previousSample.TimeStamp:N6} at {data.Last().ObservationTime.ToString("HH:mm:ss.ffffff")}." , LogLevel.VERBOSE));
+                                        previousSample = data.Last();
+                                        continue;
+                                    }
                                 }
 
                                 Data.TryDequeue(out var nextReading);
+                                previousSample = nextReading;
                                 data.Add(nextReading);
                             }
 
@@ -218,67 +228,18 @@ namespace BrainflowDataProcessing
             {
                 if (FileHandle >= 0)
                 {
-                    int test = edfCloseFile(FileHandle);
+                    if (edfCloseFile(FileHandle) == 0)
+                    {
+                        Log?.Invoke(this, new LogEventArgs(this, "RunFileWriter", $"Closed file {FileName}.", LogLevel.INFO));
+                    }
+                    else
+                    {
+                        Log?.Invoke(this, new LogEventArgs(this, "RunFileWriter", $"Error closing file {FileName}.", LogLevel.ERROR));
+                    }
                 }
                 FileTimer.Stop();
             }
         }
-
-        private IBFSample InterpolateSample(IBFSample previousSample, IBFSample nextValidSample)
-        {
-            int sampleIndexDifference = nextValidSample.SampleIndex.SampleIndexDifference(previousSample.SampleIndex);
-            IBFSample makeSample = null;
-            switch ( BoardId )
-            {
-                case 0:
-                    {
-                        var newSample = new BFCyton8Sample();
-                        newSample.SampleIndex = previousSample.SampleIndex + 1;
-                        makeSample = newSample;
-                    }
-                    break;
-                case 2:
-                    {
-                        var newSample = new BFCyton16Sample();
-                        newSample.SampleIndex = previousSample.SampleIndex + 2;
-                        sampleIndexDifference /= 2;
-                        makeSample = newSample;
-                    }
-                    break;
-            }
-
-            for(int i = 0; i < makeSample.NumberExgChannels; i++)
-            {
-                var nextValue = previousSample.GetExgDataForChannel(i) + ((nextValidSample.GetExgDataForChannel(i) - previousSample.GetExgDataForChannel(i)) / sampleIndexDifference);
-                makeSample.SetExgDataForChannel(i, nextValue);
-            }
-
-            //  Acel channels
-            for (int i = 0; i < makeSample.NumberAccelChannels; i++)
-            {
-                var nextValue = previousSample.GetAccelDataForChannel(i) + ((nextValidSample.GetAccelDataForChannel(i) - previousSample.GetAccelDataForChannel(i)) / sampleIndexDifference);
-                makeSample.SetAccelDataForChannel(i, nextValue);
-            }
-
-            //  Other channels
-            for (int i = 0; i < makeSample.NumberOtherChannels; i++)
-            {
-                var nextValue = previousSample.GetOtherDataForChannel(i) + ((nextValidSample.GetOtherDataForChannel(i) - previousSample.GetOtherDataForChannel(i)) / sampleIndexDifference);
-                makeSample.SetOtherDataForChannel(i, nextValue);
-            }
-
-            //  Analog channels
-            for (int i = 0; i < makeSample.NumberAnalogChannels; i++)
-            {
-                var nextValue = previousSample.GetAnalogDataForChannel(i) + ((nextValidSample.GetAnalogDataForChannel(i) - previousSample.GetAnalogDataForChannel(i)) / sampleIndexDifference);
-                makeSample.SetOtherDataForChannel(i, nextValue);
-            }
-
-            makeSample.TimeStamp = previousSample.TimeStamp + 1.0 / SampleRate;
-            return makeSample;
-        }
-
-     
 
 
         /// <summary>
@@ -330,9 +291,6 @@ namespace BrainflowDataProcessing
         }
 
       
-       
-
-     
         /// <summary>
         /// Open the file for writing and write the header information
         /// </summary>
@@ -347,6 +305,8 @@ namespace BrainflowDataProcessing
             {
                 throw new Exception("Unable to open the file.");
             }
+
+            Log?.Invoke(this, new LogEventArgs(this, "WriteHeader", $"Started recording file {FileName}.", LogLevel.INFO));
 
             int signalCount = 0;
 
@@ -430,7 +390,7 @@ namespace BrainflowDataProcessing
             //
             //  timestamp
             edfSetSamplesInDataRecord(FileHandle, signalCount, SampleRate);
-            edfSetPhysicalMaximum(FileHandle, signalCount, 999999.0);
+            edfSetPhysicalMaximum(FileHandle, signalCount, 43200.0);
             edfSetPhysicalMinimum(FileHandle, signalCount, 0);
             edfSetDigitalMaximum(FileHandle, signalCount, 8388607);
             edfSetDigitalMinimum(FileHandle, signalCount, -8388608);
@@ -445,6 +405,7 @@ namespace BrainflowDataProcessing
             //  File Header Properties
             //
             edfSetStartDatetime(FileHandle, firstSample.ObservationTime.Year, firstSample.ObservationTime.Month, firstSample.ObservationTime.Day, firstSample.ObservationTime.Hour, firstSample.ObservationTime.Minute, firstSample.ObservationTime.Second);
+            edfSetSubsecondStarttime(FileHandle, firstSample.ObservationTime.Millisecond * 10_000);
             edfSetPatientName(FileHandle, "");
             edfSetPatientCode(FileHandle, "");
             edfSetPatientYChromosome(FileHandle, 1);
@@ -458,6 +419,55 @@ namespace BrainflowDataProcessing
             //  we are ready to write data
             FileTimer.Restart();
             WroteHeader = true;
+        }
+
+
+        /// <summary>
+        /// Interpolate missing samples
+        /// </summary>
+        private IBFSample InterpolateSample(IBFSample previousSample, IBFSample nextValidSample)
+        {
+            int sampleIndexDifference = nextValidSample.SampleIndex.SampleIndexDifference(previousSample.SampleIndex);
+            IBFSample makeSample = previousSample.MakeNewSample();
+            makeSample.SampleIndex = previousSample.SampleIndex.SampleIndexIncrement(BoardId);
+
+            switch (BoardId)
+            {
+                case 2:
+                    sampleIndexDifference /= 2; //  before we interpolate, fix the sample index difference to the number of missing samples
+                    break;
+            }
+
+            //  Exg channels
+            for (int i = 0; i < makeSample.NumberExgChannels; i++)
+            {
+                var nextValue = previousSample.GetExgDataForChannel(i) + ((nextValidSample.GetExgDataForChannel(i) - previousSample.GetExgDataForChannel(i)) / sampleIndexDifference);
+                makeSample.SetExgDataForChannel(i, nextValue);
+            }
+
+            //  Acel channels
+            for (int i = 0; i < makeSample.NumberAccelChannels; i++)
+            {
+                var nextValue = previousSample.GetAccelDataForChannel(i) + ((nextValidSample.GetAccelDataForChannel(i) - previousSample.GetAccelDataForChannel(i)) / sampleIndexDifference);
+                makeSample.SetAccelDataForChannel(i, nextValue);
+            }
+
+            //  Other channels
+            for (int i = 0; i < makeSample.NumberOtherChannels; i++)
+            {
+                var nextValue = previousSample.GetOtherDataForChannel(i) + ((nextValidSample.GetOtherDataForChannel(i) - previousSample.GetOtherDataForChannel(i)) / sampleIndexDifference);
+                makeSample.SetOtherDataForChannel(i, nextValue);
+            }
+
+            //  Analog channels
+            for (int i = 0; i < makeSample.NumberAnalogChannels; i++)
+            {
+                var nextValue = previousSample.GetAnalogDataForChannel(i) + ((nextValidSample.GetAnalogDataForChannel(i) - previousSample.GetAnalogDataForChannel(i)) / sampleIndexDifference);
+                makeSample.SetOtherDataForChannel(i, nextValue);
+            }
+
+            makeSample.TimeStamp = previousSample.TimeStamp + (1.0 / SampleRate);
+            return makeSample;
         }
     }
 }

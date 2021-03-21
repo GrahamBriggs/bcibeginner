@@ -7,6 +7,10 @@ namespace BrainflowInterfaces
 {
     public static class BFCollectionMethods
     {
+        /// <summary>
+        /// Calculate the difference in sample index between this sample and last sample
+        /// accounts for roll over at 255
+        /// </summary>
         public static int SampleIndexDifference(this double value, int lastIndex)
         {
             var index = (int)(value + 0.5);
@@ -25,15 +29,24 @@ namespace BrainflowInterfaces
             }
         }
 
+
+        /// <summary>
+        /// Calculate the difference in sample index between this sample and last sample
+        /// accounts for roll over at 255
+        /// </summary>
         public static int SampleIndexDifference(this double value, double lastIndex)
         {
             int lastIndexInt = (int)(lastIndex + 0.5);
             return value.SampleIndexDifference(lastIndexInt);
         }
 
+
+        /// <summary>
+        /// Decrement this sample index by one unit (depending on board type)
+        /// </summary>
         public static int SampleIndexDecrement(this double value, int boardId)
         {
-            var index = (int)value;
+            var index = (int)(value+0.5);
 
             switch ( boardId )
             {
@@ -54,6 +67,10 @@ namespace BrainflowInterfaces
             }
         }
 
+
+        /// <summary>
+        /// Increment sample index by one unit (depending on board type)
+        /// </summary>
         public static int SampleIndexIncrement(this double value, int boardId)
         {
             var index = (int)(value + 0.5);
@@ -64,13 +81,13 @@ namespace BrainflowInterfaces
                     if (index == 255)
                         return 0;
                     else
-                        return index - 1;
+                        return index + 1;
 
                 case 2: //  Cyton+Daisy
                     if (index == 254)
                         return 0;
                     else
-                        return index - 2;
+                        return index + 2;
 
                 default:
                     return 0;       //  TODO ganglion
@@ -78,6 +95,9 @@ namespace BrainflowInterfaces
         }
 
 
+        /// <summary>
+        /// Calculate tthe time between samples, based on sample index (board type) and sample rate
+        /// </summary>
         public static double TimeBetweenSamples(this double value, int lastSampleIndex, int boardId, int sampleRate)
         {
             switch ( boardId )
@@ -91,6 +111,7 @@ namespace BrainflowInterfaces
             }
         }
 
+
         /// <summary>
         /// Get Exg channel data from enumerable of brainflow sample objects
         /// </summary>
@@ -98,6 +119,7 @@ namespace BrainflowInterfaces
         {
             return value.Select(x => x.GetExgDataForChannel(channel)).ToArray();
         }
+
 
         /// <summary>
         /// Get Accel channel data from enumerable of brainflow sample objects
@@ -107,6 +129,7 @@ namespace BrainflowInterfaces
             return value.Select(x => x.GetAccelDataForChannel(channel)).ToArray();
         }
 
+
         /// <summary>
         /// Get Other channel data from enumerable of brainflow sample objects
         /// </summary>
@@ -115,6 +138,7 @@ namespace BrainflowInterfaces
             return value.Select(x => x.GetOtherDataForChannel(channel)).ToArray();
         }
 
+
         /// <summary>
         /// Get Analog channel data from enumerable of brainflow sample objects
         /// </summary>
@@ -122,6 +146,7 @@ namespace BrainflowInterfaces
         {
             return value.Select(x => x.GetAnalogDataForChannel(channel)).ToArray();
         }
+
 
         /// <summary>
         /// Get Exg channel data from enumerable of brainflow sample objects
@@ -152,6 +177,7 @@ namespace BrainflowInterfaces
             return "Unknown";
         }
 
+
         /// <summary>
         /// Get equipment type description string for boardId
         /// </summary>
@@ -169,6 +195,7 @@ namespace BrainflowInterfaces
                     return "";
             }
         }
+
 
         /// <summary>
         /// Get equipment type description string for boardId

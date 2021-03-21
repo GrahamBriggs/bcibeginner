@@ -60,7 +60,7 @@ namespace brainHatSharpGUI
 
             foreach (var nextLog in logs)
             {
-                if (nextLog.Level >= Logger.LogLevelDisplay)
+                if (nextLog.Level >= Logger.LogLevelDisplay && nextLog.Level > LogLevel.VERBOSE)
                 {
                     System.Diagnostics.Debug.WriteLine($"Next Log in UI: {nextLog.FormatLogForConsole()}");
                     var item = listViewLogs.Items.Insert(0, nextLog.FormatLogForConsole());

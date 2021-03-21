@@ -122,7 +122,7 @@ namespace brainHatSharpGUI
                     string request = await reader.ReadLineAsync();
                     if (request != null && request.Length > 0)
                     {
-                        Log?.Invoke(this, new LogEventArgs(this, "ProcessAcceptTcp", $"Received {request} from {clientEndPoint}.", LogLevel.TRACE));
+                        Log?.Invoke(this, new LogEventArgs(this, "ProcessAcceptTcp", $"Received {request} from {clientEndPoint}.", LogLevel.DEBUG));
 
                         switch (request)
                         {
