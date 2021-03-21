@@ -44,6 +44,13 @@ namespace BrainflowInterfaces
             return BrainflowConstants.MissingValue;
         }
 
+        public void SetAccelDataForChannel(int channel, double data)
+        {
+            if (channel < AcelChannels.Length)
+                AcelChannels[channel] = data;
+
+        }
+
         public int NumberOtherChannels => OtherChannels.Length;
 
         public IEnumerable<double> OtherData => OtherChannels;
@@ -53,6 +60,13 @@ namespace BrainflowInterfaces
             if (channel < OtherChannels.Length)
                 return OtherChannels[channel];
             return BrainflowConstants.MissingValue;
+        }
+
+        public void SetOtherDataForChannel(int channel, double data)
+        {
+            if (channel < OtherChannels.Length)
+                OtherChannels[channel] = data;
+
         }
 
         public int NumberAnalogChannels => AnalogChannels.Length;
@@ -67,6 +81,12 @@ namespace BrainflowInterfaces
             return BrainflowConstants.MissingValue;
         }
 
+        public void SetAnalogDataForChannel(int channel, double data)
+        {
+            if (channel < AnalogChannels.Length)
+                AnalogChannels[channel] = data;
+
+        }
 
         protected double[] ExgChannels;
         protected double[] AcelChannels;

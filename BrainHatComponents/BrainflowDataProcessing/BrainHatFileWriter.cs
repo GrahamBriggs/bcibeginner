@@ -28,14 +28,27 @@ namespace BrainflowDataProcessing
             switch (format)
             {
                 case FileWriterType.OpenBciTxt:
-                    FileWriter = new OBCIGuiFormatFileWriter(boardId, sampleRate);
+                    {
+                        var newWriter = new OBCIGuiFormatFileWriter(boardId, sampleRate);
+                        newWriter.Log += OnLog;
+                        FileWriter = newWriter;
+                    }
                     break;
                 case FileWriterType.Bdf:
-                    FileWriter = new BDFFormatFileWriter(boardId, sampleRate);
+                    {
+                        var newWriter = new BDFFormatFileWriter(boardId, sampleRate);
+                        newWriter.Log += OnLog;
+                        FileWriter = newWriter;
+                    }
                     break;
             }
 
             await FileWriter.StartWritingToFileAsync(path, fileNameRoot);
+        }
+
+        private void OnLog(object sender, LogEventArgs e)
+        {
+            Log?.Invoke(sender, e);
         }
 
         public async Task StopWritingToFileAsync()
@@ -64,6 +77,8 @@ namespace BrainflowDataProcessing
            
         }
 
+
+       
 
         protected IBrainHatFileWriter FileWriter;
     }

@@ -183,7 +183,7 @@ int BoardDataReader::InitializeBoard()
 		Board->prepare_session();
 		Board->config_board((char*)"s");
 		
-		if (!GetBoardConfiguration())
+		if (!LoadBoardRegistersSettings())
 		{
 			Logging.AddLog("BoardDataReader", "InitializeBoard", "Failed to get board configuration.", LogLevelError);
 			if (Board->is_prepared())
@@ -531,7 +531,7 @@ void BoardDataReader::ProcessCommandsQueue()
 			usleep(50*USLEEP_MILI);
 		}
 		
-		if (!GetBoardConfiguration())
+		if (!LoadBoardRegistersSettings())
 		{
 			Logging.AddLog("BoardDataReader", "ProcessCommandsQueue", "Error restoring board configuration.", LogLevelError);
 		}
@@ -553,11 +553,19 @@ bool BoardDataReader::GetBoardConfiguration()
 {
 	Logging.AddLog("BoardDataReader", "GetBoardConfiguration", "Getting board configuration.", LogLevelDebug);
 	
-	string registersString = "";
-	BoardSettings.ClearBoards();
-	if (GetRegistersString(registersString))
+	int retries = 0;
+	while (retries < 10)
 	{
-		return BoardSettings.ReadFromRegisterString(registersString);
+		string registersString = "";
+		BoardSettings.ClearBoards();
+		if (GetRegistersString(registersString))
+		{
+			if (BoardSettings.ReadFromRegisterString(registersString))
+			{
+				return true;
+			}
+		}
+		retries++;
 	}
 	
 	return false;

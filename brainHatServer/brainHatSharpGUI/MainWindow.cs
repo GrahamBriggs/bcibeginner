@@ -33,6 +33,7 @@ namespace brainHatSharpGUI
             LoggingWindow = null;
 
             FileWriter = new BrainHatFileWriter();
+            FileWriter.Log += OnLog;
         }
 
 

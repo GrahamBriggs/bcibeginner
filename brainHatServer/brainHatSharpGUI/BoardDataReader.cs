@@ -62,7 +62,7 @@ namespace brainHatSharpGUI
         {
             get
             {
-                if (TheBoard != null && BoardSettings != null && BoardSettings.IsValid && BoardSettings.Boards.Length > 0)
+                if (TheBoard != null && BoardSettings != null && BoardSettings.IsValid && BoardSettings.Boards.Length > 1)
                     return BoardSettings.Boards[1].Srb1Set ? SrbSet.Connected : SrbSet.Disconnected;
                 else
                     return SrbSet.Unknown;
@@ -460,14 +460,11 @@ namespace brainHatSharpGUI
                 TheBoard.prepare_session();
                 TheBoard.config_board("s");
 
-                string registerSettings;
-                if ( ! GetBoardRegistersString(out registerSettings) )
+                BoardSettings = new CytonBoardsImplementation();
+                if ( ! await LoadBoardRegistersSettings(0) )
                 {
                     throw new Exception("Unable to get board register settings");
                 }
-
-                BoardSettings = new CytonBoardsImplementation();
-                BoardSettings.LoadFromRegistersString(registerSettings);
 
                 await StartStreamingAsync();
 
@@ -809,8 +806,7 @@ namespace brainHatSharpGUI
                         await Task.Delay(50);
                     }
 
-                    var registersString = await GetBoardConfigurationAsync();
-                    BoardSettings.LoadFromRegistersString(registersString);
+                     await LoadBoardRegistersSettings(5);
                 }
                 catch ( Exception e)
                 {
@@ -822,6 +818,36 @@ namespace brainHatSharpGUI
                         await StartStreamingAsync();
                 }
             }
+        }
+
+        private async Task<bool> LoadBoardRegistersSettings(int maxRetries)
+        {
+            //await EmptyReadBufferAsync();
+
+            int retries = 0;
+            while (retries < maxRetries)
+            {
+                try
+                {
+                    if (GetBoardRegistersString(out var registersString))
+                    {
+                        BoardSettings.LoadFromRegistersString(registersString);
+                        return true;
+                    }
+                    retries++;
+                    await Task.Delay(1000);
+                    Log?.Invoke(this, new LogEventArgs(this, "LoadBoardRegistersSettings", "Failed to get registers settings.", LogLevel.WARN));
+                }
+                catch (Exception e)
+                {
+                    Log?.Invoke(this, new LogEventArgs(this, "LoadBoardRegistersSettings", e, LogLevel.WARN));
+                    retries++;
+                    await Task.Delay(1000);
+                }
+            }
+
+            Log?.Invoke(this, new LogEventArgs(this, "LoadBoardRegistersSettings", "Failed to get settings", LogLevel.ERROR));
+            return false;
         }
 
 

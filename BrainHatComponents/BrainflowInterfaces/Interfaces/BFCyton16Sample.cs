@@ -391,8 +391,6 @@ namespace BrainflowInterfaces
         /// <summary>
         /// Get accelerometer data for specified channel
         /// </summary>
-        /// <param name="channel"></param>
-        /// <returns></returns>
         public double GetAccelDataForChannel(int channel)
         {
             switch (channel)
@@ -406,6 +404,28 @@ namespace BrainflowInterfaces
 
                 default:
                     return BrainflowConstants.MissingValue;
+            }
+        }
+
+
+        /// <summary>
+        /// Set accel channel data
+        /// </summary>
+        public void SetAccelDataForChannel(int channel, double data)
+        {
+            switch (channel)
+            {
+                case 0:
+                    AcelCh0 = data;
+                    break;
+
+                case 1:
+                    AcelCh1 = data;
+                    break;
+
+                case 2:
+                    AcelCh2 = data;
+                    break;
             }
         }
 
@@ -460,10 +480,43 @@ namespace BrainflowInterfaces
         }
 
 
+        /// <summary>
+        /// Set other data
+        /// </summary>
+        public void SetOtherDataForChannel(int channel, double data)
+        {
+            switch (channel)
+            {
+                case 0:
+                    Other0 = data;
+                    break;
+                case 1:
+                    Other1 = data;
+                    break;
+                case 2:
+                    Other2 = data;
+                    break;
+                case 3:
+                    Other3 = data;
+                    break;
+                case 4:
+                    Other4 = data;
+                    break;
+                case 5:
+                    Other5 = data;
+                    break;
+                case 6:
+                    Other6 = data;
+                    break;
+            }
+        }
+
+
+
         public int NumberAnalogChannels => 3;
 
         /// <summary>
-        /// Get Enumerable of accelerometer channel data
+        /// Get Enumerable of analog channel data
         /// </summary>
         public IEnumerable<double> AnalogData
         {
@@ -477,10 +530,8 @@ namespace BrainflowInterfaces
 
 
         /// <summary>
-        /// Get accelerometer data for specified channel
+        /// Get analog data for specified channel
         /// </summary>
-        /// <param name="channel"></param>
-        /// <returns></returns>
         public double GetAnalogDataForChannel(int channel)
         {
             switch (channel)
@@ -495,6 +546,27 @@ namespace BrainflowInterfaces
                     return BrainflowConstants.MissingValue;
             }
         }
+
+        /// <summary>
+        /// Set analog data for specified channel
+        /// </summary>
+        public void SetAnalogDataForChannel(int channel, double data)
+        {
+            switch (channel)
+            {
+                case 0:
+                    AngCh0 = data;
+                    break;
+                case 1:
+                    AngCh1 = data;
+                    break;
+                case 2:
+                    AngCh2 = data;
+                    break;
+            }
+        }
+
+
 
         public double[] AsRawSample()
         {
