@@ -1,5 +1,12 @@
 #pragma once
 
+//
+// EDFfile is a thin wrapper around the EDFlib code by Teunis van Beelen (https://gitlab.com/Teuniz/EDFlib)
+// The library does a simple pass through to the EDFlib functions with plain C declarations
+// The library provides functions with plain C declaration to get file property struct as a JSON string 
+// (annotations via JSON string coming soon ...)
+//
+
 
 // defined with this macro as being exported.
 #ifdef _WIN32

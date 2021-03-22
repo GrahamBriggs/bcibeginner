@@ -37,7 +37,6 @@ namespace BrainflowDataProcessing
         {
             await StopWritingToFileAsync();
             Data.RemoveAll();
-            LastSampleWritten = null;
 
             var timeNow = DateTimeOffset.Now;
             FileName = Path.Combine(path, $"{fileNameRoot}_{timeNow.Year}{timeNow.Month.ToString("D02")}{timeNow.Day.ToString("D02")}-{timeNow.Hour.ToString("D02")}{timeNow.Minute.ToString("D02")}{timeNow.Second.ToString("D02")}.bdf");
@@ -137,24 +136,6 @@ namespace BrainflowDataProcessing
         double FirstTimeStamp;
 
 
-        IBFSample LastSampleWritten;
-
-        bool MissingSample(IBFSample nextSample, IBFSample previousSample)
-        {
-            int sampleIndexDifference = nextSample.SampleIndex.SampleIndexDifference(previousSample.SampleIndex);
-            switch ( BoardId )
-            {
-                case 0:
-                    return sampleIndexDifference != 1;
-                case 2:
-                    return sampleIndexDifference != 2;
-                default:
-                    return false;
-            }
-
-        }
-
-
         /// <summary>
         /// Run function
         /// </summary>
@@ -178,33 +159,11 @@ namespace BrainflowDataProcessing
                     try
                     {
                         while (Data.Count >= SampleRate)
-                        {
-                            var previousSample = LastSampleWritten;
-                            if ( previousSample != null )
-                            {
-                                if ( Math.Abs(previousSample.TimeStamp - Data.First().TimeStamp) > .9)
-                                {
-                                    Log?.Invoke(this, new LogEventArgs(this, "RunFileWriter", $"Gap in data from {previousSample.ObservationTime.ToString("HH:mm:ss.fff")} to {Data.First().ObservationTime.ToString("HH:mm:ss.fff")}", LogLevel.ERROR));
-                                }
-                            }
-                            
+                        {  
                             var data = new List<IBFSample>();
                             while (data.Count < SampleRate)
                             {
-                                var nextValidSample = Data.First();
-                                if (previousSample != null)
-                                {
-                                    if (MissingSample(nextValidSample, previousSample))
-                                    {
-                                        data.Add(InterpolateSample(previousSample, nextValidSample));
-                                        Log?.Invoke(this, new LogEventArgs(this, "RunFileWriter", $"Adding interpolated sample {data.Last().SampleIndex:N0} {data.Last().TimeStamp:N6} after {previousSample.SampleIndex:N0} {previousSample.TimeStamp:N6} at {data.Last().ObservationTime.ToString("HH:mm:ss.ffffff")}." , LogLevel.VERBOSE));
-                                        previousSample = data.Last();
-                                        continue;
-                                    }
-                                }
-
                                 Data.TryDequeue(out var nextReading);
-                                previousSample = nextReading;
                                 data.Add(nextReading);
                             }
 
@@ -285,8 +244,6 @@ namespace BrainflowDataProcessing
                 //  Time stamp
                 nextData = data.Select(x => x.TimeStamp - FirstTimeStamp).ToArray();
                 edfWritePhysicalSamples(FileHandle, nextData);
-
-                LastSampleWritten = data.Last();
             }
         }
 
@@ -422,52 +379,5 @@ namespace BrainflowDataProcessing
         }
 
 
-        /// <summary>
-        /// Interpolate missing samples
-        /// </summary>
-        private IBFSample InterpolateSample(IBFSample previousSample, IBFSample nextValidSample)
-        {
-            int sampleIndexDifference = nextValidSample.SampleIndex.SampleIndexDifference(previousSample.SampleIndex);
-            IBFSample makeSample = previousSample.MakeNewSample();
-            makeSample.SampleIndex = previousSample.SampleIndex.SampleIndexIncrement(BoardId);
-
-            switch (BoardId)
-            {
-                case 2:
-                    sampleIndexDifference /= 2; //  before we interpolate, fix the sample index difference to the number of missing samples
-                    break;
-            }
-
-            //  Exg channels
-            for (int i = 0; i < makeSample.NumberExgChannels; i++)
-            {
-                var nextValue = previousSample.GetExgDataForChannel(i) + ((nextValidSample.GetExgDataForChannel(i) - previousSample.GetExgDataForChannel(i)) / sampleIndexDifference);
-                makeSample.SetExgDataForChannel(i, nextValue);
-            }
-
-            //  Acel channels
-            for (int i = 0; i < makeSample.NumberAccelChannels; i++)
-            {
-                var nextValue = previousSample.GetAccelDataForChannel(i) + ((nextValidSample.GetAccelDataForChannel(i) - previousSample.GetAccelDataForChannel(i)) / sampleIndexDifference);
-                makeSample.SetAccelDataForChannel(i, nextValue);
-            }
-
-            //  Other channels
-            for (int i = 0; i < makeSample.NumberOtherChannels; i++)
-            {
-                var nextValue = previousSample.GetOtherDataForChannel(i) + ((nextValidSample.GetOtherDataForChannel(i) - previousSample.GetOtherDataForChannel(i)) / sampleIndexDifference);
-                makeSample.SetOtherDataForChannel(i, nextValue);
-            }
-
-            //  Analog channels
-            for (int i = 0; i < makeSample.NumberAnalogChannels; i++)
-            {
-                var nextValue = previousSample.GetAnalogDataForChannel(i) + ((nextValidSample.GetAnalogDataForChannel(i) - previousSample.GetAnalogDataForChannel(i)) / sampleIndexDifference);
-                makeSample.SetOtherDataForChannel(i, nextValue);
-            }
-
-            makeSample.TimeStamp = previousSample.TimeStamp + (1.0 / SampleRate);
-            return makeSample;
-        }
     }
 }

@@ -81,6 +81,8 @@ namespace BrainflowDataProcessing
         }
 
 
+        ulong ReadDataRecordsCount;
+        double DataRecordDuration;
 
         /// <summary>
         /// Open the file and read the data into memory
@@ -111,6 +113,7 @@ namespace BrainflowDataProcessing
                 var signalCount = header.edfsignals;
                 var samplesPerDataRecord = header.signalparam[0].smp_in_datarecord;
 
+                ReadDataRecordsCount = 0;
                 double[,] chunk;
                 for(ulong i = 0; i < header.datarecords_in_file; i++)
                 {
@@ -123,6 +126,8 @@ namespace BrainflowDataProcessing
                     }
 
                     CreateSamples(chunk);
+
+                    ReadDataRecordsCount++;
                 }
 
             }
@@ -141,6 +146,7 @@ namespace BrainflowDataProcessing
         /// </summary>
         private void CreateSamples(double[,] chunk)
         {
+            double dataRecordTime = StartTime.Value + (ReadDataRecordsCount * DataRecordDuration);
             for( int i = 0; i < chunk.GetRow(0).Length; i++)
             {
                 IBFSample newSample = null;
@@ -157,7 +163,7 @@ namespace BrainflowDataProcessing
                     default:
                         throw new Exception("Board type not supported");
                 }
-                //  adjust the time stamp back
+
                 newSample.TimeStamp = StartTime.Value + newSample.TimeStamp;
                 _Samples.Add(newSample);
             }
@@ -182,6 +188,8 @@ namespace BrainflowDataProcessing
             }
 
             SampleRate = (int)(header.signalparam[0].smp_in_datarecord / (header.datarecord_duration * 1.0E-7));
+            DataRecordDuration = header.datarecord_duration * 1.0E-7;
+
             NumberOfChannels = BoardId == 0 ? 8 : 16;   //  TODO ganglion
                                                        
             var date = new DateTime(header.startdate_year, header.startdate_month, header.startdate_day, header.starttime_hour, header.starttime_minute, header.starttime_second);
