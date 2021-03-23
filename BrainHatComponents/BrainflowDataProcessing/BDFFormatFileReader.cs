@@ -190,7 +190,7 @@ namespace BrainflowDataProcessing
             SampleRate = (int)(header.signalparam[0].smp_in_datarecord / (header.datarecord_duration * 1.0E-7));
             DataRecordDuration = header.datarecord_duration * 1.0E-7;
 
-            NumberOfChannels = BoardId == 0 ? 8 : 16;   //  TODO ganglion
+            NumberOfChannels = brainflow.BoardShim.get_eeg_channels(BoardId).Length;
                                                        
             var date = new DateTime(header.startdate_year, header.startdate_month, header.startdate_day, header.starttime_hour, header.starttime_minute, header.starttime_second);
             date = date.AddMilliseconds(header.starttime_subsecond / 10_000);

@@ -546,12 +546,11 @@ void BoardDataReader::ProcessCommandsQueue()
 }
 
 
-//  Get Board Configuration
-//  load the board settings with successful configuraiton string parsing
+//  Get Board registers string and load board settings
 //
-bool BoardDataReader::GetBoardConfiguration()
+bool BoardDataReader::LoadBoardRegistersSettings()
 {
-	Logging.AddLog("BoardDataReader", "GetBoardConfiguration", "Getting board configuration.", LogLevelDebug);
+	Logging.AddLog("BoardDataReader", "LoadBoardRegistersSettings", "Getting board configuration.", LogLevelDebug);
 	
 	int retries = 0;
 	while (retries < 10)

@@ -67,7 +67,7 @@ protected:
 	std::queue<std::string> CommandsQueue;
 	void ProcessCommandsQueue();
 	//
-	bool GetBoardConfiguration();
+	bool LoadBoardRegistersSettings();
 	bool GetRegistersString(std::string& registersString);
 	bool ValidateRegisterSettingsString(std::string registerSettings);
 	bool ValidateFirmwareString(std::string firmware);	

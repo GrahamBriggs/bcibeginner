@@ -128,7 +128,7 @@ namespace BrainHatNetwork
                 {
                     await Task.Delay(TimeSpan.FromSeconds(1));
 
-                    var oldConnections = DiscoveredServers.Where(x => (DateTimeOffset.UtcNow - x.Value.TimeStamp) > TimeSpan.FromSeconds(30));  //  TODO - disconnection timeout ?
+                    var oldConnections = DiscoveredServers.Where(x => (DateTimeOffset.UtcNow - x.Value.TimeStamp) > TimeSpan.FromSeconds(30)); 
 
                     if (oldConnections.Any())
                     {

@@ -25,7 +25,7 @@ using namespace std;
 //
 BDFFileWriter::BDFFileWriter()
 {
-	
+	FileHandle = -1;
 }
 
 
@@ -42,11 +42,14 @@ BDFFileWriter::~BDFFileWriter()
 //
 void BDFFileWriter::CloseFile()
 {
+	if ( FileHandle > -1)
 	{
 		LockMutex lockFile(RecordingFileMutex);
 		edfCloseFile(FileHandle);
+		Logging.AddLog("BDFFileWriter", "CloseFile", format("Closed recording file %s.", RecordingFileName.c_str()), LogLevelInfo);
+		FileHandle = -1;
 	}
-	Logging.AddLog("BDFFileWriter", "Cancel", format("Closed recording file %s.", RecordingFileName.c_str()), LogLevelInfo);
+	
 }
 
 
@@ -139,7 +142,7 @@ void BDFFileWriter::WriteHeader(BFSample* firstSample)
 		
 		if (FileHandle < 0)
 		{
-			//  TODO - log error and bail out
+			Logging.AddLog("BDFFileWriter", "WriteHeader", "Unable to open BDF file", LogLevelError);
 			return;
 		}
 		
@@ -225,7 +228,7 @@ void BDFFileWriter::WriteHeader(BFSample* firstSample)
 		//
 		//  timestamp
 		edfSetSamplesInDataRecord(FileHandle, signalCount, SampleRate);
-		edfSetPhysicalMaximum(FileHandle, signalCount, 999999.0);
+		edfSetPhysicalMaximum(FileHandle, signalCount, 43200.0);
 		edfSetPhysicalMinimum(FileHandle, signalCount, 0);
 		edfSetDigitalMaximum(FileHandle, signalCount, 8388607);
 		edfSetDigitalMinimum(FileHandle, signalCount, -8388608);
@@ -238,10 +241,12 @@ void BDFFileWriter::WriteHeader(BFSample* firstSample)
 		uint32_t time_date_stamp = (uint32_t)firstSample->TimeStamp;
 		time_t temp = time_date_stamp;
 		tm* t = std::localtime(&temp);
-
+		double whole;
+		auto millis = (modf(firstSample->TimeStamp, &whole) * 1000);
 		//  File Header Properties
 		//
 		edfSetStartDatetime(FileHandle, t->tm_year+1900, t->tm_mon+1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+		edfSetSubsecondStarttime(FileHandle, millis * 10000);
 		edfSetPatientName(FileHandle, "");
 		edfSetPatientCode(FileHandle, "");
 		edfSetPatientYChromosome(FileHandle, 1);

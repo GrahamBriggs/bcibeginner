@@ -885,7 +885,7 @@ namespace brainHatSharpGUI
                 }
                 else
                 {
-                    Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", $"Flushing buffer: {test}", retries == 0 ? LogLevel.TRACE : LogLevel.WARN));
+                    Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", $"Flushing buffer: {test}", retries == 0 ? LogLevel.DEBUG : LogLevel.WARN));
                 }
                 retries++;
                 await Task.Delay(1000);
