@@ -64,6 +64,7 @@ namespace brainHatSharpGUI
             // 
             this.comboBoxComPort.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.comboBoxComPort.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxComPort.FormattingEnabled = true;
             this.comboBoxComPort.Location = new System.Drawing.Point(187, 19);
             this.comboBoxComPort.Name = "comboBoxComPort";
@@ -228,6 +229,8 @@ namespace brainHatSharpGUI
             this.Controls.Add(this.groupBoxBoard);
             this.Controls.Add(this.buttonStart);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximumSize = new System.Drawing.Size(511, 221);
+            this.MinimumSize = new System.Drawing.Size(511, 221);
             this.Name = "MainWindow";
             this.Text = "brainHat Server";
             this.groupBoxBoard.ResumeLayout(false);

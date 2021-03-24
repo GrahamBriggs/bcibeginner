@@ -494,14 +494,21 @@ namespace brainHatSharpGUI
         {
             if (TheBoard != null)
             {
-                if (TheBoard.is_prepared())
+                try
                 {
-                    Log?.Invoke(this, new LogEventArgs(this, "ReleaseBoardAsync", $"Releasing board.", LogLevel.DEBUG));
+                    if (TheBoard.is_prepared())
+                    {
+                        Log?.Invoke(this, new LogEventArgs(this, "ReleaseBoardAsync", $"Releasing board.", LogLevel.DEBUG));
 
-                    await StopStreamingAsync();
-                    TheBoard.release_session();
+                        await StopStreamingAsync();
+                        TheBoard.release_session();
+                    }
+                    InvalidReadCounter = 0;
                 }
-                InvalidReadCounter = 0;
+                catch (Exception e)
+                {
+                    Log?.Invoke(this, new LogEventArgs(this, "ReleaseBoardAsync", e, LogLevel.ERROR));
+                }
             }
         }
 
@@ -513,9 +520,16 @@ namespace brainHatSharpGUI
         {
             if (StreamRunning)
             {
-                StreamRunning = false;
-                Log?.Invoke(this, new LogEventArgs(this, "StopStreamingAsync", $"Stopping data stream.", LogLevel.DEBUG));
-                await Task.Run(() => { TheBoard.stop_stream(); });
+                try
+                {
+                    StreamRunning = false;
+                    Log?.Invoke(this, new LogEventArgs(this, "StopStreamingAsync", $"Stopping data stream.", LogLevel.DEBUG));
+                    await Task.Run(() => { TheBoard.stop_stream(); });
+                }
+                catch (Exception e)
+                {
+                    Log?.Invoke(this, new LogEventArgs(this, "StopStreamingAsync", e, LogLevel.ERROR));
+                }
             }
         }
 
@@ -527,18 +541,25 @@ namespace brainHatSharpGUI
         {
             if (!StreamRunning)
             {
-                if (InputParams.ip_address.Length > 0)
+                try
                 {
-                    var configString = $"streaming_board://{InputParams.ip_address}:{InputParams.ip_port}";
-                    Log?.Invoke(this, new LogEventArgs(this, "StartStreamingAsync", $"Starting data stream: {configString}", LogLevel.DEBUG));
-                    await Task.Run(() => { TheBoard.start_stream(50000, configString); });
+                    if (InputParams.ip_address.Length > 0)
+                    {
+                        var configString = $"streaming_board://{InputParams.ip_address}:{InputParams.ip_port}";
+                        Log?.Invoke(this, new LogEventArgs(this, "StartStreamingAsync", $"Starting data stream: {configString}", LogLevel.DEBUG));
+                        await Task.Run(() => { TheBoard.start_stream(50000, configString); });
+                    }
+                    else
+                    {
+                        Log?.Invoke(this, new LogEventArgs(this, "StartStreamingAsync", $"Starting data stream.", LogLevel.DEBUG));
+                        await Task.Run(() => { TheBoard.start_stream(50000); });
+                    }
+                    StreamRunning = true;
                 }
-                else
+                catch (Exception e)
                 {
-                    Log?.Invoke(this, new LogEventArgs(this, "StartStreamingAsync", $"Starting data stream.", LogLevel.DEBUG));
-                    await Task.Run(() => { TheBoard.start_stream(50000); });
+                    Log?.Invoke(this, new LogEventArgs(this, "StartStreamingAsync", e, LogLevel.ERROR));
                 }
-                StreamRunning = true;
             }
         }
 
@@ -860,38 +881,47 @@ namespace brainHatSharpGUI
         /// <returns></returns>
         private async Task<bool> EmptyReadBufferAsync()
         {
-            //  read any data out of the buffer
-            int retries = 0;
-            while (retries < 5)
+            try
             {
-                var discard = TheBoard.get_board_data();
-                if (discard.GetLength(1) == 0)
-                    break;
-                await Task.Delay(200);
-                retries++;
+                //  read any data out of the buffer
+                int retries = 0;
+                while (retries < 5)
+                {
+                    var discard = TheBoard.get_board_data();
+                    if (discard.GetLength(1) == 0)
+                        break;
+                    await Task.Delay(200);
+                    retries++;
+                }
+                if (retries == 5)
+                    Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", $"Read {retries} chunks from the buffer before empty.", LogLevel.WARN));
+
+                await Task.Delay(2000);
+
+                retries = 0;
+                while (retries < 5)
+                {
+                    var test = ConfigureBoard("V");
+                    if (ValidateFirmwareString(test))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", $"Flushing buffer: {test}", retries == 0 ? LogLevel.DEBUG : LogLevel.WARN));
+                    }
+                    retries++;
+                    await Task.Delay(1000);
+                }
+
+                Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", $"Failed to verify empty serial buffer.", LogLevel.ERROR));
+                return false;
             }
-            if (retries == 5)
-                Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", $"Read {retries} chunks from the buffer before empty.", LogLevel.WARN));
-
-            await Task.Delay(2000);
-
-            retries = 0;
-            while (retries < 5)
+            catch (Exception e)
             {
-                var test = ConfigureBoard("V");
-                if (ValidateFirmwareString(test))
-                {
-                    return true;
-                }
-                else
-                {
-                    Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", $"Flushing buffer: {test}", retries == 0 ? LogLevel.DEBUG : LogLevel.WARN));
-                }
-                retries++;
-                await Task.Delay(1000);
+                Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", e, LogLevel.ERROR));
             }
 
-            Log?.Invoke(this, new LogEventArgs(this, "StopStreamAndEmptyBufferAsnyc", $"Failed to verify empty serial buffer.", LogLevel.ERROR));
             return false;
         }
 

@@ -119,10 +119,13 @@ namespace brainHatSharpGUI
                 comboBoxComPort.Items.Add(nextPort.ToString());
             }
 
-            if (comboBoxComPort.Items.Contains(Properties.Settings.Default.ComPort))
-                comboBoxComPort.SelectedItem = Properties.Settings.Default.ComPort;
-            else if (comboBoxComPort.Items.Count > 0)
-                comboBoxComPort.SelectedIndex = 0;
+            if (comboBoxComPort.Items.Count > 0)
+            {
+                if (comboBoxComPort.Items.Contains(Properties.Settings.Default.ComPort))
+                    comboBoxComPort.SelectedItem = Properties.Settings.Default.ComPort;
+                else
+                    comboBoxComPort.SelectedIndex = 0;
+            }
         }
 
 
@@ -231,6 +234,12 @@ namespace brainHatSharpGUI
         {
             if (BrainflowBoard == null)
             {
+                if ( comboBoxComPort.SelectedItem == null )
+                {
+                    MessageBox.Show("Invalid COM Port", "brainHat", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
                 EnableConnectionButtons(false);
                 buttonStart.Text = "Cancel";
                 groupBoxBoard.Text = " --- Connecting to Board --- ";

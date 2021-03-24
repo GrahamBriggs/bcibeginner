@@ -35,7 +35,7 @@ OpenBCIFileWriter::~OpenBCIFileWriter()
 void OpenBCIFileWriter::CloseFile()
 {
 	RecordingFile.close();
-	Logging.AddLog("OpenBCIFileWriter", "Cancel", format("Closed recording file %s.", RecordingFileName.c_str()), LogLevelInfo);
+	Logging.AddLog("OpenBCIFileWriter", "CloseFile", format("Closed recording file %s.", RecordingFileName.c_str()), LogLevelInfo);
 }
 
 
