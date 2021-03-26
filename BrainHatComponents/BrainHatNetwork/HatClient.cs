@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static LSL.liblsl;
+using System.Net.NetworkInformation;
 
 namespace BrainHatNetwork
 {
@@ -71,10 +72,18 @@ namespace BrainHatNetwork
         {
             get
             {
+                var address = "";
                 if (Eth0Address.Length > 0)
-                    return Eth0Address;
+                    address = Eth0Address;
                 else
-                    return Wlan0Address;
+                    address = Wlan0Address;
+
+                //  override the address to use loopback when we are on the same machine
+                //  this allows operation of the server/viewer on same machine when not connected to network
+                if (address.CompareTo(LocalIpAddress) == 0 || address.Substring(0,7).CompareTo("169.254") == 0)
+                    address = "127.0.0.1";
+
+                return address;
             }
         }
 
@@ -140,13 +149,14 @@ namespace BrainHatNetwork
         /// <summary>
         /// Constructor
         /// </summary>
-        public HatClient(BrainHatServerStatus connection, StreamInfo streamInfo)
+        public HatClient(BrainHatServerStatus connection, StreamInfo streamInfo, string localIpAddress)
         {
             HostName = connection.HostName;
             DataPort = connection.DataPort;
             LogPort = connection.LogPort;
             Eth0Address = connection.Eth0Address;
             Wlan0Address = connection.Wlan0Address;
+            LocalIpAddress = localIpAddress;
 
             BoardId = connection.BoardId;
             SampleRate = connection.SampleRate;
@@ -162,6 +172,13 @@ namespace BrainHatNetwork
             TimeStamp = DateTimeOffset.UtcNow;
 
             RunTaskCancelTokenSource = null;
+
+            NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
+        }
+
+        private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
+        {
+            LocalIpAddress = NetworkUtilities.GetLocalIPAddress();
         }
 
         private StreamInfo StreamInfo { get; set; }
@@ -175,6 +192,7 @@ namespace BrainHatNetwork
         List<Tuple<long, long, long>> PullSampleTimes = new List<Tuple<long, long, long>>();
         List<long> PullSampleCount = new List<long>();
 
+        private string LocalIpAddress;
 
         /// <summary>
         /// Run function for reading data on LSL multicast data port

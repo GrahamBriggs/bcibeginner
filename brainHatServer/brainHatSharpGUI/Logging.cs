@@ -36,7 +36,7 @@ namespace brainHatSharpGUI
         {
             await StopLogging();
 
-            LogToFile = true;
+            LogToFile = false;
 
             LogsQueue.RemoveAll();
 

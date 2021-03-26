@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 
@@ -10,16 +11,43 @@ namespace BrainHatNetwork
     {
         public static string GetLocalIPAddress()
         {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (var ip in host.AddressList)
+            GetNetworkAddresses(out string eth0, out string wlan0);
+            if (eth0.Length > 0)
+                return eth0;
+            else
+                return wlan0;
+        }
+
+        public static void GetNetworkAddresses(out string eth0, out string wlan0)
+        {
+            eth0 = "";
+            wlan0 = "";
+            foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
             {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                if (ni.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 || ni.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
                 {
-                    return ip.ToString();
+                    foreach (UnicastIPAddressInformation ip in ni.GetIPProperties().UnicastAddresses)
+                    {
+                        if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                        {
+                            switch (ni.Name)
+                            {
+                                case "eth0":
+                                case "Ethernet":
+                                    eth0 = ip.Address.ToString();
+                                    break;
+                                case "wlan0":
+                                case "Wi-Fi":
+                                    wlan0 = ip.Address.ToString();
+                                    break;
+                            }
+                        }
+                    }
                 }
             }
-            throw new Exception("No network adapters with an IPv4 address in the system!");
         }
+
+
 
         private static string HostName = null;
         public static string GetHostName()

@@ -72,11 +72,14 @@ namespace brainHatSharpGUI
             SetComPortComboBox();
             SetBoardIdRadioButton();
             SetBrainflowStreamingUi();
+            SetSrbCheckbox();
 
             EnableConnectionButtons(true);
             buttonConfigureBoard.Enabled = false;
 
             checkBoxLogToFile.Checked = Properties.Settings.Default.LogToFile;
+            checkBoxLogToFile.CheckedChanged += checkBoxLogToFile_CheckedChanged;
+            groupBoxRunStatus.Visible = false;
 
             Logger.AddLog(this, new LogEventArgs(this, "OnLoad", $"Program started.", LogLevel.INFO));
         }
@@ -147,6 +150,19 @@ namespace brainHatSharpGUI
             }
         }
 
+
+        /// <summary>
+        /// Set SrB checkbox state from settings
+        /// </summary>
+        private void SetSrbCheckbox()
+        {
+            checkBoxSRB.Checked = Properties.Settings.Default.StartSRB;
+        }
+
+
+        /// <summary>
+        /// Set brainflow streaming UI state from settings
+        /// </summary>
         private void SetBrainflowStreamingUi()
         {
             checkBoxUseBFStream.Checked = Properties.Settings.Default.UseBFStream;
@@ -164,9 +180,20 @@ namespace brainHatSharpGUI
             radioButtonDaisy.Enabled = enable;
             comboBoxComPort.Enabled = enable;
             buttonRefresh.Enabled = enable;
+            checkBoxSRB.Enabled = enable;
             checkBoxUseBFStream.Enabled = enable;
             textBoxIpAddress.Enabled = enable;
             textBoxIpPort.Enabled = enable;
+            groupBoxBoard.Visible = enable;
+            groupBoxRunStatus.Visible = !enable;
+
+            if ( ! enable )
+            {
+                labelRunStatus.Text = "Connecting to board ...";
+                labelDataStatus.Text = checkBoxSRB.Checked ? "- connect SRB1" : " - do not connect SRB1";
+                labelSrbStatus.Text = checkBoxUseBFStream.Checked ? "- enable brainflow streaming" : "- do not enable brainflow streaming";
+                pictureBoxStatus.Image = Properties.Resources.yellowLight;
+            }
         }
 
 
@@ -204,6 +231,8 @@ namespace brainHatSharpGUI
                 Properties.Settings.Default.BoardId = 2;
 
             Properties.Settings.Default.ComPort = (string)comboBoxComPort.SelectedItem;
+
+            Properties.Settings.Default.StartSRB = checkBoxSRB.Checked;
 
             Properties.Settings.Default.UseBFStream = checkBoxUseBFStream.Checked;
             Properties.Settings.Default.IPAddress = textBoxIpAddress.Text;
@@ -277,13 +306,16 @@ namespace brainHatSharpGUI
         /// </summary>
         private async Task StartBoard(BrainFlowInputParams startupParams)
         {
+            DataLatencyTimer = new System.Diagnostics.Stopwatch();
+            DataLatencyTimer.Start();
+
             BrainflowBoard = new BoardDataReader();
             BrainflowBoard.ConnectToBoard += OnConnectToBoard;
             BrainflowBoard.Log += OnLog;
 
             await Task.Run(async () =>
             {
-                await BrainflowBoard.StartBoardDataReaderAsync(Properties.Settings.Default.BoardId, startupParams);
+                await BrainflowBoard.StartBoardDataReaderAsync(Properties.Settings.Default.BoardId, startupParams, checkBoxSRB.Checked);
             });
         }
 
@@ -324,7 +356,7 @@ namespace brainHatSharpGUI
                 //  update the UI
                 groupBoxBoard.Invoke(new Action(() =>
                 {
-                    groupBoxBoard.Text = " <<<  Connected to Board   >>> ";
+                    pictureBoxStatus.Image = Properties.Resources.greenLight;
                     buttonStart.Text = "Stop Server";
                     buttonConfigureBoard.Enabled = true;
                 }));
@@ -362,6 +394,7 @@ namespace brainHatSharpGUI
                         e.Status.RecordingDurationBrainHat = 0.0;
                     }
 
+                    UpdateStatusUi(e.Status);
 
                     BroadcastStatus.QueueStringToBroadcast($"networkstatus?hostname={e.Status.HostName}&status={JsonConvert.SerializeObject(e.Status)}\n");
                 }
@@ -372,11 +405,80 @@ namespace brainHatSharpGUI
             }
         }
 
+        private void UpdateStatusUi(BrainHatServerStatus status)
+        {
+            if (LslBroadcast == null)
+                return;
+
+            //  update the UI
+            groupBoxRunStatus.Invoke(new Action(() =>
+            {
+                labelRunStatus.Text = (DataLatencyTimer.Elapsed.TotalSeconds < 0.5) ? "Reading Data OK" : "Not Reading Data";
+                labelDataStatus.Text = status.IsStreaming ? "Data stream running" : "Data stream stopped";
+
+                if (status.IsStreaming)
+                {
+                    if (DataLatencyTimer.Elapsed.TotalSeconds < .5)
+                    {
+                        pictureBoxStatus.Image = Properties.Resources.greenLight;
+                    }
+                    else
+                    {
+                        pictureBoxStatus.Image = Properties.Resources.redLight;
+                    }
+                }
+                else
+                {
+                    if (BrainflowBoard.UserPausedStream)
+                        pictureBoxStatus.Image = Properties.Resources.yellowLight;
+                    else
+                        pictureBoxStatus.Image = Properties.Resources.redLight;
+                }
+
+
+          
+                string srbStatus = "";
+                switch ( status.CytonSRB1 )
+                {
+                    case SrbSet.Unknown:
+                        srbStatus = "SRB1 Unknown";
+                        break;
+                    case SrbSet.Disconnected:
+                        srbStatus = "SRB1 Disconnected";
+                        break;
+                    case SrbSet.Connected:
+                        srbStatus = "SRB1 Connected";
+                        break;
+                }
+                if (status.BoardId == 2)
+                {
+                    switch (status.DaisySRB1)
+                    {
+                        case SrbSet.Unknown:
+                            srbStatus = "Daisy SRB1 Unknown";
+                            break;
+                        case SrbSet.Disconnected:
+                            srbStatus = "Daisy SRB1 Disconnected";
+                            break;
+                        case SrbSet.Connected:
+                            srbStatus = "Daisy SRB1 Connected";
+                            break;
+                    }
+                }
+                labelSrbStatus.Text = srbStatus;
+            }));
+        }
+
+        System.Diagnostics.Stopwatch DataLatencyTimer;
+
         /// <summary>
         /// Data was read from the board, send it to the broadcaster
         /// </summary>
         private void OnBrainflowBoardReadData(object sender, BFChunkEventArgs e)
         {
+            if ( e.Chunk.Count() > 0)
+                DataLatencyTimer.Restart();
+
             LslBroadcast.AddData(e.Chunk);
             if (FileWriter.IsLogging)
                 FileWriter.AddData(e.Chunk);

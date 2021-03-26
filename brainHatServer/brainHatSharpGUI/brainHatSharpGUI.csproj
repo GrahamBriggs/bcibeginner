@@ -131,6 +131,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -186,6 +187,12 @@
   <ItemGroup>
     <Content Include="BrainHatSharpLogo.ico" />
     <Content Include="Resources\BrainHatSharpLogo.ico" />
+    <Content Include="Resources\greenLight.ico" />
+    <Content Include="Resources\greenLight.png" />
+    <Content Include="Resources\redLight.ico" />
+    <Content Include="Resources\redLight.png" />
+    <Content Include="Resources\yellowLight.ico" />
+    <Content Include="Resources\yellowLight.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

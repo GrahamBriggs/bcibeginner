@@ -28,9 +28,6 @@ namespace brainHatSharpGUI
     public delegate void ConnectBoBoardEventDelegate(object sender, ConnectToBoardEventArgs e);
 
 
-
-
-
     /// <summary>
     /// Board Data Reader Class
     /// pretty specific to Cyton 8 channel right now, could be more generalized to work with other boards (?)
@@ -44,9 +41,10 @@ namespace brainHatSharpGUI
         //  Properties
         public int BoardReadDelayMilliseconds { get; set; }
 
-       
+        //  Is stream running property
         public bool IsStreaming => StreamRunning;
 
+        //  SRB1 for cyton board setting
         public SrbSet CytonSRB1
         {
             get
@@ -58,6 +56,7 @@ namespace brainHatSharpGUI
             }
         }
 
+        //  SRB1 for daisy board setting
         public SrbSet DaisySRB1
         {
             get
@@ -76,9 +75,12 @@ namespace brainHatSharpGUI
         /// <summary>
         /// Start the board data reader process
         /// </summary>
-        public async Task StartBoardDataReaderAsync(int boardId, BrainFlowInputParams inputParams)
+        public async Task StartBoardDataReaderAsync(int boardId, BrainFlowInputParams inputParams, bool startSrb1Set)
         {
             await StopBoardDataReaderAsync();
+
+            StartSrb1CytonSet = startSrb1Set;
+            StartSrb1DaisySet = startSrb1Set;
 
             Log?.Invoke(this, new LogEventArgs(this, "StartBoardDataReaderAsync", $"Starting board data reader", LogLevel.DEBUG));
 
@@ -124,7 +126,10 @@ namespace brainHatSharpGUI
         public void RequestEnableStreaming(bool enable)
         {
             if ((enable && !StreamRunning) || (!enable && StreamRunning))
+            {
                 RequestToggleStreamingMode = true;
+                UserPausedStream = !enable;
+            }
         }
 
 
@@ -133,8 +138,18 @@ namespace brainHatSharpGUI
         /// </summary>
         public bool RequestSetSrb1(int board, bool enable)
         {
-            if (!BoardSettings.IsValid && BoardSettings.Boards.Count() < board)
+            if (BoardSettings == null || (!BoardSettings.IsValid && BoardSettings.Boards.Count() < board))
                 return false;
+
+            switch ( board )
+            {
+                case 0:
+                    StartSrb1CytonSet = enable;
+                    break;
+                case 2:
+                    StartSrb1DaisySet = enable;
+                    break;
+            }
 
             var channel = BoardSettings.Boards[board].Channels[0];
             var setSrb1String = FormatSetSrb1String(channel, enable);
@@ -164,6 +179,7 @@ namespace brainHatSharpGUI
                 return false;
             }
 
+            UserPausedStream = true;
             return await EmptyReadBufferAsync();
         }
 
@@ -174,13 +190,23 @@ namespace brainHatSharpGUI
         public async Task<string> GetBoardConfigurationAsync()
         {
             string config = "";
-            bool success = false; ;
+            bool success = false;
 
             Log?.Invoke(this, new LogEventArgs(this, "GetBoardConfigurationAsync", $"Getting board registers string.", LogLevel.DEBUG));
+
+            BoardSettings.Invalidate();
 
             await Task.Run(() => { success = GetBoardRegistersString(out config); });
             if ( success )
             {
+                try
+                {
+                    BoardSettings.LoadFromRegistersString(config);
+                }
+                catch (Exception e)
+                {
+                    Log?.Invoke(this, new LogEventArgs(this, "GetBoardConfigurationAsync", e, LogLevel.ERROR));
+                }
                 return config;
             }
 
@@ -304,6 +330,12 @@ namespace brainHatSharpGUI
                     var response = ConfigureBoard(settingsString);
                     Log?.Invoke(this, new LogEventArgs(this, "SetSrb1Async", $"Response:{response}.", LogLevel.DEBUG));
 
+                    if (settings.ChannelNumber <= 8)
+                        StartSrb1CytonSet = connect;
+                    else if (settings.ChannelNumber > 8)
+                        StartSrb1DaisySet = connect;
+                    
+
                     return true;
                 }
                 finally
@@ -342,6 +374,10 @@ namespace brainHatSharpGUI
                     //  send the command to set channel defaults
                     var response = ConfigureBoard("d");
                     Log?.Invoke(this, new LogEventArgs(this, "ResetChannelsToDefaultAsync", $"Response:{response}.", LogLevel.DEBUG));
+
+                    StartSrb1DaisySet = false;
+                    StartSrb1CytonSet = false;
+
                     return true;
                 }
                 finally
@@ -419,6 +455,10 @@ namespace brainHatSharpGUI
         protected BrainFlowInputParams InputParams { get; private set; }
         CytonBoardsImplementation BoardSettings;
 
+        bool StartSrb1CytonSet { get; set; }
+        bool StartSrb1DaisySet { get; set; }
+
+        public bool UserPausedStream { get; protected set; }
         private bool StreamRunning;
         private bool RequestToggleStreamingMode;
 
@@ -468,6 +508,19 @@ namespace brainHatSharpGUI
                     throw new Exception("Unable to get board register settings");
                 }
 
+                if ( StartSrb1CytonSet )
+                {
+                    await SetSrb1Async(BoardSettings.Boards[0].Channels[0], true);
+                    if (StartSrb1DaisySet && BoardId == 2 && BoardSettings.Boards.Count() > 1)
+                        await SetSrb1Async(BoardSettings.Boards[1].Channels[0], true);
+
+                    BoardSettings = new CytonBoardsImplementation();
+                    if (!await LoadBoardRegistersSettings(1))
+                    {
+                        throw new Exception("Unable to get board register settings");
+                    }
+                }
+
                 await StartStreamingAsync();
 
                 await Task.Delay(TimeSpan.FromSeconds(5));
@@ -492,6 +545,9 @@ namespace brainHatSharpGUI
         /// </summary>
         private async Task ReleaseBoardAsync()
         {
+            if (BoardSettings != null )
+                BoardSettings.Invalidate();
+
             if (TheBoard != null)
             {
                 try
@@ -812,6 +868,8 @@ namespace brainHatSharpGUI
                 try
                 {
                     await StopStreamingAsync();
+                    if ( wasStreaming)
+                        UserPausedStream = true;
 
                     BoardSettings.Invalidate();
 
@@ -838,7 +896,10 @@ namespace brainHatSharpGUI
                 finally
                 {
                     if (wasStreaming)
+                    {
                         await StartStreamingAsync();
+                        UserPausedStream = false;
+                    }
                 }
             }
         }

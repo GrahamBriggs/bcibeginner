@@ -71,9 +71,9 @@ namespace brainHatSharpGUI
             {
                 while (!token.IsCancellationRequested)
                 {
-                    string eth0, wlan0;
-                    GetNetworkAddresses(out eth0, out wlan0);
-                    var hostName = NetworkUtilities.GetHostName();
+                    string eth0, wlan0, hostName;
+                    GetNetworkProperties(out eth0, out wlan0, out hostName);
+
                     BrainHatServerStatus status = new BrainHatServerStatus()
                     {
                         HostName = hostName,
@@ -96,32 +96,23 @@ namespace brainHatSharpGUI
             }
         }
 
-        private static void GetNetworkAddresses(out string eth0, out string wlan0)
+
+        /// <summary>
+        /// Get the network properties
+        /// </summary>
+        private void GetNetworkProperties(out string eth0, out string wlan0, out string hostName)
         {
             eth0 = "";
             wlan0 = "";
-            foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
+            hostName = "";
+            try
             {
-                if (ni.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 || ni.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
-                {
-                    foreach (UnicastIPAddressInformation ip in ni.GetIPProperties().UnicastAddresses)
-                    {
-                        if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                        {
-                            switch (ni.Name)
-                            {
-                                case "eth0":
-                                case "Ethernet":
-                                    eth0 = ip.Address.ToString();
-                                    break;
-                                case "wlan0":
-                                case "Wi-Fi":
-                                    wlan0 = ip.Address.ToString();
-                                    break;
-                            }
-                        }
-                    }
-                }
+                BrainHatNetwork.NetworkUtilities.GetNetworkAddresses(out eth0, out wlan0);
+                hostName = NetworkUtilities.GetHostName();
+            }
+            catch (Exception e)
+            {
+                Log?.Invoke(this, new LogEventArgs(this, "RunStatusMonitorAsync", e, LogLevel.ERROR));
             }
         }
 

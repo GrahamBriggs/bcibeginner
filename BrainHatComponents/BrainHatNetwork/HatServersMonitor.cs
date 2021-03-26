@@ -356,7 +356,17 @@ namespace BrainHatNetwork
 
             Log?.Invoke(this, new LogEventArgs(this, "ProcessNetworkStatus", $"Discovered new brainHat server {serverStatus.HostName}.", LogLevel.INFO));
 
-            var hatServer = new HatClient(serverStatus, DiscoveredLslStreams[serverStatus.HostName]);
+            string localIpAddress = "";
+            try
+            {
+                localIpAddress = NetworkUtilities.GetLocalIPAddress();
+            }
+            catch (Exception e)
+            {
+                Log?.Invoke(this, new LogEventArgs(this, "StartMonitorAsync", $"Unable to get local IP address.{e}", LogLevel.ERROR));
+            }
+
+            var hatServer = new HatClient(serverStatus, DiscoveredLslStreams[serverStatus.HostName], localIpAddress);
             serverStatus.OffsetTime = DateTimeOffset.UtcNow - serverStatus.TimeStamp;
             hatServer.OffsetTime = serverStatus.OffsetTime;
             hatServer.TimeStamp = DateTimeOffset.UtcNow;
