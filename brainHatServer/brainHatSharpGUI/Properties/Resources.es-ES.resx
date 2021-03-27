@@ -118,137 +118,137 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AppName" xml:space="preserve">
-    <value>brainHat Server</value>
+    <value>Servidor cerebro</value>
   </data>
   <data name="BiasDrn" xml:space="preserve">
-    <value>Bias Drn.</value>
+    <value>Drenaje sesgado</value>
   </data>
   <data name="BiasDrp" xml:space="preserve">
-    <value>Bias Drp.</value>
+    <value>Caída sesgo</value>
   </data>
   <data name="BiasMeas" xml:space="preserve">
-    <value>Bias.Meas.</value>
+    <value>Medida sesgo</value>
   </data>
   <data name="BiasMeasured" xml:space="preserve">
-    <value>Bias Measured</value>
+    <value>Sesgo medido</value>
   </data>
   <data name="BiasSet" xml:space="preserve">
-    <value>Bias Set</value>
+    <value>Sesgo</value>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Cancel</value>
+    <value>Cancelar</value>
   </data>
   <data name="Channel" xml:space="preserve">
-    <value>Channel</value>
+    <value>Canal</value>
   </data>
   <data name="ChannelConfig" xml:space="preserve">
-    <value>Channel Configuration</value>
+    <value>Configuración de canal</value>
   </data>
   <data name="CloseConfigWindowBeforeStoppingServer" xml:space="preserve">
-    <value>You must close the configuration window before stopping the server.</value>
+    <value>Debe cerrar la ventana de configuración antes de detener el servidor.</value>
   </data>
   <data name="ComPort" xml:space="preserve">
-    <value>COM Port</value>
+    <value>Puerto COM</value>
   </data>
   <data name="ConfigureBoard" xml:space="preserve">
-    <value>Configure Board</value>
+    <value>Configurar equipo</value>
   </data>
   <data name="Connect" xml:space="preserve">
-    <value>Connect</value>
+    <value>Conectar</value>
   </data>
   <data name="Connected" xml:space="preserve">
-    <value>Connected</value>
+    <value>Conectado</value>
   </data>
   <data name="ConnectingToBoard" xml:space="preserve">
-    <value>Connecting to board</value>
+    <value>Haciendo conexión</value>
   </data>
   <data name="ConnectionSettings" xml:space="preserve">
-    <value>Connection Settings</value>
+    <value>Configuración de conexión</value>
   </data>
   <data name="ConnectSRB1" xml:space="preserve">
-    <value>connect SRB1</value>
+    <value>conectar SRB1</value>
   </data>
   <data name="ConnectSRB1Not" xml:space="preserve">
-    <value>do not connect SRB1</value>
+    <value>no conecte SRB1</value>
   </data>
   <data name="CurrentConfig" xml:space="preserve">
-    <value>Current Configuration</value>
+    <value>Configuración actual</value>
   </data>
   <data name="DataStream" xml:space="preserve">
-    <value>Data Stream</value>
+    <value>Transmisión de datos</value>
   </data>
   <data name="DCSignal" xml:space="preserve">
-    <value>DC Signal</value>
+    <value>Señal CC</value>
   </data>
   <data name="Default" xml:space="preserve">
-    <value>default</value>
+    <value>defecto</value>
   </data>
   <data name="Disconnect" xml:space="preserve">
-    <value>Disconnect</value>
+    <value>Desconectar</value>
   </data>
   <data name="Disconnected" xml:space="preserve">
-    <value>Disconnected</value>
+    <value>Desconectado</value>
   </data>
   <data name="EnableBrainflowStreaming" xml:space="preserve">
-    <value>enable brainflow streaming</value>
+    <value>habilitar transmisión brainflow</value>
   </data>
   <data name="EnableBrainflowStreamingLabel" xml:space="preserve">
-    <value>Enable Brainflow Streaming</value>
+    <value>Habilitar la transmisión brainflow</value>
   </data>
   <data name="EnableBrainflowStreamingNot" xml:space="preserve">
-    <value>do not enable brainflow streaming</value>
+    <value>no habilitar la transmisión brainflow</value>
   </data>
   <data name="Enabled" xml:space="preserve">
-    <value>Enabled</value>
+    <value>Activado</value>
   </data>
   <data name="Equipment" xml:space="preserve">
-    <value>Board</value>
+    <value>Equipos</value>
   </data>
   <data name="EquipmentConfiguration" xml:space="preserve">
-    <value>Board Configuration</value>
+    <value>Configuración del equipo</value>
   </data>
   <data name="FailedGetValidConfig" xml:space="preserve">
-    <value>Failed to get valid board configuration.</value>
+    <value>No se pudo obtener una configuración válida</value>
   </data>
   <data name="False" xml:space="preserve">
-    <value>False</value>
+    <value>Falso</value>
   </data>
   <data name="Fast" xml:space="preserve">
-    <value>Fast</value>
+    <value>rápida</value>
   </data>
   <data name="Gain" xml:space="preserve">
-    <value>Gain</value>
+    <value>Ganancia</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="greenLight" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\greenLight.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Ground" xml:space="preserve">
-    <value>Ground</value>
+    <value>Tierra</value>
   </data>
   <data name="ImpedanceConfig" xml:space="preserve">
-    <value>Impedance Settings</value>
+    <value>Configuración de impedancia</value>
   </data>
   <data name="IncludeInBias" xml:space="preserve">
-    <value>Include in BIAS</value>
+    <value>Incluir en sesgo</value>
   </data>
   <data name="InputType" xml:space="preserve">
-    <value>Input Type</value>
+    <value>Aporte</value>
   </data>
   <data name="InvalidComPort" xml:space="preserve">
-    <value>Invalid COM Port</value>
+    <value>Puerto COM no válido</value>
   </data>
   <data name="IpAddress" xml:space="preserve">
-    <value>IP Address</value>
+    <value>Dirección IP</value>
   </data>
   <data name="LogToFile" xml:space="preserve">
-    <value>Log to File</value>
+    <value>Guardar consola en archivo</value>
   </data>
   <data name="Mode" xml:space="preserve">
-    <value>Mode</value>
+    <value>Modo</value>
   </data>
   <data name="MustStopStreamingBeforeSendingCommand" xml:space="preserve">
-    <value>You must stop streaming before sending command.</value>
+    <value>Debe detener la transmisión antes de enviar el comando.</value>
   </data>
   <data name="Mvdd" xml:space="preserve">
     <value>Mvdd</value>
@@ -257,112 +257,112 @@
     <value>Normal</value>
   </data>
   <data name="Port" xml:space="preserve">
-    <value>Port</value>
+    <value>Puerto</value>
   </data>
   <data name="QueryBoardParams" xml:space="preserve">
-    <value>Querying board parameters ...</value>
+    <value>Consultar parámetros del equipo</value>
   </data>
   <data name="ReadingData" xml:space="preserve">
-    <value>Reading data from the board</value>
+    <value>Leer datos del equipo</value>
   </data>
   <data name="ReadingDataNot" xml:space="preserve">
-    <value>Not reading data from the board</value>
+    <value>No leer datos del equipo</value>
   </data>
   <data name="redLight" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\redLight.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Refresh" xml:space="preserve">
-    <value>Refresh</value>
+    <value>Actualizar</value>
   </data>
   <data name="Reload" xml:space="preserve">
-    <value>Reload</value>
+    <value>Recargar</value>
   </data>
   <data name="RemoveFromBias" xml:space="preserve">
-    <value>Remove from BIAS</value>
+    <value>Eliminar del sesgo</value>
   </data>
   <data name="Retrying" xml:space="preserve">
-    <value>Retrying</value>
+    <value>Reintentando</value>
   </data>
   <data name="SetChannels" xml:space="preserve">
-    <value>Set Channel(s)</value>
+    <value>Establecer canal(es)</value>
   </data>
   <data name="SetDefault" xml:space="preserve">
-    <value>Set Defaults</value>
+    <value>Establecer defecto</value>
   </data>
   <data name="SetImpedance" xml:space="preserve">
-    <value>Set Impedance(s)</value>
+    <value>Establecer impedancia(s)</value>
   </data>
   <data name="SetTestMode" xml:space="preserve">
-    <value>Set Test Mode</value>
+    <value>Establecer modo de prueba</value>
   </data>
   <data name="SettingChannels" xml:space="preserve">
-    <value>Setting channels</value>
+    <value>Configuración de canales</value>
   </data>
   <data name="SettingChannelsDefault" xml:space="preserve">
-    <value>Setting channels to default</value>
+    <value>Configuración de canales por defecto</value>
   </data>
   <data name="SettingSignalTestMode" xml:space="preserve">
-    <value>Setting signal test mode</value>
+    <value>Configuración del modo de prueba de señal</value>
   </data>
   <data name="Shorted" xml:space="preserve">
-    <value>Shorted</value>
+    <value>Corto</value>
   </data>
   <data name="Slow" xml:space="preserve">
-    <value>Slow</value>
+    <value>lenta</value>
   </data>
   <data name="SrbIs" xml:space="preserve">
-    <value>SRB1 is</value>
+    <value>SRB1 es</value>
   </data>
   <data name="StartServer" xml:space="preserve">
-    <value>Start Server</value>
+    <value>Iniciar servidor</value>
   </data>
   <data name="StartServerBeforeConfigure" xml:space="preserve">
-    <value>Please start the server before using Configure Board.</value>
+    <value>Inicie el servidor antes de utilizar Configurar equipo.</value>
   </data>
   <data name="StartStream" xml:space="preserve">
-    <value>Start Stream</value>
+    <value>Iniciar transmisión</value>
   </data>
   <data name="StartWithSrb" xml:space="preserve">
-    <value>Start with SRB1 Connected</value>
+    <value>Comienza con SRB1 conectado</value>
   </data>
   <data name="StopServer" xml:space="preserve">
-    <value>Stop Server</value>
+    <value>Detener servidor</value>
   </data>
   <data name="StopStream" xml:space="preserve">
-    <value>Stop Stream</value>
+    <value>Detener transmisión</value>
   </data>
   <data name="StreamRunning" xml:space="preserve">
-    <value>Data stream running</value>
+    <value>Transmisión de datos activa</value>
   </data>
   <data name="StreamStopped" xml:space="preserve">
-    <value>Data stream stopped</value>
+    <value>La transmisión de datos no está activa</value>
   </data>
   <data name="Temporary" xml:space="preserve">
     <value>Temp.</value>
   </data>
   <data name="TestSig" xml:space="preserve">
-    <value>Test Sig.</value>
+    <value>Prueba</value>
   </data>
   <data name="TestSignal" xml:space="preserve">
-    <value>Test Signal</value>
+    <value>Señal de prueba</value>
   </data>
   <data name="TestSignalApplied" xml:space="preserve">
-    <value>Test signal applied</value>
+    <value>Señal de prueba aplicada</value>
   </data>
   <data name="TestSignalNotApplied" xml:space="preserve">
-    <value>Test signal not applied</value>
+    <value>Señal de prueba no aplicada</value>
   </data>
   <data name="True" xml:space="preserve">
-    <value>True</value>
+    <value>Cierto</value>
   </data>
   <data name="Unknown" xml:space="preserve">
-    <value>Unknown</value>
+    <value>Desconocido</value>
   </data>
   <data name="Version" xml:space="preserve">
-    <value>Version</value>
+    <value>Versión</value>
   </data>
   <data name="ViewConsole" xml:space="preserve">
-    <value>View Console</value>
+    <value>Ver consola</value>
   </data>
   <data name="yellowLight" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\yellowLight.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

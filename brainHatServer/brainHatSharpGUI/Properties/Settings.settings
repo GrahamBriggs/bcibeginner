@@ -15,7 +15,7 @@
       <Value Profile="(Default)">6677</Value>
     </Setting>
     <Setting Name="UseBFStream" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="LogToFile" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>

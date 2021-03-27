@@ -22,6 +22,8 @@ namespace brainHatSharpGUI
         {
             InitializeComponent();
 
+            Text = Properties.Resources.EquipmentConfiguration;
+
             Board = board;
 
             Load += ConfigurationWindow_Load;
@@ -36,6 +38,21 @@ namespace brainHatSharpGUI
         /// </summary>
         private void SetupUi()
         {
+            groupBoxConfiguration.Text = Properties.Resources.CurrentConfig;
+            buttonReload.Text = Properties.Resources.Reload;
+            groupBoxDataStream.Text = Properties.Resources.DataStream;
+            buttonStartStream.Text = Properties.Resources.StartStream;
+            buttonStopStream.Text = Properties.Resources.StopStream;
+            groupBoxTestSignal.Text = Properties.Resources.TestSignal;
+            labelTestMode.Text = Properties.Resources.Mode;
+            buttonSignalTest.Text = Properties.Resources.SetTestMode;
+            groupBoxChannelConfig.Text = Properties.Resources.ChannelConfig;
+            buttonImpedance.Text = Properties.Resources.SetImpedance;
+            buttonSetChannels.Text = Properties.Resources.SetChannels;
+            buttonChannelDefaults.Text = Properties.Resources.SetDefault;
+            labelCytonSrb.Text = $"{Properties.Resources.Equipment} SRB1";
+
+
             SetupConfigurationListView();
 
             SetupSignalTestComboBox();
@@ -45,6 +62,9 @@ namespace brainHatSharpGUI
 
         private void ShowSrb1Ui(bool visible)
         {
+            
+
+
             labelCytonSrb.Visible = visible;
             labelCytonSrbStatus.Visible = visible;
             buttonCytonSrb.Visible = visible;
@@ -60,12 +80,12 @@ namespace brainHatSharpGUI
         /// </summary>
         private void SetupSignalTestComboBox()
         {
-            comboBoxSignalTest.Items.Add(new ComboBoxItem() { Text = "Ground", Value = TestSignalMode.InternalGround });
-            comboBoxSignalTest.Items.Add(new ComboBoxItem() { Text = "1x Slow", Value = TestSignalMode.Signal1Slow });
-            comboBoxSignalTest.Items.Add(new ComboBoxItem() { Text = "1x Fast", Value = TestSignalMode.Signal1Fast });
-            comboBoxSignalTest.Items.Add(new ComboBoxItem() { Text = "DC Signal", Value = TestSignalMode.DcSignal });
-            comboBoxSignalTest.Items.Add(new ComboBoxItem() { Text = "2x Slow", Value = TestSignalMode.Signal2Slow });
-            comboBoxSignalTest.Items.Add(new ComboBoxItem() { Text = "2x Fast", Value = TestSignalMode.Signal2Fast });
+            comboBoxSignalTest.Items.Add(new ComboBoxItem() { Text = Properties.Resources.Ground, Value = TestSignalMode.InternalGround });
+            comboBoxSignalTest.Items.Add(new ComboBoxItem() { Text = $"1x {Properties.Resources.Slow}", Value = TestSignalMode.Signal1Slow });
+            comboBoxSignalTest.Items.Add(new ComboBoxItem() { Text = $"1x {Properties.Resources.Fast}", Value = TestSignalMode.Signal1Fast });
+            comboBoxSignalTest.Items.Add(new ComboBoxItem() { Text = Properties.Resources.DCSignal, Value = TestSignalMode.DcSignal });
+            comboBoxSignalTest.Items.Add(new ComboBoxItem() { Text = $"2x {Properties.Resources.Slow}", Value = TestSignalMode.Signal2Slow });
+            comboBoxSignalTest.Items.Add(new ComboBoxItem() { Text = $"2x {Properties.Resources.Fast}", Value = TestSignalMode.Signal2Fast });
             comboBoxSignalTest.SelectedIndex = 0;
         }
 
@@ -81,12 +101,12 @@ namespace brainHatSharpGUI
 
             listViewConfig.Resize += listViewConfig_Resize;
 
-            listViewChannels.Columns.Add("Channel", 60);
-            listViewChannels.Columns.Add("Power Down", 100);
-            listViewChannels.Columns.Add("Gain", 50);
-            listViewChannels.Columns.Add("Input Type", 75);
-            listViewChannels.Columns.Add("Bias Set", 60);
-            listViewChannels.Columns.Add("SRB2", 60);
+            listViewChannels.Columns.Add(Properties.Resources.Channel, 57);
+            listViewChannels.Columns.Add(Properties.Resources.Enabled, 70);
+            listViewChannels.Columns.Add(Properties.Resources.Gain, 80);
+            listViewChannels.Columns.Add(Properties.Resources.InputType, 75);
+            listViewChannels.Columns.Add(Properties.Resources.BiasSet, 60);
+            listViewChannels.Columns.Add("SRB2", 55);
             listViewChannels.Columns.Add("LLOF P", 60);
             listViewChannels.Columns.Add("LLOF N", 60);
             listViewChannels.MultiSelect = true;
@@ -107,7 +127,7 @@ namespace brainHatSharpGUI
         {
             EnableSettingsButtons(false);
 
-            UpdateListViewRawConfiguration("Querying board parameters ...");
+            UpdateListViewRawConfiguration(Properties.Resources.QueryBoardParams);
 
             await Board.StopStreamAndEmptyBufferAsnyc();
             await Task.Delay(2000);
@@ -119,7 +139,7 @@ namespace brainHatSharpGUI
             }
             catch
             {
-                UpdateListViewRawConfiguration("Failed to get valid board configuration!");
+                UpdateListViewRawConfiguration(Properties.Resources.FailedGetValidConfig);
             }
             EnableSettingsButtons(true);
         }
@@ -173,13 +193,13 @@ namespace brainHatSharpGUI
                     var newItem = listViewChannels.Items.Add(new ListViewItem(new string[8]
                     {
                         nextChannel.ChannelNumber.ToString(),
-                        nextChannel.PowerDown.ToString(),
+                        (!nextChannel.PowerDown).Translate(),
                         nextChannel.Gain.ToString(),
-                        nextChannel.InputType.ToString(),
-                        nextChannel.Bias.ToString(),
-                        nextChannel.Srb2.ToString(),
-                        nextChannel.LlofP.ToString(),
-                        nextChannel.LlofN.ToString(),
+                        nextChannel.InputType.Translate(),
+                        nextChannel.Bias.Translate(),
+                        nextChannel.Srb2.Translate(),
+                        nextChannel.LlofP.Translate(),
+                        nextChannel.LlofN.Translate(),
                     }));
                     newItem.Tag = nextChannel;
                 }
@@ -214,8 +234,8 @@ namespace brainHatSharpGUI
             if (BoardSettings.Boards.Count() > 0)
             {
                 labelCytonSrb.Visible = true;
-                labelCytonSrbStatus.Text = BoardSettings.Boards.First().Srb1Set ? "SRB1 Connected" : "SRB1 Disconnected (default)";
-                buttonCytonSrb.Text = BoardSettings.Boards.First().Srb1Set ? "Disconnect SRB1" : "Connect SRB1";
+                labelCytonSrbStatus.Text = BoardSettings.Boards.First().Srb1Set ? $"{Properties.Resources.SrbIs} {Properties.Resources.Connected}" : $"{Properties.Resources.SrbIs} {Properties.Resources.Disconnected} ({Properties.Resources.Default})";
+                buttonCytonSrb.Text = BoardSettings.Boards.First().Srb1Set ? $"{Properties.Resources.Disconnect} SRB1" : $"{Properties.Resources.Connect} SRB1";
 
                 labelCytonSrb.Visible = true;
                 labelCytonSrbStatus.Visible = true;
@@ -225,8 +245,8 @@ namespace brainHatSharpGUI
             if(BoardSettings.Boards.Count() > 1)
             {
                 labelDaisySrb.Visible = true;
-                labelDaisySrbStatus.Text = BoardSettings.Boards.Last().Srb1Set ? "SRB1 Connected" : "SRB1 Disconnected (default)";
-                buttonDaisySrb.Text = BoardSettings.Boards.Last().Srb1Set ? "Disconnect SRB1" : "Connect SRB1";
+                labelDaisySrbStatus.Text = BoardSettings.Boards.Last().Srb1Set ? $"{Properties.Resources.SrbIs} {Properties.Resources.Connected}" : $"{Properties.Resources.SrbIs} {Properties.Resources.Disconnected} ({Properties.Resources.Default})";
+                buttonDaisySrb.Text = BoardSettings.Boards.Last().Srb1Set ? $"{Properties.Resources.Disconnect} SRB1" : $"{Properties.Resources.Connect} SRB1";
 
                 labelDaisySrb.Visible = true;
                 labelDaisySrbStatus.Visible = true;
@@ -289,7 +309,7 @@ namespace brainHatSharpGUI
             }
             catch (Exception)
             {
-                UpdateListViewRawConfiguration("Failed to get board configuration.");
+                UpdateListViewRawConfiguration(Properties.Resources.FailedGetValidConfig);
             }
         }
 
@@ -310,12 +330,12 @@ namespace brainHatSharpGUI
                 }
                 catch (Exception)
                 {
-                    UpdateListViewRawConfiguration("Failed to get valid board configuration! Retrying ...");
+                    UpdateListViewRawConfiguration($"{Properties.Resources.FailedGetValidConfig} {Properties.Resources.Retrying} ...");
                     await Task.Delay(4000);
                     retries++;
                 }
             }
-            throw new Exception("Unable to get valid board config");
+            throw new Exception(Properties.Resources.FailedGetValidConfig);
         }
 
 
@@ -326,7 +346,7 @@ namespace brainHatSharpGUI
         {
             if (Board.IsStreaming)
             {
-                MessageBox.Show("You must stop streaming before sending command.", "brainHat", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(Properties.Resources.MustStopStreamingBeforeSendingCommand, Properties.Resources.AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
             return true;
@@ -394,7 +414,7 @@ namespace brainHatSharpGUI
                 if (settingsWindow.ShowDialog() == DialogResult.OK)
                 {
                     EnableSettingsButtons(false);
-                    BlankBoardUi("Setting channels ...");
+                    BlankBoardUi(Properties.Resources.SettingChannels);
 
                     await Board.SetBoardChannelAsync(settingsWindow.ChannelsToSet, settingsWindow);
                     await Task.Delay(4000);
@@ -424,7 +444,7 @@ namespace brainHatSharpGUI
                 if (settingsWindow.ShowDialog() == DialogResult.OK)
                 {
                     EnableSettingsButtons(false);
-                    BlankBoardUi("Setting channels ...");
+                    BlankBoardUi($"{Properties.Resources.SettingChannels} ...");
 
                     await Board.SetImpedanceModeAsync(settingsWindow.ChannelsToSet, settingsWindow);
                     await Task.Delay(4000);
@@ -445,7 +465,7 @@ namespace brainHatSharpGUI
                 return;
 
             EnableSettingsButtons(false);
-            BlankBoardUi("Setting channels to default ...");
+            BlankBoardUi($"{Properties.Resources.SettingChannelsDefault} ...");
 
             await Board.ResetChannelsToDefaultAsync();
             await Task.Delay(4000);
@@ -464,7 +484,7 @@ namespace brainHatSharpGUI
                 return;
 
             EnableSettingsButtons(false);
-            BlankBoardUi("Setting signal test mode ...");
+            BlankBoardUi($"{Properties.Resources.SettingSignalTestMode} ...");
 
             var item = (ComboBoxItem)comboBoxSignalTest.SelectedItem;
             await Board.SetSignalTestModeAsync((TestSignalMode)item.Value);

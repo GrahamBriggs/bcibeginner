@@ -20,6 +20,8 @@ namespace brainHatSharpGUI
             Logger = logger;
 
             SetupLoggingUi(buffer);
+
+            Text = Properties.Resources.AppName;
         }
 
         Logging Logger;

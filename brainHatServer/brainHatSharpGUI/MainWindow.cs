@@ -54,20 +54,9 @@ namespace brainHatSharpGUI
         {
             base.OnLoad(e);
 
+            Text = Properties.Resources.AppName;
 
-            var version = System.Reflection.Assembly.GetAssembly(typeof(Program)).GetName().Version;
-            var date = new DateTime(2000, 1, 1)     // baseline is 01/01/2000
-           .AddDays(version.Build)             // build is number of days after baseline
-           .AddSeconds(version.Revision * 2);    // revision is half the number of seconds into the day
-
-            labelVersion.Text = $"Version: {version.Major.ToString()}.{version.Minor}  {date.ToString("MM/dd/yyyy HH:mm:ss")} {PlatformHelper.PlatformHelper.GetLibraryEnvironment()}";
-
-
-            Task.Run(async () =>
-                {
-                    await SetupLoggingAsync();
-                    await StartProgramComponentsAsync();
-                }).Wait();
+            SetUiLabels();
 
             SetComPortComboBox();
             SetBoardIdRadioButton();
@@ -77,11 +66,47 @@ namespace brainHatSharpGUI
             EnableConnectionButtons(true);
             buttonConfigureBoard.Enabled = false;
 
+            Task.Run(async () =>
+                {
+                    await SetupLoggingAsync();
+                    await StartProgramComponentsAsync();
+                }).Wait();
+
+            
+            Logger.AddLog(this, new LogEventArgs(this, "OnLoad", $"Program started.", LogLevel.INFO));
+        }
+
+
+        /// <summary>
+        /// Setup the UI labels 
+        /// </summary>
+        void SetUiLabels()
+        {
+            groupBoxBoard.Text = Properties.Resources.ConnectionSettings;
+            groupBoxRunStatus.Visible = false;
+            labelComPort.Text = Properties.Resources.ComPort;
+            buttonRefresh.Text = Properties.Resources.Refresh;
+            checkBoxSRB.Text = Properties.Resources.StartWithSrb;
+
+            checkBoxUseBFStream.Text = Properties.Resources.EnableBrainflowStreamingLabel;
+            labelIpAddress.Text = Properties.Resources.IpAddress;
+            labelIpPort.Text = Properties.Resources.Port;
+
+            buttonStart.Text = Properties.Resources.StartServer;
+            buttonConfigureBoard.Text = Properties.Resources.ConfigureBoard;
+            buttonViewLogs.Text = Properties.Resources.ViewConsole;
+
+            checkBoxLogToFile.Text = Properties.Resources.LogToFile;
+
             checkBoxLogToFile.Checked = Properties.Settings.Default.LogToFile;
             checkBoxLogToFile.CheckedChanged += checkBoxLogToFile_CheckedChanged;
-            groupBoxRunStatus.Visible = false;
+            
+            var version = System.Reflection.Assembly.GetAssembly(typeof(Program)).GetName().Version;
+            var date = new DateTime(2000, 1, 1)     // baseline is 01/01/2000
+           .AddDays(version.Build)             // build is number of days after baseline
+           .AddSeconds(version.Revision * 2);    // revision is half the number of seconds into the day
 
-            Logger.AddLog(this, new LogEventArgs(this, "OnLoad", $"Program started.", LogLevel.INFO));
+            labelVersion.Text = $"{Properties.Resources.Version}: {version.Major.ToString()}.{version.Minor}  {date.ToString("MM/dd/yyyy HH:mm:ss")} {PlatformHelper.PlatformHelper.GetLibraryEnvironment()}";
         }
 
 
@@ -116,7 +141,6 @@ namespace brainHatSharpGUI
         private void SetComPortComboBox()
         {
             comboBoxComPort.Items.Clear();
-
             foreach (var nextPort in SerialPort.GetPortNames())
             {
                 comboBoxComPort.Items.Add(nextPort.ToString());
@@ -189,9 +213,9 @@ namespace brainHatSharpGUI
 
             if ( ! enable )
             {
-                labelRunStatus.Text = "Connecting to board ...";
-                labelDataStatus.Text = checkBoxSRB.Checked ? "- connect SRB1" : " - do not connect SRB1";
-                labelSrbStatus.Text = checkBoxUseBFStream.Checked ? "- enable brainflow streaming" : "- do not enable brainflow streaming";
+                labelRunStatus.Text = $"{Properties.Resources.ConnectingToBoard} ...";
+                labelDataStatus.Text = checkBoxSRB.Checked ? $"- {Properties.Resources.ConnectSRB1}" : $" - {Properties.Resources.ConnectSRB1Not}";
+                labelSrbStatus.Text = checkBoxUseBFStream.Checked ? $"- {Properties.Resources.EnableBrainflowStreaming}" : $"- {Properties.Resources.EnableBrainflowStreamingNot}";
                 pictureBoxStatus.Image = Properties.Resources.yellowLight;
             }
         }
@@ -265,14 +289,13 @@ namespace brainHatSharpGUI
             {
                 if ( comboBoxComPort.SelectedItem == null )
                 {
-                    MessageBox.Show("Invalid COM Port", "brainHat", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(Properties.Resources.InvalidComPort, Properties.Resources.AppName, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
                 EnableConnectionButtons(false);
-                buttonStart.Text = "Cancel";
-                groupBoxBoard.Text = " --- Connecting to Board --- ";
-
+                buttonStart.Text = Properties.Resources.Cancel;
+             
                 BrainFlowInputParams startupParams = SaveConnectionSettings();
 
                 await StartBoard(startupParams);
@@ -283,7 +306,7 @@ namespace brainHatSharpGUI
             {
                 if (ConfigWindow != null)
                 {
-                    MessageBox.Show("You must close the configuration window before stopping the server.", "brainHat", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(Properties.Resources.CloseConfigWindowBeforeStoppingServer, Properties.Resources.AppName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -293,8 +316,7 @@ namespace brainHatSharpGUI
 
                 EnableConnectionButtons(true);
 
-                buttonStart.Text = "Start Server";
-                groupBoxBoard.Text = " Connect to Board ";
+                buttonStart.Text = Properties.Resources.StartServer;
                 buttonStart.Enabled = true;
                 buttonConfigureBoard.Enabled = false;
             }
@@ -357,7 +379,7 @@ namespace brainHatSharpGUI
                 groupBoxBoard.Invoke(new Action(() =>
                 {
                     pictureBoxStatus.Image = Properties.Resources.greenLight;
-                    buttonStart.Text = "Stop Server";
+                    buttonStart.Text = Properties.Resources.StopServer;
                     buttonConfigureBoard.Enabled = true;
                 }));
             }
@@ -413,8 +435,8 @@ namespace brainHatSharpGUI
             //  update the UI
             groupBoxRunStatus.Invoke(new Action(() =>
             {
-                labelRunStatus.Text = (DataLatencyTimer.Elapsed.TotalSeconds < 0.5) ? "Reading Data OK" : "Not Reading Data";
-                labelDataStatus.Text = status.IsStreaming ? "Data stream running" : "Data stream stopped";
+                labelRunStatus.Text = (DataLatencyTimer.Elapsed.TotalSeconds < 0.5) ? Properties.Resources.ReadingData : Properties.Resources.ReadingDataNot;
+                labelDataStatus.Text = status.IsStreaming ? Properties.Resources.StreamRunning : Properties.Resources.StreamStopped;
 
                 if (status.IsStreaming)
                 {
@@ -441,13 +463,13 @@ namespace brainHatSharpGUI
                 switch ( status.CytonSRB1 )
                 {
                     case SrbSet.Unknown:
-                        srbStatus = "SRB1 Unknown";
+                        srbStatus = $"SRB1 {Properties.Resources.Unknown}";
                         break;
                     case SrbSet.Disconnected:
-                        srbStatus = "SRB1 Disconnected";
+                        srbStatus = $"SRB1 {Properties.Resources.Disconnected}";
                         break;
                     case SrbSet.Connected:
-                        srbStatus = "SRB1 Connected";
+                        srbStatus = $"SRB1 {Properties.Resources.Connected}";
                         break;
                 }
                 if (status.BoardId == 2)
@@ -455,13 +477,13 @@ namespace brainHatSharpGUI
                     switch (status.DaisySRB1)
                     {
                         case SrbSet.Unknown:
-                            srbStatus = "Daisy SRB1 Unknown";
+                            srbStatus = $"Daisy SRB1 {Properties.Resources.Unknown}";
                             break;
                         case SrbSet.Disconnected:
-                            srbStatus = "Daisy SRB1 Disconnected";
+                            srbStatus = $"Daisy SRB1 {Properties.Resources.Disconnected}";
                             break;
                         case SrbSet.Connected:
-                            srbStatus = "Daisy SRB1 Connected";
+                            srbStatus = $"Daisy SRB1 {Properties.Resources.Connected}";
                             break;
                     }
                 }
@@ -505,7 +527,7 @@ namespace brainHatSharpGUI
             }
             else
             {
-                MessageBox.Show("Please start the server before using Configure Board.", "brainHat GUI");
+                MessageBox.Show(Properties.Resources.StartServerBeforeConfigure, Properties.Resources.AppName);
             }
         }
         //

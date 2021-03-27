@@ -35,7 +35,7 @@ namespace brainHatSharpGUI
             this.listViewConfig = new System.Windows.Forms.ListView();
             this.buttonSignalTest = new System.Windows.Forms.Button();
             this.comboBoxSignalTest = new System.Windows.Forms.ComboBox();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.groupBoxChannelConfig = new System.Windows.Forms.GroupBox();
             this.buttonImpedance = new System.Windows.Forms.Button();
             this.labelDaisySrbStatus = new System.Windows.Forms.Label();
             this.buttonDaisySrb = new System.Windows.Forms.Button();
@@ -46,15 +46,15 @@ namespace brainHatSharpGUI
             this.buttonSetChannels = new System.Windows.Forms.Button();
             this.listViewChannels = new System.Windows.Forms.ListView();
             this.buttonChannelDefaults = new System.Windows.Forms.Button();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.label1 = new System.Windows.Forms.Label();
+            this.groupBoxTestSignal = new System.Windows.Forms.GroupBox();
+            this.labelTestMode = new System.Windows.Forms.Label();
             this.buttonStartStream = new System.Windows.Forms.Button();
             this.buttonStopStream = new System.Windows.Forms.Button();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.groupBoxDataStream = new System.Windows.Forms.GroupBox();
             this.groupBoxConfiguration.SuspendLayout();
-            this.groupBox1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
-            this.groupBox3.SuspendLayout();
+            this.groupBoxChannelConfig.SuspendLayout();
+            this.groupBoxTestSignal.SuspendLayout();
+            this.groupBoxDataStream.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBoxConfiguration
@@ -69,7 +69,7 @@ namespace brainHatSharpGUI
             this.groupBoxConfiguration.Size = new System.Drawing.Size(378, 580);
             this.groupBoxConfiguration.TabIndex = 0;
             this.groupBoxConfiguration.TabStop = false;
-            this.groupBoxConfiguration.Text = "Current Configuration";
+            this.groupBoxConfiguration.Text = "Configuración actual";
             // 
             // buttonReload
             // 
@@ -78,7 +78,7 @@ namespace brainHatSharpGUI
             this.buttonReload.Name = "buttonReload";
             this.buttonReload.Size = new System.Drawing.Size(110, 23);
             this.buttonReload.TabIndex = 7;
-            this.buttonReload.Text = "Reload";
+            this.buttonReload.Text = "Recargar";
             this.buttonReload.UseVisualStyleBackColor = true;
             this.buttonReload.Click += new System.EventHandler(this.buttonReload_Click);
             // 
@@ -101,11 +101,11 @@ namespace brainHatSharpGUI
             // buttonSignalTest
             // 
             this.buttonSignalTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonSignalTest.Location = new System.Drawing.Point(150, 50);
+            this.buttonSignalTest.Location = new System.Drawing.Point(97, 50);
             this.buttonSignalTest.Name = "buttonSignalTest";
-            this.buttonSignalTest.Size = new System.Drawing.Size(110, 23);
+            this.buttonSignalTest.Size = new System.Drawing.Size(163, 23);
             this.buttonSignalTest.TabIndex = 1;
-            this.buttonSignalTest.Text = "Set Test Mode";
+            this.buttonSignalTest.Text = "Establecer modo de prueba";
             this.buttonSignalTest.UseVisualStyleBackColor = true;
             this.buttonSignalTest.Click += new System.EventHandler(this.buttonSignalTest_Click);
             // 
@@ -114,40 +114,40 @@ namespace brainHatSharpGUI
             this.comboBoxSignalTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.comboBoxSignalTest.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxSignalTest.FormattingEnabled = true;
-            this.comboBoxSignalTest.Location = new System.Drawing.Point(114, 23);
+            this.comboBoxSignalTest.Location = new System.Drawing.Point(97, 23);
             this.comboBoxSignalTest.Name = "comboBoxSignalTest";
-            this.comboBoxSignalTest.Size = new System.Drawing.Size(147, 21);
+            this.comboBoxSignalTest.Size = new System.Drawing.Size(164, 21);
             this.comboBoxSignalTest.TabIndex = 2;
             // 
-            // groupBox1
+            // groupBoxChannelConfig
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.groupBoxChannelConfig.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.Controls.Add(this.buttonImpedance);
-            this.groupBox1.Controls.Add(this.labelDaisySrbStatus);
-            this.groupBox1.Controls.Add(this.buttonDaisySrb);
-            this.groupBox1.Controls.Add(this.labelDaisySrb);
-            this.groupBox1.Controls.Add(this.labelCytonSrbStatus);
-            this.groupBox1.Controls.Add(this.buttonCytonSrb);
-            this.groupBox1.Controls.Add(this.labelCytonSrb);
-            this.groupBox1.Controls.Add(this.buttonSetChannels);
-            this.groupBox1.Controls.Add(this.listViewChannels);
-            this.groupBox1.Controls.Add(this.buttonChannelDefaults);
-            this.groupBox1.Location = new System.Drawing.Point(397, 117);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(540, 476);
-            this.groupBox1.TabIndex = 3;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Channel Configuration";
+            this.groupBoxChannelConfig.Controls.Add(this.buttonImpedance);
+            this.groupBoxChannelConfig.Controls.Add(this.labelDaisySrbStatus);
+            this.groupBoxChannelConfig.Controls.Add(this.buttonDaisySrb);
+            this.groupBoxChannelConfig.Controls.Add(this.labelDaisySrb);
+            this.groupBoxChannelConfig.Controls.Add(this.labelCytonSrbStatus);
+            this.groupBoxChannelConfig.Controls.Add(this.buttonCytonSrb);
+            this.groupBoxChannelConfig.Controls.Add(this.labelCytonSrb);
+            this.groupBoxChannelConfig.Controls.Add(this.buttonSetChannels);
+            this.groupBoxChannelConfig.Controls.Add(this.listViewChannels);
+            this.groupBoxChannelConfig.Controls.Add(this.buttonChannelDefaults);
+            this.groupBoxChannelConfig.Location = new System.Drawing.Point(397, 117);
+            this.groupBoxChannelConfig.Name = "groupBoxChannelConfig";
+            this.groupBoxChannelConfig.Size = new System.Drawing.Size(540, 476);
+            this.groupBoxChannelConfig.TabIndex = 3;
+            this.groupBoxChannelConfig.TabStop = false;
+            this.groupBoxChannelConfig.Text = "Configuración de canal";
             // 
             // buttonImpedance
             // 
             this.buttonImpedance.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.buttonImpedance.Location = new System.Drawing.Point(181, 344);
+            this.buttonImpedance.Location = new System.Drawing.Point(6, 344);
             this.buttonImpedance.Name = "buttonImpedance";
-            this.buttonImpedance.Size = new System.Drawing.Size(117, 23);
+            this.buttonImpedance.Size = new System.Drawing.Size(156, 23);
             this.buttonImpedance.TabIndex = 13;
-            this.buttonImpedance.Text = "Set Impedance(s)";
+            this.buttonImpedance.Text = "Establecer impedancia(s)";
             this.buttonImpedance.UseVisualStyleBackColor = true;
             this.buttonImpedance.Click += new System.EventHandler(this.buttonImpedance_Click);
             // 
@@ -178,9 +178,9 @@ namespace brainHatSharpGUI
             this.labelDaisySrb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelDaisySrb.Location = new System.Drawing.Point(346, 393);
             this.labelDaisySrb.Name = "labelDaisySrb";
-            this.labelDaisySrb.Size = new System.Drawing.Size(111, 13);
+            this.labelDaisySrb.Size = new System.Drawing.Size(74, 13);
             this.labelDaisySrb.TabIndex = 10;
-            this.labelDaisySrb.Text = "Daisy Board SRB1";
+            this.labelDaisySrb.Text = "Daisy SRB1";
             // 
             // labelCytonSrbStatus
             // 
@@ -209,18 +209,18 @@ namespace brainHatSharpGUI
             this.labelCytonSrb.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.labelCytonSrb.Location = new System.Drawing.Point(11, 393);
             this.labelCytonSrb.Name = "labelCytonSrb";
-            this.labelCytonSrb.Size = new System.Drawing.Size(112, 13);
+            this.labelCytonSrb.Size = new System.Drawing.Size(88, 13);
             this.labelCytonSrb.TabIndex = 7;
-            this.labelCytonSrb.Text = "Cyton Board SRB1";
+            this.labelCytonSrb.Text = "Equipos SRB1";
             // 
             // buttonSetChannels
             // 
             this.buttonSetChannels.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonSetChannels.Location = new System.Drawing.Point(304, 344);
+            this.buttonSetChannels.Location = new System.Drawing.Point(190, 344);
             this.buttonSetChannels.Name = "buttonSetChannels";
-            this.buttonSetChannels.Size = new System.Drawing.Size(110, 23);
+            this.buttonSetChannels.Size = new System.Drawing.Size(156, 23);
             this.buttonSetChannels.TabIndex = 6;
-            this.buttonSetChannels.Text = "Set Channel(s)";
+            this.buttonSetChannels.Text = "Establecer canal(es)";
             this.buttonSetChannels.UseVisualStyleBackColor = true;
             this.buttonSetChannels.Click += new System.EventHandler(this.buttonSetChannels_Click);
             // 
@@ -240,89 +240,89 @@ namespace brainHatSharpGUI
             // buttonChannelDefaults
             // 
             this.buttonChannelDefaults.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonChannelDefaults.Location = new System.Drawing.Point(420, 344);
+            this.buttonChannelDefaults.Location = new System.Drawing.Point(374, 344);
             this.buttonChannelDefaults.Name = "buttonChannelDefaults";
-            this.buttonChannelDefaults.Size = new System.Drawing.Size(110, 23);
+            this.buttonChannelDefaults.Size = new System.Drawing.Size(156, 23);
             this.buttonChannelDefaults.TabIndex = 4;
-            this.buttonChannelDefaults.Text = "Reset to Default";
+            this.buttonChannelDefaults.Text = "Establecer predeterminado";
             this.buttonChannelDefaults.UseVisualStyleBackColor = true;
             this.buttonChannelDefaults.Click += new System.EventHandler(this.buttonChannelDefaults_Click);
             // 
-            // groupBox2
+            // groupBoxTestSignal
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox2.Controls.Add(this.label1);
-            this.groupBox2.Controls.Add(this.buttonSignalTest);
-            this.groupBox2.Controls.Add(this.comboBoxSignalTest);
-            this.groupBox2.Location = new System.Drawing.Point(649, 13);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(288, 88);
-            this.groupBox2.TabIndex = 4;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Test Signal";
+            this.groupBoxTestSignal.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxTestSignal.Controls.Add(this.labelTestMode);
+            this.groupBoxTestSignal.Controls.Add(this.buttonSignalTest);
+            this.groupBoxTestSignal.Controls.Add(this.comboBoxSignalTest);
+            this.groupBoxTestSignal.Location = new System.Drawing.Point(649, 13);
+            this.groupBoxTestSignal.Name = "groupBoxTestSignal";
+            this.groupBoxTestSignal.Size = new System.Drawing.Size(288, 88);
+            this.groupBoxTestSignal.TabIndex = 4;
+            this.groupBoxTestSignal.TabStop = false;
+            this.groupBoxTestSignal.Text = "Señal de prueba";
             // 
-            // label1
+            // labelTestMode
             // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(22, 26);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(58, 13);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "Test Mode";
+            this.labelTestMode.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelTestMode.AutoSize = true;
+            this.labelTestMode.Location = new System.Drawing.Point(22, 26);
+            this.labelTestMode.Name = "labelTestMode";
+            this.labelTestMode.Size = new System.Drawing.Size(34, 13);
+            this.labelTestMode.TabIndex = 3;
+            this.labelTestMode.Text = "Modo";
             // 
             // buttonStartStream
             // 
             this.buttonStartStream.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonStartStream.Location = new System.Drawing.Point(63, 22);
+            this.buttonStartStream.Location = new System.Drawing.Point(55, 22);
             this.buttonStartStream.Name = "buttonStartStream";
-            this.buttonStartStream.Size = new System.Drawing.Size(110, 23);
+            this.buttonStartStream.Size = new System.Drawing.Size(137, 23);
             this.buttonStartStream.TabIndex = 8;
-            this.buttonStartStream.Text = "Start Stream";
+            this.buttonStartStream.Text = "Iniciar transmisión";
             this.buttonStartStream.UseVisualStyleBackColor = true;
             this.buttonStartStream.Click += new System.EventHandler(this.buttonStartStream_Click);
             // 
             // buttonStopStream
             // 
             this.buttonStopStream.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonStopStream.Location = new System.Drawing.Point(63, 51);
+            this.buttonStopStream.Location = new System.Drawing.Point(55, 51);
             this.buttonStopStream.Name = "buttonStopStream";
-            this.buttonStopStream.Size = new System.Drawing.Size(110, 23);
+            this.buttonStopStream.Size = new System.Drawing.Size(137, 23);
             this.buttonStopStream.TabIndex = 9;
-            this.buttonStopStream.Text = "Stop Stream";
+            this.buttonStopStream.Text = "Detener transmisión";
             this.buttonStopStream.UseVisualStyleBackColor = true;
             this.buttonStopStream.Click += new System.EventHandler(this.buttonStopStream_Click);
             // 
-            // groupBox3
+            // groupBoxDataStream
             // 
-            this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox3.Controls.Add(this.buttonStartStream);
-            this.groupBox3.Controls.Add(this.buttonStopStream);
-            this.groupBox3.Location = new System.Drawing.Point(397, 12);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(246, 88);
-            this.groupBox3.TabIndex = 10;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Data Stream";
+            this.groupBoxDataStream.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxDataStream.Controls.Add(this.buttonStartStream);
+            this.groupBoxDataStream.Controls.Add(this.buttonStopStream);
+            this.groupBoxDataStream.Location = new System.Drawing.Point(397, 12);
+            this.groupBoxDataStream.Name = "groupBoxDataStream";
+            this.groupBoxDataStream.Size = new System.Drawing.Size(246, 88);
+            this.groupBoxDataStream.TabIndex = 10;
+            this.groupBoxDataStream.TabStop = false;
+            this.groupBoxDataStream.Text = "Transmisión de datos";
             // 
             // ConfigurationWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(949, 611);
-            this.Controls.Add(this.groupBox3);
-            this.Controls.Add(this.groupBox2);
-            this.Controls.Add(this.groupBox1);
+            this.Controls.Add(this.groupBoxDataStream);
+            this.Controls.Add(this.groupBoxTestSignal);
+            this.Controls.Add(this.groupBoxChannelConfig);
             this.Controls.Add(this.groupBoxConfiguration);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ConfigurationWindow";
             this.Text = "ConfigurationWindow";
             this.groupBoxConfiguration.ResumeLayout(false);
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
-            this.groupBox3.ResumeLayout(false);
+            this.groupBoxChannelConfig.ResumeLayout(false);
+            this.groupBoxChannelConfig.PerformLayout();
+            this.groupBoxTestSignal.ResumeLayout(false);
+            this.groupBoxTestSignal.PerformLayout();
+            this.groupBoxDataStream.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -333,16 +333,16 @@ namespace brainHatSharpGUI
         private System.Windows.Forms.ListView listViewConfig;
         private System.Windows.Forms.Button buttonSignalTest;
         private System.Windows.Forms.ComboBox comboBoxSignalTest;
-        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox groupBoxChannelConfig;
         private System.Windows.Forms.Button buttonChannelDefaults;
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.GroupBox groupBoxTestSignal;
+        private System.Windows.Forms.Label labelTestMode;
         private System.Windows.Forms.ListView listViewChannels;
         private System.Windows.Forms.Button buttonReload;
         private System.Windows.Forms.Button buttonSetChannels;
         private System.Windows.Forms.Button buttonStartStream;
         private System.Windows.Forms.Button buttonStopStream;
-        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.GroupBox groupBoxDataStream;
         private System.Windows.Forms.Label labelDaisySrbStatus;
         private System.Windows.Forms.Button buttonDaisySrb;
         private System.Windows.Forms.Label labelDaisySrb;

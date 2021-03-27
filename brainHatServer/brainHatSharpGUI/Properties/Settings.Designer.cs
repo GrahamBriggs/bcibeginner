@@ -73,7 +73,7 @@ namespace brainHatSharpGUI.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool UseBFStream {
             get {
                 return ((bool)(this["UseBFStream"]));

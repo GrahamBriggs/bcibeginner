@@ -44,7 +44,7 @@ namespace brainHatSharpGUI
             this.comboBoxLlofP.FormattingEnabled = true;
             this.comboBoxLlofP.Location = new System.Drawing.Point(119, 78);
             this.comboBoxLlofP.Name = "comboBoxLlofP";
-            this.comboBoxLlofP.Size = new System.Drawing.Size(186, 21);
+            this.comboBoxLlofP.Size = new System.Drawing.Size(227, 21);
             this.comboBoxLlofP.TabIndex = 1;
             // 
             // comboBoxLlofN
@@ -53,7 +53,7 @@ namespace brainHatSharpGUI
             this.comboBoxLlofN.FormattingEnabled = true;
             this.comboBoxLlofN.Location = new System.Drawing.Point(119, 121);
             this.comboBoxLlofN.Name = "comboBoxLlofN";
-            this.comboBoxLlofN.Size = new System.Drawing.Size(186, 21);
+            this.comboBoxLlofN.Size = new System.Drawing.Size(227, 21);
             this.comboBoxLlofN.TabIndex = 2;
             // 
             // labelChannel
@@ -86,9 +86,9 @@ namespace brainHatSharpGUI
             // 
             // buttonSetImpedance
             // 
-            this.buttonSetImpedance.Location = new System.Drawing.Point(175, 164);
+            this.buttonSetImpedance.Location = new System.Drawing.Point(152, 164);
             this.buttonSetImpedance.Name = "buttonSetImpedance";
-            this.buttonSetImpedance.Size = new System.Drawing.Size(130, 23);
+            this.buttonSetImpedance.Size = new System.Drawing.Size(194, 23);
             this.buttonSetImpedance.TabIndex = 13;
             this.buttonSetImpedance.Text = "Set Impedance(s)";
             this.buttonSetImpedance.UseVisualStyleBackColor = true;

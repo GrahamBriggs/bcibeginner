@@ -17,17 +17,18 @@ namespace brainHatSharpGUI
         {
             InitializeComponent();
             ChannelsToSet = channels;
-
-            var labelTitle = channels.Count() > 1 ? "Set Channels" : "Set Channel";
-
+            
+            Text = Properties.Resources.SetImpedance;
+            var labelTitle = Properties.Resources.SetChannels;
             labelChannel.Text = $"{labelTitle} {string.Join(", ", channels)}";
+            buttonSetImpedance.Text = Properties.Resources.SetImpedance;
 
-            comboBoxLlofP.Items.Add(new ComboBoxItem("Test signal not applied (default)", false));
-            comboBoxLlofP.Items.Add(new ComboBoxItem("Test signal applied", true));
+            comboBoxLlofP.Items.Add(new ComboBoxItem($"{Properties.Resources.TestSignalNotApplied} ({Properties.Resources.Default})", false));
+            comboBoxLlofP.Items.Add(new ComboBoxItem(Properties.Resources.TestSignalApplied, true));
             comboBoxLlofP.SelectedIndex = settings.LlofP ? 1 : 0;
 
-            comboBoxLlofN.Items.Add(new ComboBoxItem("Test signal not applied (default)", false));
-            comboBoxLlofN.Items.Add(new ComboBoxItem("Test signal applied", true));
+            comboBoxLlofN.Items.Add(new ComboBoxItem($"{Properties.Resources.TestSignalNotApplied} ({Properties.Resources.Default})", false));
+            comboBoxLlofN.Items.Add(new ComboBoxItem(Properties.Resources.TestSignalApplied, true));
             comboBoxLlofN.SelectedIndex = settings.LlofN ? 1 : 0;
 
 

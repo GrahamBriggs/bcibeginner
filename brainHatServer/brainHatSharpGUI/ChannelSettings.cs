@@ -16,14 +16,18 @@ namespace brainHatSharpGUI
         public ChannelSettings(IEnumerable<int> channels, ICytonChannelSettings settings)
         {
             InitializeComponent();
+
+            Text = Properties.Resources.ChannelConfig;
+
             ChannelsToSet = channels;
 
-            var labelTitle = channels.Count() > 1 ? "Set Channels" : "Set Channel";
+            var labelTitle = Properties.Resources.SetChannels;
+            buttonSetChannels.Text = Properties.Resources.SetChannels;
 
             labelChannel.Text = $"{labelTitle} {string.Join(", ", channels)}";
 
-            comboBoxPowerDown.Items.Add(new ComboBoxItem("false (default)", false));
-            comboBoxPowerDown.Items.Add(new ComboBoxItem("true", true));
+            comboBoxPowerDown.Items.Add(new ComboBoxItem($"{Properties.Resources.False} ({Properties.Resources.Default})", false));
+            comboBoxPowerDown.Items.Add(new ComboBoxItem(Properties.Resources.True, true));
             comboBoxPowerDown.SelectedIndex = settings.PowerDown ? 1 : 0;
 
             comboBoxGain.Items.Add(new ComboBoxItem("1x", ChannelGain.x1));
@@ -32,25 +36,25 @@ namespace brainHatSharpGUI
             comboBoxGain.Items.Add(new ComboBoxItem("6x", ChannelGain.x6));
             comboBoxGain.Items.Add(new ComboBoxItem("8x", ChannelGain.x8));
             comboBoxGain.Items.Add(new ComboBoxItem("12x", ChannelGain.x12));
-            comboBoxGain.Items.Add(new ComboBoxItem("24x (default)", ChannelGain.x24));
+            comboBoxGain.Items.Add(new ComboBoxItem($"24x ({Properties.Resources.Default})", ChannelGain.x24));
             comboBoxGain.SelectedIndex = (int)settings.Gain;
 
-            comboBoxInputType.Items.Add(new ComboBoxItem("Normal (default)", AdsChannelInputType.Normal));
-            comboBoxInputType.Items.Add(new ComboBoxItem("Shorted", AdsChannelInputType.Shorted));
-            comboBoxInputType.Items.Add(new ComboBoxItem("Bias Measured", AdsChannelInputType.BiasMeas));
-            comboBoxInputType.Items.Add(new ComboBoxItem("MVDD", AdsChannelInputType.Mvdd));
-            comboBoxInputType.Items.Add(new ComboBoxItem("Temp", AdsChannelInputType.Temp));
-            comboBoxInputType.Items.Add(new ComboBoxItem("Testing", AdsChannelInputType.Testsig));
-            comboBoxInputType.Items.Add(new ComboBoxItem("Bias Drp", AdsChannelInputType.BiasDrp));
-            comboBoxInputType.Items.Add(new ComboBoxItem("Bias Drn", AdsChannelInputType.BiasDrn));
+            comboBoxInputType.Items.Add(new ComboBoxItem($"{Properties.Resources.Normal} ({Properties.Resources.Default})", AdsChannelInputType.Normal));
+            comboBoxInputType.Items.Add(new ComboBoxItem(Properties.Resources.Shorted, AdsChannelInputType.Shorted));
+            comboBoxInputType.Items.Add(new ComboBoxItem(Properties.Resources.BiasMeasured, AdsChannelInputType.BiasMeas));
+            comboBoxInputType.Items.Add(new ComboBoxItem(Properties.Resources.Mvdd, AdsChannelInputType.Mvdd));
+            comboBoxInputType.Items.Add(new ComboBoxItem(Properties.Resources.Temporary, AdsChannelInputType.Temp));
+            comboBoxInputType.Items.Add(new ComboBoxItem(Properties.Resources.TestSignal, AdsChannelInputType.Testsig));
+            comboBoxInputType.Items.Add(new ComboBoxItem(Properties.Resources.BiasDrp, AdsChannelInputType.BiasDrp));
+            comboBoxInputType.Items.Add(new ComboBoxItem(Properties.Resources.BiasDrn, AdsChannelInputType.BiasDrn));
             comboBoxInputType.SelectedIndex = (int)settings.InputType;
 
-            comboBoxBias.Items.Add(new ComboBoxItem("Remove from BIAS", false));
-            comboBoxBias.Items.Add(new ComboBoxItem("Include in BIAS (default)", true));
+            comboBoxBias.Items.Add(new ComboBoxItem(Properties.Resources.RemoveFromBias, false));
+            comboBoxBias.Items.Add(new ComboBoxItem($"{Properties.Resources.IncludeInBias} ({Properties.Resources.Default})", true));
             comboBoxBias.SelectedIndex = settings.Bias ? 1 : 0;
 
-            comboBoxSrb2.Items.Add(new ComboBoxItem("Disconnected from SRB2", false));
-            comboBoxSrb2.Items.Add(new ComboBoxItem("Connected to SRB2 (default)", true));
+            comboBoxSrb2.Items.Add(new ComboBoxItem($"{Properties.Resources.Disconnect} SRB2", false));
+            comboBoxSrb2.Items.Add(new ComboBoxItem($"{Properties.Resources.Connect} to SRB2 ({Properties.Resources.Default})", true));
             comboBoxSrb2.SelectedIndex = settings.Srb2 ? 1 : 0;
         }
 
