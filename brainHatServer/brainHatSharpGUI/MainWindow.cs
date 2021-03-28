@@ -16,6 +16,7 @@ using System.Web;
 using Newtonsoft.Json;
 using BrainflowDataProcessing;
 using System.IO;
+using System.Configuration;
 
 namespace brainHatSharpGUI
 {
@@ -451,7 +452,7 @@ namespace brainHatSharpGUI
                 }
                 else
                 {
-                    if (BrainflowBoard.UserPausedStream)
+                    if (BrainflowBoard != null && BrainflowBoard.UserPausedStream)
                         pictureBoxStatus.Image = Properties.Resources.yellowLight;
                     else
                         pictureBoxStatus.Image = Properties.Resources.redLight;
@@ -642,7 +643,8 @@ namespace brainHatSharpGUI
                             break;
                     }
 
-                    var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "brainHatRecordings");
+                    var recordingDir = ConfigurationManager.AppSettings.Get("defaultDir");
+                    var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), recordingDir);
                     await FileWriter.StartWritingToFileAsync(path, fileName, BrainflowBoard.BoardId, BrainflowBoard.SampleRate, format);
 
                     return $"ACK?response=File {Path.GetFileName(FileWriter.FileName)} started.";
