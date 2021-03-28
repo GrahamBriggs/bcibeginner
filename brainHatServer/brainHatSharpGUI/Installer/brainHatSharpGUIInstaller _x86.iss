@@ -6,13 +6,13 @@
 #define MyAppPublisher "Little Bytes of Pi, LLC"
 #define MyAppURL "http://littlebytesofpi.com"
 #define MyAppExeName "brainHatSharpGUI.exe"
-#define MyAppDefaultGroup "brainHat"
+#define MyAppDefaultGroup "brainHatx86"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{04641D25-1E89-4A79-A075-886971C157B0}
+AppId={{23EF3A3A-76F8-4797-9BBB-C6D621841D3B}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -22,10 +22,9 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppDefaultGroup}
-OutputBaseFilename=brainHatSharpGUI_setup
+OutputBaseFilename=brainHatSharpGUI_setup_x86_
 Compression=lzma
 SolidCompression=yes
-ArchitecturesInstallIn64BitMode=x64
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -34,11 +33,11 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "..\bin\Release\brainHatSharpGUI.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\bin\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\bin\Release\*.config"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\x86\Release\brainHatSharpGUI.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\x86\Release\*.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\x86\Release\*.config"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
-Source: "..\bin\Release\es-ES\brainHatSharpGUI.resources.dll"; DestDir: "{app}\es-ES"
+Source: "..\bin\x86\Release\es-ES\brainHatSharpGUI.resources.dll"; DestDir: "{app}\es-ES"
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

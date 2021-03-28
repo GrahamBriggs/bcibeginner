@@ -214,7 +214,7 @@ namespace brainHatSharpGUI
             if ( ! enable )
             {
                 labelRunStatus.Text = $"{Properties.Resources.ConnectingToBoard} ...";
-                labelDataStatus.Text = checkBoxSRB.Checked ? $"- {Properties.Resources.ConnectSRB1}" : $" - {Properties.Resources.ConnectSRB1Not}";
+                labelDataStatus.Text = checkBoxSRB.Checked ? $"- {Properties.Resources.ConnectSRB1}" : $"- {Properties.Resources.ConnectSRB1Not}";
                 labelSrbStatus.Text = checkBoxUseBFStream.Checked ? $"- {Properties.Resources.EnableBrainflowStreaming}" : $"- {Properties.Resources.EnableBrainflowStreamingNot}";
                 pictureBoxStatus.Image = Properties.Resources.yellowLight;
             }
