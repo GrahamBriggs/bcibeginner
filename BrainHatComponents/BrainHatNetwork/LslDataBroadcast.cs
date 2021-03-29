@@ -162,24 +162,25 @@ namespace BrainHatNetwork
         {
             try
             {
-                liblsl.StreamOutlet outlet = new liblsl.StreamOutlet(StreamInfo);
-
-                while (!cancelToken.IsCancellationRequested)
+                using (var outlet = new liblsl.StreamOutlet(StreamInfo))
                 {
-                    await Task.Delay(10);
-
-                    while (!DataToBroadcast.IsEmpty)
+                    while (!cancelToken.IsCancellationRequested)
                     {
-                        try
-                        {
-                            DataToBroadcast.TryDequeue(out var sample);
-                            if (outlet.have_consumers())
-                                outlet.push_sample(sample.AsRawSample());
+                        await Task.Delay(10);
 
-                        }
-                        catch (Exception ex)
+                        while (!DataToBroadcast.IsEmpty)
                         {
-                            Log?.Invoke(this, new LogEventArgs(this, "RunBroadcastServerAsync", ex, LogLevel.ERROR));
+                            try
+                            {
+                                DataToBroadcast.TryDequeue(out var sample);
+                                if (outlet.have_consumers())
+                                    outlet.push_sample(sample.AsRawSample());
+
+                            }
+                            catch (Exception ex)
+                            {
+                                Log?.Invoke(this, new LogEventArgs(this, "RunBroadcastServerAsync", ex, LogLevel.ERROR));
+                            }
                         }
                     }
                 }
@@ -189,6 +190,10 @@ namespace BrainHatNetwork
             catch (Exception e)
             {
                 Log?.Invoke(this, new LogEventArgs(this, "RunBroadcastServerAsync", e, LogLevel.ERROR));
+            }
+            finally
+            {
+               
             }
         }
 
