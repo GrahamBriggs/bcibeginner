@@ -163,8 +163,7 @@ namespace brainHatSharpGUI
             }
             catch (Exception e)
             {
-
-                throw;
+                System.Diagnostics.Debug.WriteLine($"Exception in logging: {e}.");
             }
 
         }

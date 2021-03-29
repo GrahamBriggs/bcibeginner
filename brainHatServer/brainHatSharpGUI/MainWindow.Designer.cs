@@ -33,8 +33,12 @@ namespace brainHatSharpGUI
             this.buttonStart = new System.Windows.Forms.Button();
             this.comboBoxComPort = new System.Windows.Forms.ComboBox();
             this.groupBoxBoard = new System.Windows.Forms.GroupBox();
-            this.checkBoxSRB = new System.Windows.Forms.CheckBox();
+            this.textBoxIpAddress = new System.Windows.Forms.TextBox();
+            this.labelIpPort = new System.Windows.Forms.Label();
+            this.textBoxIpPort = new System.Windows.Forms.TextBox();
+            this.labelIpAddress = new System.Windows.Forms.Label();
             this.checkBoxUseBFStream = new System.Windows.Forms.CheckBox();
+            this.checkBoxSRB = new System.Windows.Forms.CheckBox();
             this.buttonRefresh = new System.Windows.Forms.Button();
             this.labelComPort = new System.Windows.Forms.Label();
             this.radioButtonDaisy = new System.Windows.Forms.RadioButton();
@@ -48,10 +52,6 @@ namespace brainHatSharpGUI
             this.buttonConfigureBoard = new System.Windows.Forms.Button();
             this.labelVersion = new System.Windows.Forms.Label();
             this.checkBoxLogToFile = new System.Windows.Forms.CheckBox();
-            this.textBoxIpAddress = new System.Windows.Forms.TextBox();
-            this.labelIpPort = new System.Windows.Forms.Label();
-            this.textBoxIpPort = new System.Windows.Forms.TextBox();
-            this.labelIpAddress = new System.Windows.Forms.Label();
             this.groupBoxBoard.SuspendLayout();
             this.groupBoxRunStatus.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxStatus)).BeginInit();
@@ -61,7 +61,7 @@ namespace brainHatSharpGUI
             // 
             this.buttonStart.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonStart.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonStart.Location = new System.Drawing.Point(569, 38);
+            this.buttonStart.Location = new System.Drawing.Point(511, 38);
             this.buttonStart.Name = "buttonStart";
             this.buttonStart.Size = new System.Drawing.Size(164, 38);
             this.buttonStart.TabIndex = 0;
@@ -74,10 +74,11 @@ namespace brainHatSharpGUI
             this.comboBoxComPort.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.comboBoxComPort.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxComPort.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.comboBoxComPort.FormattingEnabled = true;
-            this.comboBoxComPort.Location = new System.Drawing.Point(180, 50);
+            this.comboBoxComPort.Location = new System.Drawing.Point(272, 27);
             this.comboBoxComPort.Name = "comboBoxComPort";
-            this.comboBoxComPort.Size = new System.Drawing.Size(222, 28);
+            this.comboBoxComPort.Size = new System.Drawing.Size(215, 28);
             this.comboBoxComPort.TabIndex = 1;
             // 
             // groupBoxBoard
@@ -95,41 +96,84 @@ namespace brainHatSharpGUI
             this.groupBoxBoard.Controls.Add(this.radioButtonDaisy);
             this.groupBoxBoard.Controls.Add(this.radioButtonCyton);
             this.groupBoxBoard.Controls.Add(this.comboBoxComPort);
-            this.groupBoxBoard.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.groupBoxBoard.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.groupBoxBoard.Location = new System.Drawing.Point(12, 12);
             this.groupBoxBoard.Name = "groupBoxBoard";
-            this.groupBoxBoard.Size = new System.Drawing.Size(547, 252);
+            this.groupBoxBoard.Size = new System.Drawing.Size(493, 252);
             this.groupBoxBoard.TabIndex = 2;
             this.groupBoxBoard.TabStop = false;
             this.groupBoxBoard.Text = "Configuración de conexión";
             // 
-            // checkBoxSRB
+            // textBoxIpAddress
             // 
-            this.checkBoxSRB.AutoSize = true;
-            this.checkBoxSRB.Location = new System.Drawing.Point(180, 90);
-            this.checkBoxSRB.Name = "checkBoxSRB";
-            this.checkBoxSRB.Size = new System.Drawing.Size(255, 24);
-            this.checkBoxSRB.TabIndex = 11;
-            this.checkBoxSRB.Text = "Comienza con SRB1 conectado";
-            this.checkBoxSRB.UseVisualStyleBackColor = true;
+            this.textBoxIpAddress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxIpAddress.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxIpAddress.Location = new System.Drawing.Point(286, 184);
+            this.textBoxIpAddress.Name = "textBoxIpAddress";
+            this.textBoxIpAddress.Size = new System.Drawing.Size(137, 26);
+            this.textBoxIpAddress.TabIndex = 12;
+            // 
+            // labelIpPort
+            // 
+            this.labelIpPort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelIpPort.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelIpPort.Location = new System.Drawing.Point(155, 224);
+            this.labelIpPort.Name = "labelIpPort";
+            this.labelIpPort.Size = new System.Drawing.Size(125, 19);
+            this.labelIpPort.TabIndex = 15;
+            this.labelIpPort.Text = "Puerto";
+            this.labelIpPort.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // textBoxIpPort
+            // 
+            this.textBoxIpPort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBoxIpPort.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxIpPort.Location = new System.Drawing.Point(286, 220);
+            this.textBoxIpPort.Name = "textBoxIpPort";
+            this.textBoxIpPort.Size = new System.Drawing.Size(137, 26);
+            this.textBoxIpPort.TabIndex = 13;
+            // 
+            // labelIpAddress
+            // 
+            this.labelIpAddress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelIpAddress.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelIpAddress.Location = new System.Drawing.Point(155, 189);
+            this.labelIpAddress.Name = "labelIpAddress";
+            this.labelIpAddress.Size = new System.Drawing.Size(125, 19);
+            this.labelIpAddress.TabIndex = 14;
+            this.labelIpAddress.Text = "Dirección IP";
+            this.labelIpAddress.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // checkBoxUseBFStream
             // 
             this.checkBoxUseBFStream.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.checkBoxUseBFStream.AutoSize = true;
-            this.checkBoxUseBFStream.Location = new System.Drawing.Point(12, 149);
+            this.checkBoxUseBFStream.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkBoxUseBFStream.Location = new System.Drawing.Point(29, 161);
             this.checkBoxUseBFStream.Name = "checkBoxUseBFStream";
             this.checkBoxUseBFStream.Size = new System.Drawing.Size(254, 24);
             this.checkBoxUseBFStream.TabIndex = 6;
             this.checkBoxUseBFStream.Text = "Habilitar la transmisión brainflow";
             this.checkBoxUseBFStream.UseVisualStyleBackColor = true;
             // 
+            // checkBoxSRB
+            // 
+            this.checkBoxSRB.AutoSize = true;
+            this.checkBoxSRB.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkBoxSRB.Location = new System.Drawing.Point(29, 104);
+            this.checkBoxSRB.Name = "checkBoxSRB";
+            this.checkBoxSRB.Size = new System.Drawing.Size(255, 24);
+            this.checkBoxSRB.TabIndex = 11;
+            this.checkBoxSRB.Text = "Comienza con SRB1 conectado";
+            this.checkBoxSRB.UseVisualStyleBackColor = true;
+            // 
             // buttonRefresh
             // 
             this.buttonRefresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.buttonRefresh.Location = new System.Drawing.Point(411, 50);
+            this.buttonRefresh.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.buttonRefresh.Location = new System.Drawing.Point(329, 61);
             this.buttonRefresh.Name = "buttonRefresh";
-            this.buttonRefresh.Size = new System.Drawing.Size(130, 29);
+            this.buttonRefresh.Size = new System.Drawing.Size(158, 29);
             this.buttonRefresh.TabIndex = 5;
             this.buttonRefresh.Text = "Actualizar";
             this.buttonRefresh.UseVisualStyleBackColor = true;
@@ -137,12 +181,13 @@ namespace brainHatSharpGUI
             // 
             // labelComPort
             // 
-            this.labelComPort.Location = new System.Drawing.Point(176, 27);
+            this.labelComPort.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelComPort.Location = new System.Drawing.Point(136, 32);
             this.labelComPort.Name = "labelComPort";
             this.labelComPort.Size = new System.Drawing.Size(130, 20);
             this.labelComPort.TabIndex = 4;
             this.labelComPort.Text = "Puerto COM";
-            this.labelComPort.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labelComPort.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // radioButtonDaisy
             // 
@@ -170,15 +215,17 @@ namespace brainHatSharpGUI
             // 
             // groupBoxRunStatus
             // 
+            this.groupBoxRunStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBoxRunStatus.BackColor = System.Drawing.Color.Transparent;
             this.groupBoxRunStatus.Controls.Add(this.pictureBoxStatus);
             this.groupBoxRunStatus.Controls.Add(this.labelDataStatus);
             this.groupBoxRunStatus.Controls.Add(this.labelSrbStatus);
             this.groupBoxRunStatus.Controls.Add(this.labelRunStatus);
-            this.groupBoxRunStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBoxRunStatus.Location = new System.Drawing.Point(13, 9);
+            this.groupBoxRunStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.groupBoxRunStatus.Location = new System.Drawing.Point(12, 11);
             this.groupBoxRunStatus.Name = "groupBoxRunStatus";
-            this.groupBoxRunStatus.Size = new System.Drawing.Size(546, 252);
+            this.groupBoxRunStatus.Size = new System.Drawing.Size(493, 252);
             this.groupBoxRunStatus.TabIndex = 7;
             this.groupBoxRunStatus.TabStop = false;
             // 
@@ -187,7 +234,7 @@ namespace brainHatSharpGUI
             this.pictureBoxStatus.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.pictureBoxStatus.Image = global::brainHatSharpGUI.Properties.Resources.yellowLight;
             this.pictureBoxStatus.InitialImage = null;
-            this.pictureBoxStatus.Location = new System.Drawing.Point(14, 20);
+            this.pictureBoxStatus.Location = new System.Drawing.Point(22, 37);
             this.pictureBoxStatus.Name = "pictureBoxStatus";
             this.pictureBoxStatus.Size = new System.Drawing.Size(48, 48);
             this.pictureBoxStatus.TabIndex = 3;
@@ -196,30 +243,30 @@ namespace brainHatSharpGUI
             // labelDataStatus
             // 
             this.labelDataStatus.AutoSize = true;
-            this.labelDataStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelDataStatus.Location = new System.Drawing.Point(87, 67);
+            this.labelDataStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelDataStatus.Location = new System.Drawing.Point(93, 95);
             this.labelDataStatus.Name = "labelDataStatus";
-            this.labelDataStatus.Size = new System.Drawing.Size(56, 20);
+            this.labelDataStatus.Size = new System.Drawing.Size(60, 24);
             this.labelDataStatus.TabIndex = 2;
             this.labelDataStatus.Text = "Status";
             // 
             // labelSrbStatus
             // 
             this.labelSrbStatus.AutoSize = true;
-            this.labelSrbStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelSrbStatus.Location = new System.Drawing.Point(87, 99);
+            this.labelSrbStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelSrbStatus.Location = new System.Drawing.Point(93, 133);
             this.labelSrbStatus.Name = "labelSrbStatus";
-            this.labelSrbStatus.Size = new System.Drawing.Size(56, 20);
+            this.labelSrbStatus.Size = new System.Drawing.Size(60, 24);
             this.labelSrbStatus.TabIndex = 1;
             this.labelSrbStatus.Text = "Status";
             // 
             // labelRunStatus
             // 
             this.labelRunStatus.AutoSize = true;
-            this.labelRunStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelRunStatus.Location = new System.Drawing.Point(74, 33);
+            this.labelRunStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelRunStatus.Location = new System.Drawing.Point(80, 53);
             this.labelRunStatus.Name = "labelRunStatus";
-            this.labelRunStatus.Size = new System.Drawing.Size(62, 20);
+            this.labelRunStatus.Size = new System.Drawing.Size(66, 24);
             this.labelRunStatus.TabIndex = 0;
             this.labelRunStatus.Text = "Status";
             // 
@@ -227,7 +274,7 @@ namespace brainHatSharpGUI
             // 
             this.buttonViewLogs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonViewLogs.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonViewLogs.Location = new System.Drawing.Point(569, 142);
+            this.buttonViewLogs.Location = new System.Drawing.Point(511, 142);
             this.buttonViewLogs.Name = "buttonViewLogs";
             this.buttonViewLogs.Size = new System.Drawing.Size(164, 38);
             this.buttonViewLogs.TabIndex = 3;
@@ -239,7 +286,7 @@ namespace brainHatSharpGUI
             // 
             this.buttonConfigureBoard.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonConfigureBoard.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonConfigureBoard.Location = new System.Drawing.Point(569, 90);
+            this.buttonConfigureBoard.Location = new System.Drawing.Point(511, 90);
             this.buttonConfigureBoard.Name = "buttonConfigureBoard";
             this.buttonConfigureBoard.Size = new System.Drawing.Size(164, 38);
             this.buttonConfigureBoard.TabIndex = 4;
@@ -260,54 +307,18 @@ namespace brainHatSharpGUI
             // 
             this.checkBoxLogToFile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBoxLogToFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkBoxLogToFile.Location = new System.Drawing.Point(569, 186);
+            this.checkBoxLogToFile.Location = new System.Drawing.Point(511, 186);
             this.checkBoxLogToFile.Name = "checkBoxLogToFile";
             this.checkBoxLogToFile.Size = new System.Drawing.Size(164, 54);
             this.checkBoxLogToFile.TabIndex = 6;
             this.checkBoxLogToFile.Text = "Guardar consola en archivo";
             this.checkBoxLogToFile.UseVisualStyleBackColor = true;
             // 
-            // textBoxIpAddress
-            // 
-            this.textBoxIpAddress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxIpAddress.Location = new System.Drawing.Point(278, 175);
-            this.textBoxIpAddress.Name = "textBoxIpAddress";
-            this.textBoxIpAddress.Size = new System.Drawing.Size(137, 26);
-            this.textBoxIpAddress.TabIndex = 12;
-            // 
-            // labelIpPort
-            // 
-            this.labelIpPort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelIpPort.Location = new System.Drawing.Point(147, 215);
-            this.labelIpPort.Name = "labelIpPort";
-            this.labelIpPort.Size = new System.Drawing.Size(125, 19);
-            this.labelIpPort.TabIndex = 15;
-            this.labelIpPort.Text = "Puerto";
-            this.labelIpPort.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // textBoxIpPort
-            // 
-            this.textBoxIpPort.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxIpPort.Location = new System.Drawing.Point(278, 211);
-            this.textBoxIpPort.Name = "textBoxIpPort";
-            this.textBoxIpPort.Size = new System.Drawing.Size(137, 26);
-            this.textBoxIpPort.TabIndex = 13;
-            // 
-            // labelIpAddress
-            // 
-            this.labelIpAddress.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.labelIpAddress.Location = new System.Drawing.Point(147, 180);
-            this.labelIpAddress.Name = "labelIpAddress";
-            this.labelIpAddress.Size = new System.Drawing.Size(125, 19);
-            this.labelIpAddress.TabIndex = 14;
-            this.labelIpAddress.Text = "Dirección IP";
-            this.labelIpAddress.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(741, 305);
+            this.ClientSize = new System.Drawing.Size(683, 305);
             this.Controls.Add(this.groupBoxRunStatus);
             this.Controls.Add(this.checkBoxLogToFile);
             this.Controls.Add(this.labelVersion);
@@ -316,8 +327,6 @@ namespace brainHatSharpGUI
             this.Controls.Add(this.groupBoxBoard);
             this.Controls.Add(this.buttonStart);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximumSize = new System.Drawing.Size(757, 344);
-            this.MinimumSize = new System.Drawing.Size(757, 344);
             this.Name = "MainWindow";
             this.Text = "brainHat Server";
             this.groupBoxBoard.ResumeLayout(false);
