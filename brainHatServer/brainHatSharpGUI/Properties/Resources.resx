@@ -310,6 +310,9 @@
   <data name="Slow" xml:space="preserve">
     <value>Slow</value>
   </data>
+  <data name="SRB1" xml:space="preserve">
+    <value>SRB1</value>
+  </data>
   <data name="SrbIs" xml:space="preserve">
     <value>SRB1 is</value>
   </data>

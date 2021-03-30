@@ -639,6 +639,15 @@ namespace brainHatSharpGUI.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to SRB1.
+        /// </summary>
+        public static string SRB1 {
+            get {
+                return ResourceManager.GetString("SRB1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SRB1 is.
         /// </summary>
         public static string SrbIs {
