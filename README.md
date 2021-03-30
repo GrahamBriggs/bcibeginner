@@ -16,14 +16,17 @@ For a quick overview of what the system can do, see the videos here:
 
 ### brainHat Servers
 See brainHatServer/brainHat for the C++ server program for the Raspberry Pi. Run it from the command line, or use the included scripts to configure it as a background daemon.
+
 ![brainHatDaemon](https://user-images.githubusercontent.com/5171343/112923410-1d540480-90c3-11eb-92e4-bf756578f7a7.png)
 
 See brainHatServer/brainHatSharp for a GUI version of the server program for Windows and Raspberry Pi.
+
 ![brainHatServer](https://user-images.githubusercontent.com/5171343/112923172-a585da00-90c2-11eb-9de1-739dcb2998d3.png)
 
 
 ### brainHat Clients
 See BrainHatClient for a C# GUI client program for Windows and Raspberry Pi.
+
 ![brainHatClient](https://user-images.githubusercontent.com/5171343/112923869-f21de500-90c3-11eb-9a00-fe50b9192685.png)
 
 
