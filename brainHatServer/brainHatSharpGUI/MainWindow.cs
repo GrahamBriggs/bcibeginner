@@ -464,13 +464,13 @@ namespace brainHatSharpGUI
                 switch ( status.CytonSRB1 )
                 {
                     case SrbSet.Unknown:
-                        srbStatus = $"SRB1 {Properties.Resources.Unknown}";
+                        srbStatus = $"{Properties.Resources.SRB1} {Properties.Resources.Unknown}";
                         break;
                     case SrbSet.Disconnected:
-                        srbStatus = $"SRB1 {Properties.Resources.Disconnected}";
+                        srbStatus = $"{Properties.Resources.SRB1} {Properties.Resources.Disconnected}";
                         break;
                     case SrbSet.Connected:
-                        srbStatus = $"SRB1 {Properties.Resources.Connected}";
+                        srbStatus = $"{Properties.Resources.SRB1} {Properties.Resources.Connected}";
                         break;
                 }
                 if (status.BoardId == 2)
@@ -478,13 +478,13 @@ namespace brainHatSharpGUI
                     switch (status.DaisySRB1)
                     {
                         case SrbSet.Unknown:
-                            srbStatus = $"Daisy SRB1 {Properties.Resources.Unknown}";
+                            srbStatus = $"Daisy {Properties.Resources.SRB1} {Properties.Resources.Unknown}";
                             break;
                         case SrbSet.Disconnected:
-                            srbStatus = $"Daisy SRB1 {Properties.Resources.Disconnected}";
+                            srbStatus = $"Daisy {Properties.Resources.SRB1} {Properties.Resources.Disconnected}";
                             break;
                         case SrbSet.Connected:
-                            srbStatus = $"Daisy SRB1 {Properties.Resources.Connected}";
+                            srbStatus = $"Daisy {Properties.Resources.SRB1} {Properties.Resources.Connected}";
                             break;
                     }
                 }

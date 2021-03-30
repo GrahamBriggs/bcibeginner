@@ -50,7 +50,7 @@ namespace brainHatSharpGUI
             buttonImpedance.Text = Properties.Resources.SetImpedance;
             buttonSetChannels.Text = Properties.Resources.SetChannels;
             buttonChannelDefaults.Text = Properties.Resources.SetDefault;
-            labelCytonSrb.Text = $"{Properties.Resources.Equipment} SRB1";
+            labelCytonSrb.Text = $"{Properties.Resources.Equipment} {Properties.Resources.SRB1}";
 
 
             SetupConfigurationListView();
@@ -235,7 +235,7 @@ namespace brainHatSharpGUI
             {
                 labelCytonSrb.Visible = true;
                 labelCytonSrbStatus.Text = BoardSettings.Boards.First().Srb1Set ? $"{Properties.Resources.SrbIs} {Properties.Resources.Connected}" : $"{Properties.Resources.SrbIs} {Properties.Resources.Disconnected} ({Properties.Resources.Default})";
-                buttonCytonSrb.Text = BoardSettings.Boards.First().Srb1Set ? $"{Properties.Resources.Disconnect} SRB1" : $"{Properties.Resources.Connect} SRB1";
+                buttonCytonSrb.Text = BoardSettings.Boards.First().Srb1Set ? $"{Properties.Resources.Disconnect} {Properties.Resources.SRB1}" : $"{Properties.Resources.Connect} {Properties.Resources.SRB1}";
 
                 labelCytonSrb.Visible = true;
                 labelCytonSrbStatus.Visible = true;
@@ -246,7 +246,7 @@ namespace brainHatSharpGUI
             {
                 labelDaisySrb.Visible = true;
                 labelDaisySrbStatus.Text = BoardSettings.Boards.Last().Srb1Set ? $"{Properties.Resources.SrbIs} {Properties.Resources.Connected}" : $"{Properties.Resources.SrbIs} {Properties.Resources.Disconnected} ({Properties.Resources.Default})";
-                buttonDaisySrb.Text = BoardSettings.Boards.Last().Srb1Set ? $"{Properties.Resources.Disconnect} SRB1" : $"{Properties.Resources.Connect} SRB1";
+                buttonDaisySrb.Text = BoardSettings.Boards.Last().Srb1Set ? $"{Properties.Resources.Disconnect} {Properties.Resources.SRB1}" : $"{Properties.Resources.Connect} {Properties.Resources.SRB1}";
 
                 labelDaisySrb.Visible = true;
                 labelDaisySrbStatus.Visible = true;
