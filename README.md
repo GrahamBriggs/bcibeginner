@@ -28,6 +28,7 @@ See BrainHatClient for a C# GUI client program for Windows and Raspberry Pi.
 
 
 See brainHatLit for a demo program to light up pins on the Raspberry Pi in response to brainflow data processing events.
+
 ![brainHatLit](https://user-images.githubusercontent.com/5171343/112924212-943dcd00-90c4-11eb-8c3b-5eb14d6cab01.png)
 
 
