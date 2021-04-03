@@ -296,7 +296,7 @@ namespace brainHatSharpGUI
             // 
             // labelVersion
             // 
-            this.labelVersion.Location = new System.Drawing.Point(12, 270);
+            this.labelVersion.Location = new System.Drawing.Point(12, 266);
             this.labelVersion.Name = "labelVersion";
             this.labelVersion.Size = new System.Drawing.Size(309, 23);
             this.labelVersion.TabIndex = 5;
@@ -318,7 +318,7 @@ namespace brainHatSharpGUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(683, 305);
+            this.ClientSize = new System.Drawing.Size(683, 291);
             this.Controls.Add(this.groupBoxRunStatus);
             this.Controls.Add(this.checkBoxLogToFile);
             this.Controls.Add(this.labelVersion);
@@ -327,6 +327,8 @@ namespace brainHatSharpGUI
             this.Controls.Add(this.groupBoxBoard);
             this.Controls.Add(this.buttonStart);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.MaximumSize = new System.Drawing.Size(699, 330);
+            this.MinimumSize = new System.Drawing.Size(699, 330);
             this.Name = "MainWindow";
             this.Text = "brainHat Server";
             this.groupBoxBoard.ResumeLayout(false);

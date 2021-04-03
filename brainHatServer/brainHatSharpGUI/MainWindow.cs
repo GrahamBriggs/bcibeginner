@@ -88,6 +88,7 @@ namespace brainHatSharpGUI
             labelComPort.Text = Properties.Resources.ComPort;
             buttonRefresh.Text = Properties.Resources.Refresh;
             checkBoxSRB.Text = Properties.Resources.StartWithSrb;
+            checkBoxSRB.Visible = false;
 
             checkBoxUseBFStream.Text = Properties.Resources.EnableBrainflowStreamingLabel;
             labelIpAddress.Text = Properties.Resources.IpAddress;

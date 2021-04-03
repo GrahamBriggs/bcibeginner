@@ -242,7 +242,7 @@
     <value>IP Address</value>
   </data>
   <data name="LogToFile" xml:space="preserve">
-    <value>Log to File</value>
+    <value>Log Console to File</value>
   </data>
   <data name="Mode" xml:space="preserve">
     <value>Mode</value>

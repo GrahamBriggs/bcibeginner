@@ -431,7 +431,7 @@ namespace brainHatSharpGUI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Log to File.
+        ///   Looks up a localized string similar to Log Console to File.
         /// </summary>
         public static string LogToFile {
             get {
