@@ -319,8 +319,8 @@ namespace BrainHatNetwork
 
                         //  update server connection state
                         await server.UpdateConnection(serverStatus);
-                        server.TimeStamp = serverStatus.TimeStamp;
                         serverStatus.OffsetTime = DateTimeOffset.UtcNow - serverStatus.TimeStamp;
+                        server.TimeStamp = DateTimeOffset.UtcNow;
                         server.OffsetTime = serverStatus.OffsetTime;
                         server.CytonSRB1 = serverStatus.CytonSRB1;
                         server.DaisySRB1 = serverStatus.DaisySRB1;
