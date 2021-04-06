@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -36,7 +37,7 @@ namespace BrainHatNetwork
             await StopMonitorAsync();
 
             MonitorCancelTokenSource = new CancellationTokenSource();
-            UdpReaderRunTask = RunUdpMulticastReaderAsync(MonitorCancelTokenSource.Token);
+            StartUdpMulticastReaders(MonitorCancelTokenSource.Token);
             ConnectionMonitorRunTask = RunConnectionStatusMonitorAsync(MonitorCancelTokenSource.Token);
             ReadLogPortTask = RunReadLogPortAsync(MonitorCancelTokenSource.Token);
             LslScannerRunTask = RunLslScannerAsync(MonitorCancelTokenSource.Token);
@@ -53,8 +54,9 @@ namespace BrainHatNetwork
             if (MonitorCancelTokenSource != null)
             {
                 MonitorCancelTokenSource.Cancel();
-                if (UdpReaderRunTask != null)
-                    await Task.WhenAll(UdpReaderRunTask, ConnectionMonitorRunTask, LslScannerRunTask, ReadLogPortTask);
+                if ( MulticastReaders != null )
+                    await Task.WhenAll(MulticastReaders);
+                await Task.WhenAll(ConnectionMonitorRunTask, LslScannerRunTask, ReadLogPortTask);
 
                 foreach (var nextServer in DiscoveredServers)
                 {
@@ -62,7 +64,8 @@ namespace BrainHatNetwork
                 }
 
                 MonitorCancelTokenSource = null;
-                UdpReaderRunTask = null;
+                MulticastReaders.Clear();
+                MulticastReaders = null;
                 ConnectionMonitorRunTask = null;
                 ReadLogPortTask = null;
             }
@@ -109,7 +112,7 @@ namespace BrainHatNetwork
 
         //  Thread cancel token and task
         CancellationTokenSource MonitorCancelTokenSource { get; set; }
-        Task UdpReaderRunTask { get; set; }
+
         Task ConnectionMonitorRunTask { get; set; }
         Task LslScannerRunTask { get; set; }
         Task ReadLogPortTask { get; set; }
@@ -217,12 +220,57 @@ namespace BrainHatNetwork
             }
         }
 
+        List<Task> MulticastReaders;
+
+        protected void StartUdpMulticastReaders(CancellationToken cancelToken)
+        {
+
+            MulticastReaders = new List<Task>();
+
+            // list of UdpClients to send multicasts
+            List<UdpClient> sendClients = new List<UdpClient>();
+
+            // join multicast group on all available network interfaces
+            NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+
+            foreach (NetworkInterface networkInterface in networkInterfaces)
+            {
+                if ((!networkInterface.Supports(NetworkInterfaceComponent.IPv4)) ||
+                    (networkInterface.OperationalStatus != OperationalStatus.Up))
+                {
+                    continue;
+                }
+
+                IPInterfaceProperties adapterProperties = networkInterface.GetIPProperties();
+                UnicastIPAddressInformationCollection unicastIPAddresses = adapterProperties.UnicastAddresses;
+                IPAddress ipAddress = null;
+
+                foreach (UnicastIPAddressInformation unicastIPAddress in unicastIPAddresses)
+                {
+                    if (unicastIPAddress.Address.AddressFamily != AddressFamily.InterNetwork)
+                    {
+                        continue;
+                    }
+
+                    ipAddress = unicastIPAddress.Address;
+                    break;
+                }
+
+                if (ipAddress == null)
+                {
+                    continue;
+                }
+
+                MulticastReaders.Add(RunUdpMulticastReaderAsync(cancelToken, ipAddress));
+            }
+        }
+
 
         /// <summary>
         /// Task to read from the server UDP multicast socket.
         /// This function will initiate creation of HatClient for discovered brainHat server.
         /// </summary>
-        protected async Task RunUdpMulticastReaderAsync(CancellationToken cancelToken)
+        protected async Task RunUdpMulticastReaderAsync(CancellationToken cancelToken, IPAddress interfaceAddress)
         {
             try
             {
@@ -236,7 +284,7 @@ namespace BrainHatNetwork
                     udpClient.Client.Bind(localpt);
 
                     //  join the multicast group
-                    udpClient.JoinMulticastGroup(IPAddress.Parse(BrainHatNetworkAddresses.MulticastGroupAddress));
+                    udpClient.JoinMulticastGroup(IPAddress.Parse(BrainHatNetworkAddresses.MulticastGroupAddress), interfaceAddress);
                     
 
                     //  spin until canceled
