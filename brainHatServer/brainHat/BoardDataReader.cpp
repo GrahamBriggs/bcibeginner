@@ -82,6 +82,10 @@ int BoardDataReader::Start(int board_id, struct BrainFlowInputParams params)
 	BoardParamaters = params;
 	BoardId = board_id;
 	
+	//  TODO - clean up SRB settings
+	StartSrb1CytonSet = true;
+	StartSrb1DaisySet = false;
+	
 	LastSampleIndex = -1;
 	
 	
@@ -125,27 +129,42 @@ int BoardDataReader::GetSrb1(int board)
 }
 
 
+string FormatSrb1Command(CytonChannelSettings* channelSettings, bool enable)
+{
+	auto settingsString = format("x%s%s%d%d%s%s%sX",
+		ChannelSetCharacter(channelSettings->ChannelNumber).c_str(),
+		BoolCharacter(channelSettings->PowerDown).c_str(),
+		channelSettings->Gain,
+		channelSettings->InputType,
+		BoolCharacter(channelSettings->Bias).c_str(),
+		BoolCharacter(channelSettings->Srb2).c_str(),
+		BoolCharacter(enable).c_str());
+	
+	return settingsString;
+}
+
 //  Public function to set SRB1 state
 bool BoardDataReader::RequestSetSrb1(int board, bool enable)
 {
 	if (!BoardSettings.HasValidSettings() && BoardSettings.Boards.size() < board)
 		return false;
 	
+	switch (board)
+	{
+	case 0: 
+		StartSrb1CytonSet = enable;
+		break;
+	case 2:
+		StartSrb1DaisySet = enable;
+		break;
+	default:
+		return false;	//  TODO ganglion 
+	}
+	
 	auto channelSettings = BoardSettings.Boards[board]->Channels.front();
 	if (CommandsQueueLock.try_lock_for(chrono::milliseconds(1000)))
-	{
-		//    string settingsString = $"x{settings.ChannelNumber.ChannelSetCharacter()}{settings.PowerDown.BoolCharacter()}{(int)(settings.Gain)}{(int)(settings.InputType)}{settings.Bias.BoolCharacter()}{settings.Srb2.BoolCharacter()}{(connect ? "1" : "0")}X";
-
-		string settingsString = format("x%s%s%d%d%s%s%sX",
-									ChannelSetCharacter(channelSettings->ChannelNumber).c_str(),
-									BoolCharacter(channelSettings->PowerDown).c_str(),
-									channelSettings->Gain,
-									channelSettings->InputType,
-									BoolCharacter(channelSettings->Bias).c_str(),
-									BoolCharacter(channelSettings->Srb2).c_str(),
-									BoolCharacter(enable).c_str());
-		
-		CommandsQueue.push(settingsString);
+	{		
+		CommandsQueue.push(FormatSrb1Command(channelSettings, enable));
 
 		CommandsQueueLock.unlock();
 		return true;
@@ -191,6 +210,25 @@ int BoardDataReader::InitializeBoard()
 				Board->release_session();
 			}
 			return -1;
+		}
+		
+		//  TODO - clean up SRB1 startup setting
+		if (StartSrb1CytonSet)
+		{
+			Logging.AddLog("BoardDataReader", "InitializeBoard", "Starting with SRB1 on.", LogLevelInfo);
+			auto channelSettings = BoardSettings.Boards[0]->Channels.front();
+			auto settingString = FormatSrb1Command(channelSettings, true);
+			Board->config_board((char*)settingString.c_str());
+			
+			if (!LoadBoardRegistersSettings())
+			{
+				Logging.AddLog("BoardDataReader", "InitializeBoard", "Failed to get board configuration.", LogLevelError);
+				if (Board->is_prepared())
+				{
+					Board->release_session();
+				}
+				return -1;
+			}
 		}
 		
 		bool newConnection = SampleRate < 0;

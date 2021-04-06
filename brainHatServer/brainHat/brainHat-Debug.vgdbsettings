@@ -13,7 +13,7 @@
     </CustomSourceDirectories>
     <AutoProgramSPIFFSPartition>true</AutoProgramSPIFFSPartition>
     <BuildHost>
-      <HostName>brainHat3</HostName>
+      <HostName>brainHat2</HostName>
       <Transport>SSH</Transport>
       <UserName>pi</UserName>
     </BuildHost>

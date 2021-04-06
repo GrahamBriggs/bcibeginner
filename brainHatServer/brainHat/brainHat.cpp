@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 	if (!ParseArguments(argc, argv))
 		return -1;
 		
-	BoardShim::set_log_file((char*)"./brainflowLogs.txt");
+	//BoardShim::set_log_file((char*)"./brainflowLogs.txt");
 	BoardShim::set_log_level(6);
 	
 	//  start program threads

@@ -42,6 +42,8 @@ protected:
 	bool StreamRunning;
 	bool IsConnected;
 	bool RequestToggleStreaming;
+	bool StartSrb1CytonSet;
+	bool StartSrb1DaisySet;
 	//
 	bool BoardReady();
 	int	 InitializeBoard();
