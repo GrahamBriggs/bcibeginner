@@ -137,8 +137,15 @@ namespace BrainHatNetwork
                     {
                         foreach (var nextConnection in oldConnections)
                         {
+                            if ( nextConnection.Value.SecondsSinceLastSample < 30 )
+                            {
+                                //  glitch in the matrix, lost server status but it is still receiving streaming data
+                                continue;
+                            }
+
                             try
                             {
+                                //  remove this server
                                 Log?.Invoke(this, new LogEventArgs(nextConnection.Key, this, "RunConnectionStatusMonitor", $"Lost connection to brainHat server {nextConnection.Key}.", LogLevel.INFO));
                                 HatConnectionChanged?.Invoke(this, new HatConnectionEventArgs(HatConnectionState.Lost, nextConnection.Key));
 
@@ -341,6 +348,7 @@ namespace BrainHatNetwork
         }
 
        
+       
         /// <summary>
         /// Process network connection status message
         /// </summary>
@@ -355,6 +363,9 @@ namespace BrainHatNetwork
                 {
                     var serverStatus = JsonConvert.DeserializeObject<BrainHatServerStatus>(status);
 
+                    if (serverStatus.IpAddress.Length == 0)
+                        return;
+
                     //  check the list of discovered servers
                     if (!DiscoveredServers.ContainsKey(hostName))
                     {
@@ -366,6 +377,8 @@ namespace BrainHatNetwork
                         var server = DiscoveredServers[hostName];
 
                         //  update server connection state
+                        var updateTime = server.TimeStamp;
+
                         await server.UpdateConnection(serverStatus);
                         serverStatus.OffsetTime = DateTimeOffset.UtcNow - serverStatus.TimeStamp;
                         server.TimeStamp = DateTimeOffset.UtcNow;
@@ -373,6 +386,8 @@ namespace BrainHatNetwork
                         server.CytonSRB1 = serverStatus.CytonSRB1;
                         server.DaisySRB1 = serverStatus.DaisySRB1;
                         server.IsStreaming = serverStatus.IsStreaming;
+                        server.Eth0Address = serverStatus.Eth0Address;
+                        server.Wlan0Address = serverStatus.Wlan0Address;
 
                         //  set raw data status for the event message
                         serverStatus.ReceivingRaw = server.ReceivingRaw;

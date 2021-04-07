@@ -508,6 +508,7 @@ namespace brainHatSharpGUI
                     throw new Exception("Unable to get board register settings");
                 }
 
+                //  TODO - clean up SRB1 start setting
                 if ( StartSrb1CytonSet )
                 {
                     await SetSrb1Async(BoardSettings.Boards[0].Channels[0], true);

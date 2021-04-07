@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <unistd.h>
 #include <lsl_cpp.h>
+#include <net/if.h>
+#include <ifaddrs.h>
 
 #include "brainHat.h"
 #include "Logger.h"
@@ -30,7 +32,7 @@ bool HandleServerRequest(string request);
 //  Program Components
 Logger Logging;
 BroadcastData DataBroadcaster;
-BroadcastStatus StatusBroadcaster;
+list<BroadcastStatus*> StatusBroadcasters;
 CommandServer ComServer(HandleServerRequest);
 
 //  Data Source is either board or demo file reader
@@ -56,8 +58,8 @@ void RunBoardData();
 void RunFileData();
 bool ProcessKeyboardInput(string input); 
 bool LiveData() { return Board_Id >= 0; }
-
-
+void StartStatusBroadcast();
+void StopStatusBroadcast();
 
 
 //  Main function
@@ -73,8 +75,8 @@ int main(int argc, char *argv[])
 	//  start program threads
 	Logging.Start();
 	ComServer.Start();
-	StatusBroadcaster.Start();
-	//  DataBroadcaster thread is started in BoardConnectionStateChanged( ) when the new board parameters are discovered
+	StartStatusBroadcast();
+	
 	
 	//  start board or file simulator data
 	if(LiveData())
@@ -88,7 +90,7 @@ int main(int argc, char *argv[])
 
 	// user quit, stop threads
 	DataBroadcaster.Cancel();
-	StatusBroadcaster.Cancel();
+	StopStatusBroadcast();
 	ComServer.Cancel();
 	Logging.Cancel();
 	
@@ -395,6 +397,60 @@ bool ParseArguments(int argc, char *argv[])
 	}
 	
 	return true;
+}
+
+
+
+typedef unsigned long uint32;
+
+uint32 SockAddrToUint32(struct sockaddr * a)
+{
+	return ((a)&&(a->sa_family == AF_INET)) ? ntohl(((struct sockaddr_in *)a)->sin_addr.s_addr) : 0;
+}
+
+// convert a numeric IP address into its string representation
+static void Inet_NtoA(uint32 addr, char * ipbuf)
+{
+	sprintf(ipbuf, "%li.%li.%li.%li", (addr >> 24) & 0xFF, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, (addr >> 0) & 0xFF);
+}
+
+
+void StartStatusBroadcast()
+{
+
+	struct ifaddrs * ifap;
+	if (getifaddrs(&ifap) == 0)
+	{
+		struct ifaddrs * p = ifap;
+		while (p)
+		{
+			uint32 ifaAddr  = SockAddrToUint32(p->ifa_addr);
+			uint32 maskAddr = SockAddrToUint32(p->ifa_netmask);
+			uint32 dstAddr  = SockAddrToUint32(p->ifa_dstaddr);
+			if (ifaAddr > 0)
+			{
+				char ifaAddrStr[32]; Inet_NtoA(ifaAddr, ifaAddrStr);
+				char maskAddrStr[32]; Inet_NtoA(maskAddr, maskAddrStr);
+				char dstAddrStr[32]; Inet_NtoA(dstAddr, dstAddrStr);
+				//printf("  Found interface:  name=[%s] desc=[%s] address=[%s] netmask=[%s] broadcastAddr=[%s]\n", p->ifa_name, "unavailable", ifaAddrStr, maskAddrStr, dstAddrStr);
+				BroadcastStatus* newBroadcaster = new BroadcastStatus(p->ifa_name);
+				newBroadcaster->Start();
+				StatusBroadcasters.push_back(newBroadcaster);
+			}
+			p = p->ifa_next;
+		}
+		freeifaddrs(ifap);
+	}
+}
+
+
+void StopStatusBroadcast()
+{
+	for (auto nextBroadcaster = StatusBroadcasters.begin(); nextBroadcaster != StatusBroadcasters.end(); ++nextBroadcaster)
+	{
+		(*nextBroadcaster)->Cancel();
+		delete *nextBroadcaster;
+	}
 }
 
 

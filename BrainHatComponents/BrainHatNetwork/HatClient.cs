@@ -64,6 +64,8 @@ namespace BrainHatNetwork
 
         public bool ReceivingRaw => (RunTaskCancelTokenSource != null && TimeSinceLastSample.ElapsedMilliseconds < 5000);
 
+        public double SecondsSinceLastSample => TimeSinceLastSample.Elapsed.TotalSeconds;
+
         public double RawLatency => RawDataOffsetTime;
 
         public TimeSpan OffsetTime { get; set; }
