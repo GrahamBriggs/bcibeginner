@@ -35,6 +35,6 @@ namespace BrainHatNetwork
         }
 
         public string Request { get; protected set; }
-        protected Dictionary<string, string> Args;
+        Dictionary<string, string> Args;
     }
 }

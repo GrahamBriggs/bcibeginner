@@ -20,7 +20,7 @@ namespace BrainflowDataProcessing
 
         public double FileDuration => FileWriter != null ? FileWriter.FileDuration : 0;
 
-        public string FileName => FileWriter != null ? Path.GetFileName(FileWriter.FileName): "";
+        public string FileName => FileWriter != null ? Path.GetFileName(FileWriter.FileName) : "";
 
 
         public async Task StartWritingToFileAsync(string path, string fileNameRoot, int boardId, int sampleRate, FileWriterType format)
@@ -46,7 +46,7 @@ namespace BrainflowDataProcessing
             await FileWriter.StartWritingToFileAsync(path, fileNameRoot);
         }
 
-        private void OnLog(object sender, LogEventArgs e)
+        void OnLog(object sender, LogEventArgs e)
         {
             Log?.Invoke(sender, e);
         }
@@ -74,12 +74,10 @@ namespace BrainflowDataProcessing
 
         public BrainHatFileWriter()
         {
-           
+
         }
 
-
-       
-
-        protected IBrainHatFileWriter FileWriter;
+ 
+        IBrainHatFileWriter FileWriter;
     }
 }

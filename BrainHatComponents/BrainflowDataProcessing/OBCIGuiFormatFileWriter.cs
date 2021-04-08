@@ -42,7 +42,6 @@ namespace BrainflowDataProcessing
 
         public string FileName { get; protected set; }
 
-        protected Stopwatch FileTimer { get; set; }
         public double FileDuration => FileTimer.Elapsed.TotalSeconds;
 
         /// <summary>
@@ -84,7 +83,7 @@ namespace BrainflowDataProcessing
 
         public void AddData(IEnumerable<IBFSample> chunk)
         {
-            if ( FileWritingTask != null )
+            if (FileWritingTask != null)
             {
                 Data.AddRange(chunk);
                 NotifyAddedData.Release();
@@ -109,21 +108,23 @@ namespace BrainflowDataProcessing
         }
 
         //  File writing task 
-        protected CancellationTokenSource FileWriterCancelTokenSource;
-        protected Task FileWritingTask;
-        protected SemaphoreSlim NotifyAddedData;
+        CancellationTokenSource FileWriterCancelTokenSource;
+        Task FileWritingTask;
+        SemaphoreSlim NotifyAddedData;
 
         // Queue to hold data pending write
         ConcurrentQueue<IBFSample> Data;
 
+        Stopwatch FileTimer;
+
         //  File Name Root
         string FileNameRoot;
-      
+
 
         //OpenBCI_GUI$BoardCytonSerialDaisy
         //OpenBCI_GUI$BoardCytonSerial
 
-        private string FileBoardDescription()
+        string FileBoardDescription()
         {
             switch (BoardId)
             {
@@ -138,12 +139,12 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Run function
         /// </summary>
-        private async Task RunFileWriter(CancellationToken cancelToken)
+        async Task RunFileWriter(CancellationToken cancelToken)
         {
             try
             {
                 //  generate test file name
-              
+
                 if (!Directory.Exists(Path.GetDirectoryName(FileName)))
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(FileName));
@@ -221,7 +222,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Write header to file based on the first sample recorded
         /// </summary>
-        private void WriteHeaderToFile(StreamWriter file, IBFSample nextReading)
+        void WriteHeaderToFile(StreamWriter file, IBFSample nextReading)
         {
             string header = "Sample Index";
 
@@ -259,7 +260,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Write a sample to file
         /// </summary>
-        private void WriteToFile(StreamWriter file, IBFSample nextSample)
+        void WriteToFile(StreamWriter file, IBFSample nextSample)
         {
             var seconds = (long)Math.Truncate(nextSample.TimeStamp);
             var time = DateTimeOffset.FromUnixTimeSeconds(seconds);

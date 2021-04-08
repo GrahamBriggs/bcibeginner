@@ -109,7 +109,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Get enumerable of the band powers we are calculating
         /// </summary>
-        public IEnumerable<KeyValuePair<string,IBFSample>> GetBandPowers()
+        public IEnumerable<KeyValuePair<string, IBFSample>> GetBandPowers()
         {
             foreach (var nextBandPower in BandPowersCollection)
                 yield return nextBandPower;
@@ -131,7 +131,7 @@ namespace BrainflowDataProcessing
             NumberOfChannels = BoardShim.get_exg_channels(BoardId).Length;
             SampleRate = sampleRate;
             Name = name;
-         
+
             PeriodMilliseconds = 200;   //  default 5 Hz
 
             ProcessingTimes = new ConcurrentQueue<double>();
@@ -155,15 +155,15 @@ namespace BrainflowDataProcessing
         ConcurrentDictionary<string, IBFSample> BandPowersCollection;
 
         //  Run function task
-        protected CancellationTokenSource CancelTokenSource { get; set; }
-        protected Task MonitorRunTask { get; set; }
-        ConcurrentQueue<double> ProcessingTimes { get; set; }
+        CancellationTokenSource CancelTokenSource;
+        Task MonitorRunTask;
+        ConcurrentQueue<double> ProcessingTimes;
 
 
         /// <summary>
         /// Monitor run function
         /// </summary>
-        private async Task RunBadPowerMonitorAsync(CancellationToken cancelToken)
+        async Task RunBadPowerMonitorAsync(CancellationToken cancelToken)
         {
             try
             {
@@ -205,7 +205,7 @@ namespace BrainflowDataProcessing
         /// Detect band power
         /// </summary>
         /// <param name="data"></param>
-        private void DetectBandPowers()
+        void DetectBandPowers()
         {
             try
             {

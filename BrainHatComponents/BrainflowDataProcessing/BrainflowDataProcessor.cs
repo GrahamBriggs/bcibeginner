@@ -41,8 +41,6 @@ namespace BrainflowDataProcessing
             PeriodicProcessorTask = RunPeriodicProcessorAsync(CancelTokenSource.Token);
             DataMonitorTask = RunDataMonitorAsync(CancelTokenSource.Token);
 
-            TimeTagFirstSample = -1;
-
             Log?.Invoke(this, new LogEventArgs(Name, this, "StartDataProcessor", $"Starting Brainflow data processor for {Name}.", LogLevel.INFO));
         }
 
@@ -101,16 +99,20 @@ namespace BrainflowDataProcessing
         /// </summary>
         public async Task<SignalFiltering> StartSignalFilteringAsync(string filterName)
         {
-            if ( CancelTokenSource == null )
+            if (CancelTokenSource == null)
             {
                 Log?.Invoke(this, new LogEventArgs(Name, this, "StartSignalFiltering", $"You must start the processor first.", LogLevel.ERROR));
                 return null;
             }
 
-            if (ActiveFilters.ContainsKey(filterName))
-                return ActiveFilters[filterName];
 
-            if ( Filters.GetFilter(filterName) != null )
+            if (ActiveFilters.ContainsKey(filterName))
+            {
+                return ActiveFilters[filterName];
+            }
+
+
+            if (Filters.GetFilter(filterName) != null)
             {
                 var newFilter = new SignalFiltering(Name, BoardId, SampleRate, Filters.GetFilter(filterName))
                 {
@@ -262,7 +264,7 @@ namespace BrainflowDataProcessing
             }
         }
 
-        
+
 
 
         /// <summary>
@@ -281,10 +283,6 @@ namespace BrainflowDataProcessing
         {
             return BandPowers.GetBandPower(band);
         }
-
-
-       
-
 
         #endregion
 
@@ -312,15 +310,10 @@ namespace BrainflowDataProcessing
             BandPowers.GetRawChunk = GetRawChunk;
             BandPowers.Log += OnComponentLog;
 
-            RealTimeBufferLengthSeconds = 5*60;
+            RealTimeBufferLengthSeconds = 5 * 60;
 
 
             ActiveFilters = new Dictionary<string, SignalFiltering>();
-
-            if (Filters.GetFilterNames().Count() == 0)
-                Filters.LoadDefaultFilter();
-
-            TimeTagFirstSample = -1;
 
             //  default periods for periodic loops
             PeriodMsUpdateData = 200;       //  5Hz for update data message
@@ -342,15 +335,15 @@ namespace BrainflowDataProcessing
         public double RealTimeBufferLengthSeconds { get; set; }
 
         //  Running tasks
-        protected CancellationTokenSource CancelTokenSource { get; set; }
-        protected Task RawDataQueueProcessorTask { get; set; }
-        protected Task PeriodicProcessorTask { get; set; }
-        protected Task DataMonitorTask { get; set; }
+        CancellationTokenSource CancelTokenSource;
+        Task RawDataQueueProcessorTask;
+        Task PeriodicProcessorTask;
+        Task DataMonitorTask;
 
         // Processing queue to hold data to be processed
-        protected SemaphoreSlim NotifyAddedData { get; set; }
+        SemaphoreSlim NotifyAddedData;
         ConcurrentQueue<IBFSample> DataToProcess;
-        protected bool FlushQueue;
+        bool FlushQueue;
 
         //  Collection of sensor observations that have been processed
         List<IBFSample> UnfilteredData;
@@ -362,26 +355,23 @@ namespace BrainflowDataProcessing
         public IBFSample StdDevMedians { get; private set; }
 
         //  Band power monitor
-        protected BandPowerMonitor BandPowers { get; private set; }
+        BandPowerMonitor BandPowers;
 
         //  Signal filtering
-        Dictionary<string,SignalFiltering> ActiveFilters { get; set; }
-        
+        Dictionary<string, SignalFiltering> ActiveFilters;
+
         public static SignalFilters Filters = new SignalFilters();
 
-        double TimeTagFirstSample { get; set; }
-
-
         //  Performance testing and monitoring
-        ConcurrentQueue<double> ProcessingTimesQueue { get; set; }
-        private int LastSampleIndex;
+        ConcurrentQueue<double> ProcessingTimesQueue;
+        int LastSampleIndex;
 
 
 
         /// <summary>
         /// Create the collection of std deviations median
         /// </summary>
-        private void CreateChannelStdDevRunningCollection()
+        void CreateChannelStdDevRunningCollection()
         {
             ChannelSdtDevRunningCollection = new List<ConcurrentQueue<double>>();
             //  add a collection for each channel
@@ -395,7 +385,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Clear out the std dev collections
         /// </summary>
-        private void ClearStdDevRunningCollection()
+        void ClearStdDevRunningCollection()
         {
             for (int i = 0; i < NumberOfChannels; i++)
             {
@@ -409,7 +399,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Init the processor 
         /// </summary>
-        private void InitializeProcessor()
+        void InitializeProcessor()
         {
             //  clean out our collections
             lock (UnfilteredData)
@@ -423,15 +413,15 @@ namespace BrainflowDataProcessing
 
 
         //  Data monitor update periods
-        private int PeriodMsUpdateData { get; set; }
-        private int PeriodMsUpdateProcessorStats { get; set; }
+        int PeriodMsUpdateData;
+        int PeriodMsUpdateProcessorStats;
 
         /// <summary>
         /// Background task to monitor the data
         /// will send event with current data (to update the UI for example) at a frequency of 1/PeriodUpdateData
         /// will log calculation performance metrics at a frequency of 1/PeriodUpdateProcessorStats
         /// </summary>
-        private async Task RunDataMonitorAsync(CancellationToken cancelToken)
+        async Task RunDataMonitorAsync(CancellationToken cancelToken)
         {
             try
             {
@@ -481,7 +471,7 @@ namespace BrainflowDataProcessing
         /// Send an event with the current state of the data
         /// intended to enable continuous update of UI, including signal that we do not have fresh data
         /// </summary>
-        private void SendCurrentDataEvent()
+        void SendCurrentDataEvent()
         {
             ProcessorCurrentStateReportEventArgs report = new ProcessorCurrentStateReportEventArgs();
 
@@ -509,9 +499,9 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Keep track of processor steps efficiency for benchmarking purposes
         /// </summary>
-        private void LogProcessorStats(TimeSpan elapsed)
+        void LogProcessorStats(TimeSpan elapsed)
         {
-            if ( ProcessingTimesQueue.Count > 0)
+            if (ProcessingTimesQueue.Count > 0)
             {
                 IBFSample first;
                 lock (UnfilteredData)
@@ -523,7 +513,7 @@ namespace BrainflowDataProcessing
                 if (ProcessingTimesQueue.Count > 0)
                     processor = $"Queue {(ProcessingTimesQueue.Count / elapsed.TotalSeconds).ToString("F0")} times per second: Av {ProcessingTimesQueue.Average().ToString("F4")} s | Max {ProcessingTimesQueue.Max().ToString("F4")} s.";
 
-               
+
                 Log?.Invoke(this, new LogEventArgs(Name, this, "LogProcessorStats", $"{Name} processing: Age {(DateTimeOffset.UtcNow.ToUnixTimeInDoubleSeconds() - first.TimeStamp).ToString("F6")}.  {processor}", LogLevel.TRACE));
 
                 if (CountMissingIndex > 0)
@@ -540,7 +530,7 @@ namespace BrainflowDataProcessing
         /// Raw data processing queue task
         /// Uses notifications and will process the data one at a time
         /// </summary>
-        private async Task RunDataQueueProcessorAsync(CancellationToken cancelToken)
+        async Task RunDataQueueProcessorAsync(CancellationToken cancelToken)
         {
             try
             {
@@ -596,7 +586,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Process the data in the queue
         /// </summary>
-        private void ProcessDataQueue(IBFSample sample)
+        void ProcessDataQueue(IBFSample sample)
         {
             if (sample != null)
             {
@@ -611,13 +601,13 @@ namespace BrainflowDataProcessing
 
 
 
-        private int CountMissingIndex;
+        int CountMissingIndex;
 
         /// <summary>
         /// Check the sample index sequence
         /// log a warning if sample index is missing
         /// </summary>
-        private void InspectSampleIndex(IBFSample sample)
+        void InspectSampleIndex(IBFSample sample)
         {
             var nextIndex = (int)(sample.SampleIndex);
             var difference = sample.SampleIndex.SampleIndexDifference(LastSampleIndex);
@@ -647,7 +637,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Periodic processing tasks
         /// </summary>
-        private async Task RunPeriodicProcessorAsync(CancellationToken cancelToken)
+        async Task RunPeriodicProcessorAsync(CancellationToken cancelToken)
         {
             try
             {
@@ -691,7 +681,7 @@ namespace BrainflowDataProcessing
             }
         }
 
-        private void UpdateStandardDeviations()
+        void UpdateStandardDeviations()
         {
             var data = GetUnfilteredData(.25);
             if (data != null && data.Count() > 0)
@@ -706,7 +696,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Update the running collection of standard deviations for each channel
         /// </summary>
-        private void UpdateStdDevCollections(IEnumerable<IBFSample> data)
+        void UpdateStdDevCollections(IEnumerable<IBFSample> data)
         {
             for (int i = 0; i < NumberOfChannels; i++)
             {
@@ -719,7 +709,7 @@ namespace BrainflowDataProcessing
         /// Update the running list of standard deviations for a specific channel
         /// return the median std dev for the collection
         /// </summary>
-        private double UpdateStdDevCollection(ConcurrentQueue<double> avgCollection, double stdDev)
+        double UpdateStdDevCollection(ConcurrentQueue<double> avgCollection, double stdDev)
         {
             try
             {
@@ -741,7 +731,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Update the current running standard deviation median for each channel
         /// </summary>
-        private void UpdateStdDevMedians()
+        void UpdateStdDevMedians()
         {
             for (int i = 0; i < NumberOfChannels; i++)
             {
@@ -751,7 +741,7 @@ namespace BrainflowDataProcessing
 
 
 
-       
+
 
 
 
@@ -759,7 +749,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Get the last number of seconds of Exg data for the specified channel
         /// </summary>
-        private IEnumerable<IBFSample> GetUnfilteredData(double seconds)
+        IEnumerable<IBFSample> GetUnfilteredData(double seconds)
         {
             var data = new List<IBFSample>();
             lock (UnfilteredData)
@@ -784,7 +774,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Get a range of Exg data starting at from seconds ago, and ending at to seconds ago
         /// </summary>
-        private IEnumerable<IBFSample> GetUnfilteredData(double from, double to)
+        IEnumerable<IBFSample> GetUnfilteredData(double from, double to)
         {
             var data = new List<IBFSample>();
             lock (UnfilteredData)
@@ -812,7 +802,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Get the last number of seconds of Exg data for the specified channel
         /// </summary>
-        private IEnumerable<IBFSample> GetUnfilteredData(DateTimeOffset since)
+        IEnumerable<IBFSample> GetUnfilteredData(DateTimeOffset since)
         {
             var data = new List<IBFSample>();
 
@@ -838,7 +828,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Remove specified seconds of old data from the list
         /// </summary>
-        private void FlushOldData(double seconds)
+        void FlushOldData(double seconds)
         {
             lock (UnfilteredData)
             {
@@ -853,7 +843,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Calculate the deviation for each Exg channel with specified seconds worth of data
         /// </summary>
-        private IBFSample GenerateDeviationReport(double seconds)
+        IBFSample GenerateDeviationReport(double seconds)
         {
             var devReport = new BFSampleImplementation(BoardId);
             var data = GetUnfilteredData(seconds);
@@ -870,7 +860,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Calculate the average for each Exg channel using specified seconds worth of data
         /// </summary>
-        private IBFSample GenerateAverageReport(double seconds)
+        IBFSample GenerateAverageReport(double seconds)
         {
             var averageReport = new BFSampleImplementation(BoardId);
             var data = GetUnfilteredData(seconds);
@@ -886,7 +876,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Calculate the median for each Exg channel using specified seconds worth of data
         /// </summary>
-        private IBFSample GenerateMedianReport(double seconds)
+        IBFSample GenerateMedianReport(double seconds)
         {
             var medianReport = new BFSampleImplementation(BoardId);
             var data = GetUnfilteredData(seconds);
@@ -905,7 +895,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Pass through function for members with log function to forward log events
         /// </summary>
-        private void OnComponentLog(object sender, LogEventArgs e)
+        void OnComponentLog(object sender, LogEventArgs e)
         {
             Log?.Invoke(sender, e);
         }

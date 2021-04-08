@@ -45,7 +45,7 @@ namespace BrainHatNetwork
         public SrbSet CytonSRB1 { get; set; }
 
         public SrbSet DaisySRB1 { get; set; }
-        
+
         public bool IsStreaming { get; set; }
 
         public bool RecordingDataBrainHat { get; set; }
@@ -82,7 +82,7 @@ namespace BrainHatNetwork
 
                 //  override the address to use loopback when we are on the same machine
                 //  this allows operation of the server/viewer on same machine when not connected to network
-                if (address.CompareTo(LocalIpAddress) == 0 || address.Substring(0,7).CompareTo("169.254") == 0)
+                if (address.CompareTo(LocalIpAddress) == 0 || address.Substring(0, 7).CompareTo("169.254") == 0)
                     address = "127.0.0.1";
 
                 return address;
@@ -170,6 +170,7 @@ namespace BrainHatNetwork
 
             CountRecordsTimer = new System.Diagnostics.Stopwatch();
             TimeSinceLastSample = new System.Diagnostics.Stopwatch();
+            TimeSinceLastSample.Start();
 
             TimeStamp = DateTimeOffset.UtcNow;
 
@@ -178,28 +179,28 @@ namespace BrainHatNetwork
             NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
         }
 
-        private void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
+        void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
         {
             LocalIpAddress = NetworkUtilities.GetLocalIPAddress();
         }
 
-        private StreamInfo StreamInfo { get; set; }
+        StreamInfo StreamInfo;
         public int SampleSize { get; protected set; }
 
         //  Read data port task
-        CancellationTokenSource RunTaskCancelTokenSource { get; set; }
-        Task ReadDataPortTask { get; set; }
+        CancellationTokenSource RunTaskCancelTokenSource;
+        Task ReadDataPortTask;
 
         //  read disgnostics
         List<Tuple<long, long, long>> PullSampleTimes = new List<Tuple<long, long, long>>();
         List<long> PullSampleCount = new List<long>();
 
-        private string LocalIpAddress;
+        string LocalIpAddress;
 
         /// <summary>
         /// Run function for reading data on LSL multicast data port
         /// </summary>
-        protected async Task RunReadDataPortAsync(CancellationToken cancelToken)
+        async Task RunReadDataPortAsync(CancellationToken cancelToken)
         {
             var sw = new System.Diagnostics.Stopwatch();
             var sampleReportingTime = new System.Diagnostics.Stopwatch();
@@ -216,7 +217,7 @@ namespace BrainHatNetwork
 
                 double[,] buffer = new double[512, SampleSize];
                 double[] timestamps = new double[512];
-            
+
                 sw.Restart();
 
                 //  spin until canceled
@@ -274,7 +275,7 @@ namespace BrainHatNetwork
         /// <summary>
         /// Process chunk read
         /// </summary>
-        private void ProcessChunk(double[,] buffer, int num)
+        void ProcessChunk(double[,] buffer, int num)
         {
             for (int s = 0; s < num; s++)
             {
@@ -305,12 +306,12 @@ namespace BrainHatNetwork
 
         double RawDataOffsetTime;
         System.Diagnostics.Stopwatch TimeSinceLastSample;
-        
+
 
         /// <summary>
         /// Log raw data processing performance
         /// </summary>
-        private void LogRawDataProcessingPerformance(IBFSample data)
+        void LogRawDataProcessingPerformance(IBFSample data)
         {
             RecordsCount++;
             TimeSinceLastSample.Restart();

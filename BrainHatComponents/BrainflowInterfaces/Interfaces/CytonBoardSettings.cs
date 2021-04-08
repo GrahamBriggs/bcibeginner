@@ -38,14 +38,14 @@ namespace BrainflowInterfaces
             Srb2 = true;
         }
 
-        public int ChannelNumber { get; set;}
-        public bool PowerDown { get; set;}
-        public ChannelGain Gain { get; set;}
-        public AdsChannelInputType InputType { get; set;}
-        public bool Bias { get; set;}
+        public int ChannelNumber { get; set; }
+        public bool PowerDown { get; set; }
+        public ChannelGain Gain { get; set; }
+        public AdsChannelInputType InputType { get; set; }
+        public bool Bias { get; set; }
         public bool LlofP { get; set; }
         public bool LlofN { get; set; }
-        public bool Srb2 { get; set;}
+        public bool Srb2 { get; set; }
 
         public override string ToString()
         {
@@ -67,13 +67,13 @@ namespace BrainflowInterfaces
         }
 
         public bool Srb1Set { get; set; }
-        protected List<ICytonChannelSettings> _Channels;
+        List<ICytonChannelSettings> _Channels;
         public ICytonChannelSettings[] Channels => _Channels.ToArray();
         public void AddChannel(ICytonChannelSettings channel)
         {
             _Channels.Add(channel);
         }
-        
+
     }
 
     public interface ICytonBoards
@@ -89,7 +89,7 @@ namespace BrainflowInterfaces
             _Boards = new List<CytonBoardSettingsImplementation>();
         }
 
-        protected List<CytonBoardSettingsImplementation> _Boards;
+        List<CytonBoardSettingsImplementation> _Boards;
         public ICytonBoardSettings[] Boards => _Boards.ToArray();
 
         public bool IsValid => _Boards.Count > 0;
@@ -116,7 +116,7 @@ namespace BrainflowInterfaces
                     {
                         if (_Boards.Count > 0)
                         {
-                            if ( _Boards[_Boards.Count-1].Channels.Count() != 8 )
+                            if (_Boards[_Boards.Count - 1].Channels.Count() != 8)
                             {
                                 _Boards = new List<CytonBoardSettingsImplementation>();
                                 throw new Exception("Board has less than 8 channels");
@@ -132,18 +132,18 @@ namespace BrainflowInterfaces
                         if (columns.Count() == 11)
                         {
                             var newChannel = new CytonChannelSettingsImplementation();
-                         
+
                             newChannel.ChannelNumber = int.Parse(nextLine.Substring("CH".Length, 1)) + boardChannelOffset;
-                           
-                            if ( _Boards.Last().Channels.Length > 0)
+
+                            if (_Boards.Last().Channels.Length > 0)
                             {
-                                if(newChannel.ChannelNumber - _Boards.Last().Channels.Last().ChannelNumber != 1)
+                                if (newChannel.ChannelNumber - _Boards.Last().Channels.Last().ChannelNumber != 1)
                                 {
                                     _Boards = new List<CytonBoardSettingsImplementation>();
                                     throw new Exception("Board channels are not sequential");
                                 }
                             }
-                            
+
                             newChannel.PowerDown = columns[7.IndexOfBit()] == "1" ? true : false;
                             newChannel.Gain = columns.GetChannelGain();
                             newChannel.InputType = columns.GetChannelInputType();
@@ -210,7 +210,7 @@ namespace BrainflowInterfaces
                     }
                 }
 
-               
+
             }
             catch (Exception e)
             {
@@ -218,7 +218,7 @@ namespace BrainflowInterfaces
             }
         }
 
-        private void ValidateBoardChannels()
+        void ValidateBoardChannels()
         {
             if (_Boards.Last().Channels.Length != 8)
             {
@@ -227,8 +227,8 @@ namespace BrainflowInterfaces
             }
         }
 
-        
-        
+
+
 
     }
 
@@ -241,7 +241,7 @@ namespace BrainflowInterfaces
 
         public static ChannelGain GetChannelGain(this string[] value)
         {
-            if ( value.Count() == 11 )
+            if (value.Count() == 11)
             {
                 int channelGain = 0;
                 channelGain += value[4.IndexOfBit()] == "1" ? 1 : 0;

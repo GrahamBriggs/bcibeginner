@@ -47,9 +47,9 @@ namespace BrainflowInterfaces
 
         }
 
-       
 
-        
+
+
         /// <summary>
         /// Copy constructor
         /// </summary>
@@ -101,7 +101,7 @@ namespace BrainflowInterfaces
             InitializeFromSample(sample);
         }
 
-        private void InitializeFromSample(double[] data)
+        void InitializeFromSample(double[] data)
         {
             int index = 0;
             SampleIndex = data[index++];
@@ -136,7 +136,7 @@ namespace BrainflowInterfaces
         public BFCyton8Sample(string fromTxt)
         {
             var fields = fromTxt.Split(',');
-            if ( fields.Length == 24 )
+            if (fields.Length == 24)
             {
                 int index = 0;
                 SampleIndex = double.Parse(fields[index++]);
@@ -170,13 +170,13 @@ namespace BrainflowInterfaces
         /// Get TimeSamp as DateTime in local time
         /// </summary>
         public DateTime ObservationTime => DateTimeOffset.FromUnixTimeMilliseconds((long)(TimeStamp * 1000.0)).ToLocalTime().DateTime;
-       
+
 
 
         /// <summary>
         /// Exg channel methods
         /// </summary>
-        public int NumberExgChannels =>  8;
+        public int NumberExgChannels => 8;
 
         /// <summary>
         /// Get Enumerable of EXG channel data
@@ -196,7 +196,7 @@ namespace BrainflowInterfaces
 
             }
         }
-        
+
 
         /// <summary>
         /// Get EXG channel data for specified channel
@@ -226,7 +226,7 @@ namespace BrainflowInterfaces
             }
         }
 
-        
+
         /// <summary>
         /// Set EXG Channel data for specified channel
         /// </summary>
@@ -307,7 +307,7 @@ namespace BrainflowInterfaces
         /// </summary>
         public void SetAccelDataForChannel(int channel, double data)
         {
-            switch ( channel )
+            switch (channel)
             {
                 case 0:
                     AcelCh0 = data;
@@ -497,5 +497,5 @@ namespace BrainflowInterfaces
 
     }
 }
-    
+
 

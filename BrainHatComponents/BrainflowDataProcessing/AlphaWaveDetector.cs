@@ -40,7 +40,7 @@ namespace BrainflowDataProcessing
             Log?.Invoke(this, new LogEventArgs(this, "StartDetectorAsync", $"Starting alpha wave detector.", LogLevel.INFO));
         }
 
-      
+
 
 
         /// <summary>
@@ -74,20 +74,20 @@ namespace BrainflowDataProcessing
             AlphaThresholdFalling = 4.0;
         }
 
-        protected CancellationTokenSource CancelTokenSource { get; set; }
-        protected Task RunTask { get; set; }
+        CancellationTokenSource CancelTokenSource;
+        Task RunTask;
 
-        DateTimeOffset? TimeEnteredAlphaState { get; set; }
-       // DateTimeOffset? TimeAlphaStateSlip { get; set; }
+        DateTimeOffset? TimeEnteredAlphaState;
+        // DateTimeOffset? TimeAlphaStateSlip { get; set; }
 
-        private async Task RunAlphaWaveDetector(CancellationToken cancelToken)
+        async Task RunAlphaWaveDetector(CancellationToken cancelToken)
         {
             try
             {
                 var sw = new System.Diagnostics.Stopwatch();
                 sw.Start();
 
-                while ( ! cancelToken.IsCancellationRequested)
+                while (!cancelToken.IsCancellationRequested)
                 {
                     try
                     {
@@ -128,7 +128,7 @@ namespace BrainflowDataProcessing
             }
             catch (OperationCanceledException)
             { }
-            catch ( Exception e)
+            catch (Exception e)
             {
                 Log?.Invoke(this, new LogEventArgs(this, "RunAlphaWaveDetector", e, LogLevel.FATAL));
             }
