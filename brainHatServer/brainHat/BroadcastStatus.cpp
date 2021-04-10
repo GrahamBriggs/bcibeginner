@@ -51,7 +51,7 @@ void BroadcastStatus::Start()
 	
 	if (port < 0)
 	{
-		Logging.AddLog("BroadcastData", "Start", "Unable to open server socket port.", LogLevelFatal);
+		Logging.AddLog("BroadcastStatus", "Start", "Unable to open server socket port.", LogLevelFatal);
 		return;
 	}
 

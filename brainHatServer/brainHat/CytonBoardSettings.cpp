@@ -93,7 +93,7 @@ bool CytonBoards::ReadFromRegisterString(string registerReport)
 			{
 				if (Boards[Boards.size() - 1]->Channels.size() != 8)
 				{
-					Logging.AddLog("CytonBoardSettings", "ReadFromRegisterString", "Board does not have 8 channels.", LogLevelError);
+					Logging.AddLog("CytonBoards", "ReadFromRegisterString", "Board does not have 8 channels.", LogLevelError);
 					ClearBoards();
 					return false;
 				}
@@ -116,7 +116,7 @@ bool CytonBoards::ReadFromRegisterString(string registerReport)
 				{
 					if (newChannel->ChannelNumber - Boards.back()->Channels.back()->ChannelNumber != 1)
 					{
-						Logging.AddLog("CytonBoardSettings", "ReadFromRegisterString", "Board channels are not sequential.", LogLevelError);
+						Logging.AddLog("CytonBoards", "ReadFromRegisterString", "Board channels are not sequential.", LogLevelError);
 						ClearBoards();
 						delete newChannel;
 						return false;
@@ -134,7 +134,7 @@ bool CytonBoards::ReadFromRegisterString(string registerReport)
 		{
 			if (!ValidateBoardChannels())
 			{
-				Logging.AddLog("CytonBoardSettings", "ReadFromRegisterString", "Board does not have 8 channels.", LogLevelError);
+				Logging.AddLog("CytonBoards", "ReadFromRegisterString", "Board does not have 8 channels.", LogLevelError);
 				ClearBoards();
 				return false;
 			}
@@ -155,7 +155,7 @@ bool CytonBoards::ReadFromRegisterString(string registerReport)
 		{
 			if (!ValidateBoardChannels())
 			{
-				Logging.AddLog("CytonBoardSettings", "ReadFromRegisterString", "Board does not have 8 channels.", LogLevelError);
+				Logging.AddLog("CytonBoards", "ReadFromRegisterString", "Board does not have 8 channels.", LogLevelError);
 				ClearBoards();
 				return false;
 			}
@@ -176,7 +176,7 @@ bool CytonBoards::ReadFromRegisterString(string registerReport)
 		{
 			if (!ValidateBoardChannels())
 			{
-				Logging.AddLog("CytonBoardSettings", "ReadFromRegisterString", "Board does not have 8 channels.", LogLevelError);
+				Logging.AddLog("CytonBoards", "ReadFromRegisterString", "Board does not have 8 channels.", LogLevelError);
 				ClearBoards();
 				return false;
 			}
@@ -197,7 +197,7 @@ bool CytonBoards::ReadFromRegisterString(string registerReport)
 		{
 			if (!ValidateBoardChannels())
 			{
-				Logging.AddLog("CytonBoardSettings", "ReadFromRegisterString", "Board does not have 8 channels.", LogLevelError);
+				Logging.AddLog("CytonBoards", "ReadFromRegisterString", "Board does not have 8 channels.", LogLevelError);
 				ClearBoards();
 				return false;
 			}
