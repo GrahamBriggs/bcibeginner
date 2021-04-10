@@ -52,9 +52,8 @@ void BrainHatFileWriter::Cancel()
 }
 
 
-/**
- * Lists all files and sub-directories at given path.
- */
+//  Find the path to the USB drive folder
+//  return empty string if no USB drive found
 string FindUsbDrive(const char *path)
 {
 	struct dirent *dp;
@@ -76,8 +75,38 @@ string FindUsbDrive(const char *path)
 	// Close directory stream
 	closedir(dir);
 	return "";
-	
 }
+
+
+//  Check that the default folder exists, if not create it
+//
+bool CreateDefaultFolder()
+{
+	//  check to see that our recording folder exists
+	DIR* dir = opendir(RECORDINGFOLDER);
+	if (dir) 	
+	{
+		closedir(dir);
+	}
+	else if (ENOENT == errno) 
+	{
+		//  does not exist, make it
+		if(!MakePath(RECORDINGFOLDER))
+		{
+			Logging.AddLog("BrainHatFileWriter", "CheckRecordingFolder", format("Failed to create directory %s", RECORDINGFOLDER), LogLevelError);
+			return false;
+		}
+	}
+	else 
+	{
+		//  some other directory error
+		Logging.AddLog("BrainHatFileWriter", "CheckRecordingFolder", "Directory error.", LogLevelError);
+		return false;
+	}
+	
+	return true;
+}
+
 
 //  Check that the recording folder exists, if not create it
 //
@@ -88,7 +117,12 @@ bool CheckRecordingFolder(string fileName, bool tryUsb, std::string& pathToRecFo
 	if (tryUsb)
 		rootPath = FindUsbDrive("/media/pi");
 	if (rootPath.length() == 0)
+	{
+		if (!CreateDefaultFolder())
+			return false;
+		
 		rootPath = RECORDINGFOLDER;
+	}
 	
 	pathToRecFolder = format("%s/%s/", rootPath.c_str(), fileName.c_str());
 	
