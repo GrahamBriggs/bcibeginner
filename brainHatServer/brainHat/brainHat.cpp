@@ -245,7 +245,11 @@ bool HandleRecordingRequest(UriArgParser& requestParser)
 		else if (enable == "false")
 		{
 			if (IsRecording())
+			{
 				FileWriter->Cancel();
+				delete FileWriter;
+				FileWriter = NULL;
+			}
 		}
 		
 		return true;

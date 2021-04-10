@@ -143,9 +143,11 @@ void BDFFileWriter::WriteHeader(BFSample* firstSample)
 		
 		if (FileHandle < 0)
 		{
-			Logging.AddLog("BDFFileWriter", "WriteHeader", "Unable to open BDF file", LogLevelError);
+			Logging.AddLog("BDFFileWriter", "WriteHeader", format("Failed to open recording file %s.", RecordingFileFullPath.c_str()), LogLevelError);
 			return;
 		}
+		
+		Logging.AddLog("BDFFileWriter", "WriteHeader", format("Opened recording file %s.", RecordingFileFullPath.c_str()), LogLevelInfo);
 		
 		int signalCount = 0;
 
