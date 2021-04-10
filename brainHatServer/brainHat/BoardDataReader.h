@@ -18,7 +18,7 @@ public:
 	BoardDataReader(ConnectionChangedCallbackFn connectionChangedFn, NewSampleCallbackFn newSampleFn);
 	virtual ~BoardDataReader();
 	
-	int Start(int board_id, struct BrainFlowInputParams params);
+	int Start(int board_id, struct BrainFlowInputParams params, bool srb1On);
 	
 	virtual void Cancel();
 	
@@ -47,6 +47,7 @@ protected:
 	//
 	bool BoardReady();
 	int	 InitializeBoard();
+	bool InitializeSrbOnStartup();
 	void InitializeDataReadCounters();
 	void ReleaseBoard();
 	void DiscardFirstChunk();

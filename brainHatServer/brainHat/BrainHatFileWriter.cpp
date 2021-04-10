@@ -24,9 +24,9 @@ BrainHatFileWriter::~BrainHatFileWriter()
 
 // Start recording, opens the file and kicks off a thread to write to the file
 //
-bool BrainHatFileWriter::StartRecording(string fileName, int boardId, int sampleRate)
+bool BrainHatFileWriter::StartRecording(string fileName, bool tryUsb, int boardId, int sampleRate)
 {	
-	if (OpenFile(fileName))
+	if (OpenFile(fileName, tryUsb))
 	{
 		BoardId = boardId;
 		SampleRate = sampleRate;
@@ -52,13 +52,48 @@ void BrainHatFileWriter::Cancel()
 }
 
 
+/**
+ * Lists all files and sub-directories at given path.
+ */
+string FindUsbDrive(const char *path)
+{
+	struct dirent *dp;
+	DIR *dir = opendir(path);
+
+	// Unable to open directory stream
+	if(!dir) 
+	    return ""; 
+
+	while ((dp = readdir(dir)) != NULL)
+	{
+		if (string(dp->d_name).compare(".") != 0 && string(dp->d_name).compare("..") != 0)
+		{
+			closedir(dir); 
+			return format("/media/pi/%s",dp->d_name);
+		}
+	}
+
+	// Close directory stream
+	closedir(dir);
+	return "";
+	
+}
 
 //  Check that the recording folder exists, if not create it
 //
-bool CheckRecordingFolder()
+bool CheckRecordingFolder(string fileName, bool tryUsb, std::string& pathToRecFolder)
 {
+	//  set the path for file recording
+	string rootPath = "";
+	if (tryUsb)
+		rootPath = FindUsbDrive("/media/pi");
+	if (rootPath.length() == 0)
+		rootPath = RECORDINGFOLDER;
+	
+	pathToRecFolder = format("%s/%s/", rootPath.c_str(), fileName.c_str());
+	
 	//  check to see that our recording folder exists
-	DIR* dir = opendir(RECORDINGFOLDER);
+	DIR* dir = opendir(pathToRecFolder.c_str());
 	if (dir) 	
 	{
 		closedir(dir);
@@ -66,16 +101,18 @@ bool CheckRecordingFolder()
 	else if (ENOENT == errno) 
 	{
 		//  does not exist, make it
-		if(!MakePath(RECORDINGFOLDER))
+		if(!MakePath(pathToRecFolder.c_str()))
 		{
-			Logging.AddLog("OpenBCIFileWriter", "OpenFile", format("Failed to create directory %s", RECORDINGFOLDER), LogLevelError);
+			Logging.AddLog("BrainHatFileWriter", "CheckRecordingFolder", format("Failed to create directory %s", pathToRecFolder.c_str()), LogLevelError);
+			pathToRecFolder = "";
 			return false;
 		}
 	}
 	else 
 	{
 		//  some other directory error
-		Logging.AddLog("OpenBCIFileWriter", "OpenFile", "Directory error opening recording file.", LogLevelError);
+		Logging.AddLog("BrainHatFileWriter", "CheckRecordingFolder", "Directory error opening recording file.", LogLevelError);
+		pathToRecFolder = "";
 		return false;
 	}
 	
@@ -110,18 +147,18 @@ void BrainHatFileWriter::RunFunction()
 }
 
 
-void BrainHatFileWriter::SetFilePath(string fileRootName, string extension)
+void BrainHatFileWriter::SetFilePath(string pathToRecFolder, string sessionName, string extension)
 {
 	timeval tv;
 	gettimeofday(&tv, NULL);
-	tm* logTime = localtime(&(tv.tv_sec));
+	tm* timeNow = localtime(&(tv.tv_sec));
 
 	//  create file name from test name and start time
 	ostringstream os;		
-	os << fileRootName << "_" << setfill('0') << setw(2) << logTime->tm_hour << setw(2) << logTime->tm_min  << setw(2) << logTime->tm_sec << "." << extension;	
+	os << sessionName << "_" << setw(4) << timeNow->tm_year + 1900 << setfill('0') << setw(2) << timeNow->tm_mon + 1 << setfill('0') << setw(2) << timeNow->tm_mday << "-" << setfill('0') << setw(2) << timeNow->tm_hour << setfill('0') << setw(2) << timeNow->tm_min  << setfill('0') << setw(2) << timeNow->tm_sec << "." << extension;	
 	RecordingFileName = os.str();	
 	os.str("");
-	os << RECORDINGFOLDER << RecordingFileName;	
+	os << pathToRecFolder << RecordingFileName;	
 	RecordingFileFullPath = os.str();
 }
 

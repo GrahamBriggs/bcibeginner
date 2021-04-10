@@ -58,12 +58,13 @@ void BDFFileWriter::CloseFile()
 	
 //  Open the  file
 //
-bool BDFFileWriter::OpenFile(string fileName)
+bool BDFFileWriter::OpenFile(string fileName, bool tryUsb)
 {
-	if (!CheckRecordingFolder())
+	string pathToRecFolder = "";
+	if (!CheckRecordingFolder(fileName, tryUsb, pathToRecFolder))
 		return false;
 		
-	SetFilePath(fileName, "bdf");
+	SetFilePath(pathToRecFolder, fileName, "bdf");
 	
 	return true;
 }

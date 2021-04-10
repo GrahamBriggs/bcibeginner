@@ -38,13 +38,16 @@ CommandServer ComServer(HandleServerRequest);
 //  Data Source is either board or demo file reader
 BoardDataSource* DataSource = NULL;
 
-//  Board Data Reader
-int Board_Id = -99;
-struct BrainFlowInputParams BrainflowBoardParams;
-BoardDataReader BoardReader(BoardConnectionStateChanged, NewSample);
-
-//  demo file reader
+//  Command line arguments
+int Board_Id = 0;
+bool RecordToUsb = true;
+bool StartSrbOn = false;
 string DemoFileName = "";
+struct BrainFlowInputParams InputParams;
+
+
+//  Data Reader
+BoardDataReader BoardReader(BoardConnectionStateChanged, NewSample);
 BoardFileSimulator DemoFileReader(BoardConnectionStateChanged, NewSample);
 
 //  File Recorder
@@ -53,7 +56,7 @@ bool IsRecording() {return FileWriter != NULL && FileWriter->IsRecording();}
 
 //  Program functions
 bool ParseArguments(int argc, char *argv[]);
-bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int *board_id, string &demoFileName);
+bool parse_args(int argc, char *argv[]);
 void RunBoardData();
 void RunFileData();
 bool ProcessKeyboardInput(string input); 
@@ -76,7 +79,6 @@ int main(int argc, char *argv[])
 	Logging.Start();
 	ComServer.Start();
 	StartStatusBroadcast();
-	
 	
 	//  start board or file simulator data
 	if(LiveData())
@@ -102,7 +104,7 @@ int main(int argc, char *argv[])
 //
 void RunBoardData()
 {	
-	BoardReader.Start(Board_Id, BrainflowBoardParams);
+	BoardReader.Start(Board_Id, InputParams, StartSrbOn);
 	
 	Logging.AddLog("main", "RunBoardData", "Starting board data. Enter Q to quit.", LogLevelInfo);
 	
@@ -238,7 +240,7 @@ bool HandleRecordingRequest(UriArgParser& requestParser)
 			}
 			
 			
-			FileWriter->StartRecording(fileName, Board_Id, DataSource->GetSampleRate());
+			FileWriter->StartRecording(fileName, RecordToUsb, Board_Id, DataSource->GetSampleRate());
 		}
 		else if (enable == "false")
 		{
@@ -353,11 +355,17 @@ bool ParseArguments(int argc, char *argv[])
 	if (argc > 1)
 	{
 		//  parse the args
-		if(!parse_args(argc, argv, &BrainflowBoardParams, &Board_Id, DemoFileName))
+		if(!parse_args(argc, argv))
 		{
 			cout << "Invalid startup parameters. Exiting program." << endl;
 			getchar();
 			return false;
+		}
+		
+		//  for file data, check demo file name
+		if(LiveData() && DemoFileName.size() > 0 )
+		{
+			Board_Id == -99;
 		}
 		
 		//  for live data, check supported boards
@@ -368,23 +376,15 @@ bool ParseArguments(int argc, char *argv[])
 			return false;
 		}
 		
-		//  for file data, check demo file name
-		if(!LiveData() && DemoFileName == "")
-		{
-			cout << "Invalid startup parameters. Empty demo file name." << endl;
-			getchar();
-			return false;
-		}	
-		
 		//  default serial port if it was not specified
-		if(LiveData() && BrainflowBoardParams.serial_port.size() == 0)
-			BrainflowBoardParams.serial_port = "/dev/ttyUSB0";
+		if(LiveData() && InputParams.serial_port.size() == 0)
+			InputParams.serial_port = "/dev/ttyUSB0";
 	}
 	else
 	{
 		// no command line args,  default to Cyton board on the default port
 		Board_Id = 0;
-		BrainflowBoardParams.serial_port = "/dev/ttyUSB0";
+		InputParams.serial_port = "/dev/ttyUSB0";
 	}
 	
 	if (LiveData())
@@ -456,9 +456,8 @@ void StopStatusBroadcast()
 
 //  Parse the command line args from the brainflow sample
 //
-bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int *board_id, string &demoFileName)
+bool parse_args(int argc, char *argv[])
 {
-	bool board_id_found = false;
 	for (int i = 1; i < argc; i++)
 	{
 		if (std::string(argv[i]) == std::string("--board-id"))
@@ -466,8 +465,7 @@ bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int
 			if (i + 1 < argc)
 			{
 				i++;
-				board_id_found = true;
-				*board_id = std::stoi(std::string(argv[i]));
+				Board_Id = std::stoi(std::string(argv[i]));
 			}
 			else
 			{
@@ -480,7 +478,35 @@ bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int
 			if (i + 1 < argc)
 			{
 				i++;
-				demoFileName = std::string(argv[i]);
+				DemoFileName = std::string(argv[i]);
+			}
+			else
+			{
+				std::cerr << "missed argument" << std::endl;
+				return false;
+			}
+		}
+		if (std::string(argv[i]) == std::string("--srb-on"))
+		{
+			if (i + 1 < argc)
+			{
+				i++;
+				if (std::string(argv[i]) == "true")
+					StartSrbOn = true;
+			}
+			else
+			{
+				std::cerr << "missed argument" << std::endl;
+				return false;
+			}
+		}
+		if (std::string(argv[i]) == std::string("--rec-usb"))
+		{
+			if (i + 1 < argc)
+			{
+				i++;
+				if (std::string(argv[i]) == "false")
+					RecordToUsb = false;
 			}
 			else
 			{
@@ -493,7 +519,7 @@ bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int
 			if (i + 1 < argc)
 			{
 				i++;
-				params->ip_address = std::string(argv[i]);
+				InputParams.ip_address = std::string(argv[i]);
 			}
 			else
 			{
@@ -506,7 +532,7 @@ bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int
 			if (i + 1 < argc)
 			{
 				i++;
-				params->ip_port = std::stoi(std::string(argv[i]));
+				InputParams.ip_port = std::stoi(std::string(argv[i]));
 			}
 			else
 			{
@@ -519,7 +545,7 @@ bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int
 			if (i + 1 < argc)
 			{
 				i++;
-				params->serial_port = std::string(argv[i]);
+				InputParams.serial_port = std::string(argv[i]);
 			}
 			else
 			{
@@ -532,7 +558,7 @@ bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int
 			if (i + 1 < argc)
 			{
 				i++;
-				params->ip_protocol = std::stoi(std::string(argv[i]));
+				InputParams.ip_protocol = std::stoi(std::string(argv[i]));
 			}
 			else
 			{
@@ -545,7 +571,7 @@ bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int
 			if (i + 1 < argc)
 			{
 				i++;
-				params->timeout = std::stoi(std::string(argv[i]));
+				InputParams.timeout = std::stoi(std::string(argv[i]));
 			}
 			else
 			{
@@ -558,7 +584,7 @@ bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int
 			if (i + 1 < argc)
 			{
 				i++;
-				params->other_info = std::string(argv[i]);
+				InputParams.other_info = std::string(argv[i]);
 			}
 			else
 			{
@@ -571,7 +597,7 @@ bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int
 			if (i + 1 < argc)
 			{
 				i++;
-				params->mac_address = std::string(argv[i]);
+				InputParams.mac_address = std::string(argv[i]);
 			}
 			else
 			{
@@ -584,7 +610,7 @@ bool parse_args(int argc, char *argv[], struct BrainFlowInputParams *params, int
 			if (i + 1 < argc)
 			{
 				i++;
-				params->serial_number = std::string(argv[i]);
+				InputParams.serial_number = std::string(argv[i]);
 			}
 			else
 			{
