@@ -27,14 +27,35 @@
     
 	<div id="content">
         <h1><?php echo gethostname();?> </h1>
-		<p><h2>Server Status</h2><p>
+		<p><h2>Welcome to brainHat Server</h2><p>
 
+		<p></p>
+		
+		<?php 
+			$ip_server = $_SERVER['SERVER_ADDR']; 
+			echo "<h3>Connect to this server at $ip_server</h3>"; 
+		?>
+		
+		<h4>Login (ssh)</h4>
+		<p>User Name: pi</p>
+		<p>Password: raspb3rry</p>
+		
+		<h4>Remote Desktop (VNC)</h4>
+		<p>Password: raspb3rry</p>
+		
+		<h4>File Sharing (Samba)</h4>
+		<p>User: pi <br>
+		<p>Password: raspb3rry</p>
+		<p>User: root <br>
+		<p>Password: raspb3rry</p>
+		
+		<h2>brainHat daemon</h2>
 		
 <?php
 
 	$pid = shell_exec('pidof brainHat');
     if ( $pid == "" )
-    	echo "<p>brainHat Server process is not running</p>";
+    	echo "<h3>brainHat Server process is not running !</h3>";
     else 
     	echo "<p>brainHat Server is running - pid : $pid</p>";
 ?>

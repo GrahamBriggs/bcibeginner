@@ -32,14 +32,23 @@
 	  
 <?php
     echo "<h3>Wi-Fi</h3>";
-    $memory = shell_exec('service hostapd status');
-    echo "<pre>$memory</pre>";
+    $shellResponse = shell_exec('service hostapd status');
+    echo "<pre>$shellResponse</pre>";
+
+	$pid = shell_exec('pidof piWiFiCtrl');
+    if ( $pid == "" )
+    	echo "<p>piWiFiCtrl process is not running !</p>";
+    else 
+    	echo "<p>piWiFiCtrl process is running - pid : $pid</p>";
+
+
+
     ?>
 
 <?php
     echo "<h3>DHCP</h3>";
-    $memory = shell_exec('systemctl status dhcpcd');
-    echo "<pre>$memory</pre>";
+    $shellResponse = shell_exec('systemctl status dhcpcd');
+    echo "<pre>$shellResponse</pre>";
     ?>
 
 		
@@ -65,8 +74,8 @@
 
 <?php
 	echo "<h3>Memory</h3>";
-$memory = shell_exec('free -htl');
-    echo "<pre>$memory</pre>";
+$shellResponse = shell_exec('free -htl');
+    echo "<pre>$shellResponse</pre>";
 
     echo "<h3>Disk Usage</h3>";
     $disk = shell_exec('df -h');

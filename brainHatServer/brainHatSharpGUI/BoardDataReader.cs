@@ -141,12 +141,13 @@ namespace brainHatSharpGUI
             if (BoardSettings == null || (!BoardSettings.IsValid && BoardSettings.Boards.Count() < board))
                 return false;
 
+            //  this is the board configuration index, not the board ID
             switch ( board )
             {
                 case 0:
                     StartSrb1CytonSet = enable;
                     break;
-                case 2:
+                case 1:
                     StartSrb1DaisySet = enable;
                     break;
             }
