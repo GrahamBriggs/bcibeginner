@@ -17,8 +17,10 @@ using json = nlohmann::json;
 
 //  Constructor
 //
-BroadcastStatus::BroadcastStatus()
+BroadcastStatus::BroadcastStatus(string interface)
 {
+	Interface = interface;
+	
 	SocketFileDescriptor = -1;	
 	
 	Eth0Address = "";
@@ -45,11 +47,11 @@ void BroadcastStatus::Start()
 	BroadcastStatusTimer.Start();
 	CheckIpConfigTimer.Start(); 
 	
-	int port = OpenServerSocket(MULTICAST_STATUSPORT, MULTICAST_GROUPADDRESS);
+	int port = OpenServerSocket(MULTICAST_STATUSPORT, MULTICAST_GROUPADDRESS, Interface);
 	
 	if (port < 0)
 	{
-		Logging.AddLog("BroadcastData", "Start", "Unable to open server socket port.", LogLevelFatal);
+		Logging.AddLog("BroadcastStatus", "Start", "Unable to open server socket port.", LogLevelFatal);
 		return;
 	}
 
@@ -70,9 +72,13 @@ void BroadcastStatus::SetIpConfig()
 	for (auto it = addresses.begin(); it != addresses.end(); ++it)
 	{
 		if (get<0>(*it).compare("eth0") == 0)
+		{
 			Eth0Address = get<1>(*it);
+		}
 		else if (get<0>(*it).compare("wlan0") == 0)
+		{
 			Wlan0Address = get<1>(*it);
+		}
 	}
 	
 	//  TODO - set wlan mode

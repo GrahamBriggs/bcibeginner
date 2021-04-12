@@ -87,7 +87,7 @@ namespace BrainHatNetwork
 
         public int BoardId { get; protected set; }
         public int SampleRate { get; protected set; }
-        protected int SampleSize { get; set; }
+        int SampleSize;
 
 
         //  Thread run objects
@@ -95,16 +95,16 @@ namespace BrainHatNetwork
         Task RunTask;
 
         //  Broadcast queue
-        ConcurrentQueue<IBFSample> DataToBroadcast { get; set; }
+        ConcurrentQueue<IBFSample> DataToBroadcast;
 
         //  Stream info
-        liblsl.StreamInfo StreamInfo { get; set; }
+        liblsl.StreamInfo StreamInfo;
 
 
         /// <summary>
         /// Setup LSL outlet for the board
         /// </summary>
-        private void SetupLslOutletForBoard()
+        void SetupLslOutletForBoard()
         {
             var numChannels = BoardShim.get_exg_channels(BoardId).Length;
             var numAccelChannels = BoardShim.get_accel_channels(BoardId).Length;
@@ -150,15 +150,11 @@ namespace BrainHatNetwork
         }
 
 
-
-     
-
-
         /// <summary>
         /// Run the broadcast async task
         /// Will spin continuously and write samples in the queue to the LSL outlet 
         /// </summary>
-        private async Task RunDataBroadcastAsync(CancellationToken cancelToken)
+        async Task RunDataBroadcastAsync(CancellationToken cancelToken)
         {
             try
             {
@@ -193,7 +189,7 @@ namespace BrainHatNetwork
             }
             finally
             {
-               
+
             }
         }
 

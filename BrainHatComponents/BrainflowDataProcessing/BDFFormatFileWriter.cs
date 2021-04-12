@@ -113,9 +113,9 @@ namespace BrainflowDataProcessing
         }
 
         //  File writing task 
-        protected CancellationTokenSource FileWriterCancelTokenSource;
-        protected Task FileWritingTask;
-        protected SemaphoreSlim NotifyAddedData;
+        CancellationTokenSource FileWriterCancelTokenSource;
+        Task FileWritingTask;
+        SemaphoreSlim NotifyAddedData;
 
         // Queue to hold data pending write
         ConcurrentQueue<IBFSample> Data;
@@ -123,10 +123,10 @@ namespace BrainflowDataProcessing
         //  BDF File
         bool WroteHeader = false;
         int FileHandle;
-        protected Stopwatch FileTimer { get; set; }
+        Stopwatch FileTimer;
 
         //  Board propertites
-        
+
 
         //  Signal Properties
         int NumberOfExgChannels;
@@ -139,7 +139,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Run function
         /// </summary>
-        private async Task RunFileWriter(CancellationToken cancelToken)
+        async Task RunFileWriter(CancellationToken cancelToken)
         {
             try
             {
@@ -159,7 +159,7 @@ namespace BrainflowDataProcessing
                     try
                     {
                         while (Data.Count >= SampleRate)
-                        {  
+                        {
                             var data = new List<IBFSample>();
                             while (data.Count < SampleRate)
                             {
@@ -205,9 +205,9 @@ namespace BrainflowDataProcessing
         /// Write a chunk of samples to the file
         /// we always use page size = sample rate, so each chunk represents one second of data
         /// </summary>
-        private void WriteToFile(List<IBFSample> data)
+        void WriteToFile(List<IBFSample> data)
         {
-            if ( data.Count > 0 )
+            if (data.Count > 0)
             {
                 //  sample index
                 var nextData = data.Select(x => x.SampleIndex).ToArray();
@@ -247,18 +247,18 @@ namespace BrainflowDataProcessing
             }
         }
 
-      
+
         /// <summary>
         /// Open the file for writing and write the header information
         /// </summary>
-        private void WriteHeader(IBFSample firstSample)
+        void WriteHeader(IBFSample firstSample)
         {
             if (firstSample == null || WroteHeader)
                 return; //  invalid first sample or we already wrote the header 
 
             //  open the file for writing
             FileHandle = edfOpenFileWriteOnly(FileName, 3, firstSample.SampleSize);
-            if ( FileHandle < 0)
+            if (FileHandle < 0)
             {
                 throw new Exception("Unable to open the file.");
             }
@@ -282,7 +282,7 @@ namespace BrainflowDataProcessing
             signalCount++;
             //
             //  exg channels
-            for(int i = 0; i < firstSample.NumberExgChannels; i++)
+            for (int i = 0; i < firstSample.NumberExgChannels; i++)
             {
                 edfSetSamplesInDataRecord(FileHandle, signalCount, SampleRate);
                 edfSetPhysicalMaximum(FileHandle, signalCount, 187500.000);
@@ -298,7 +298,7 @@ namespace BrainflowDataProcessing
             NumberOfExgChannels = firstSample.NumberExgChannels;
             //
             //  acel channels
-            for(int i = 0; i < firstSample.NumberAccelChannels; i++)
+            for (int i = 0; i < firstSample.NumberAccelChannels; i++)
             {
                 edfSetSamplesInDataRecord(FileHandle, signalCount, SampleRate);
                 edfSetPhysicalMaximum(FileHandle, signalCount, 1.0);

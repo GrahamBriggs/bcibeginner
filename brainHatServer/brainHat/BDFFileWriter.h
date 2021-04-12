@@ -24,7 +24,7 @@ protected:
 	int NumberOfAnalogChannels;
 	double FirstTimeStamp;
 	
-	virtual bool OpenFile(std::string fileName);
+	virtual bool OpenFile(std::string fileName, bool tryUsb);
 	virtual void CloseFile();
 	
 	virtual void WriteDataToFile();

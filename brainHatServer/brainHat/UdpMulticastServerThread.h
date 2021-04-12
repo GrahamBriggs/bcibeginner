@@ -17,7 +17,7 @@ public:
 	
 	// open a server socket on the port with the group address
 	// returns the port number opened, or -1 if failure
-	int OpenServerSocket(int port, std::string group);
+	int OpenServerSocket(int port, std::string group, std::string interface = "");
 	
 	virtual void Cancel();
 	

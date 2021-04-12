@@ -431,7 +431,7 @@ namespace brainHatSharpGUI.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Log to File.
+        ///   Looks up a localized string similar to Log Console to File.
         /// </summary>
         public static string LogToFile {
             get {
@@ -635,6 +635,15 @@ namespace brainHatSharpGUI.Properties {
         public static string Slow {
             get {
                 return ResourceManager.GetString("Slow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to SRB1.
+        /// </summary>
+        public static string SRB1 {
+            get {
+                return ResourceManager.GetString("SRB1", resourceCulture);
             }
         }
         

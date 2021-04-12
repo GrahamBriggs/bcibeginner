@@ -77,10 +77,14 @@ bool BoardDataReader::BoardReady()
 
 //  Thread Start
 //
-int BoardDataReader::Start(int board_id, struct BrainFlowInputParams params)
+int BoardDataReader::Start(int board_id, struct BrainFlowInputParams params, bool srb1On)
 {
 	BoardParamaters = params;
 	BoardId = board_id;
+	
+	//  TODO - clean up SRB settings
+	StartSrb1CytonSet = (board_id == 0 || board_id == 2) && srb1On;
+	StartSrb1DaisySet = board_id == 2 && srb1On;
 	
 	LastSampleIndex = -1;
 	
@@ -125,27 +129,46 @@ int BoardDataReader::GetSrb1(int board)
 }
 
 
+string FormatSrb1Command(CytonChannelSettings* channelSettings, bool enable)
+{
+	auto settingsString = format("x%s%s%d%d%s%s%sX",
+		ChannelSetCharacter(channelSettings->ChannelNumber).c_str(),
+		BoolCharacter(channelSettings->PowerDown).c_str(),
+		channelSettings->Gain,
+		channelSettings->InputType,
+		BoolCharacter(channelSettings->Bias).c_str(),
+		BoolCharacter(channelSettings->Srb2).c_str(),
+		BoolCharacter(enable).c_str());
+	
+	return settingsString;
+}
+
 //  Public function to set SRB1 state
 bool BoardDataReader::RequestSetSrb1(int board, bool enable)
 {
-	if (!BoardSettings.HasValidSettings() && BoardSettings.Boards.size() < board)
+	if (!BoardSettings.HasValidSettings() || BoardSettings.Boards.size() < board || BoardSettings.Boards[board]->Channels.size() < 1)
+	{
+		Logging.AddLog("BoardDataReader", "RequestSetSrb1", "Invalid parameters for request set SRB1", LogLevelError);
 		return false;
+	}
+	
+	//   this is the board configuration index, not the board ID
+	switch (board)
+	{
+	case 0: 
+		StartSrb1CytonSet = enable;
+		break;
+	case 1:
+		StartSrb1DaisySet = enable;
+		break;
+	default:
+		return false;	//  TODO ganglion 
+	}
 	
 	auto channelSettings = BoardSettings.Boards[board]->Channels.front();
 	if (CommandsQueueLock.try_lock_for(chrono::milliseconds(1000)))
-	{
-		//    string settingsString = $"x{settings.ChannelNumber.ChannelSetCharacter()}{settings.PowerDown.BoolCharacter()}{(int)(settings.Gain)}{(int)(settings.InputType)}{settings.Bias.BoolCharacter()}{settings.Srb2.BoolCharacter()}{(connect ? "1" : "0")}X";
-
-		string settingsString = format("x%s%s%d%d%s%s%sX",
-									ChannelSetCharacter(channelSettings->ChannelNumber).c_str(),
-									BoolCharacter(channelSettings->PowerDown).c_str(),
-									channelSettings->Gain,
-									channelSettings->InputType,
-									BoolCharacter(channelSettings->Bias).c_str(),
-									BoolCharacter(channelSettings->Srb2).c_str(),
-									BoolCharacter(enable).c_str());
-		
-		CommandsQueue.push(settingsString);
+	{		
+		CommandsQueue.push(FormatSrb1Command(channelSettings, enable));
 
 		CommandsQueueLock.unlock();
 		return true;
@@ -193,6 +216,9 @@ int BoardDataReader::InitializeBoard()
 			return -1;
 		}
 		
+		if (!InitializeSrbOnStartup())
+			return -1;
+		
 		bool newConnection = SampleRate < 0;
 		DataRows = BoardShim::get_num_rows(BoardId);
 		SampleRate = BoardShim::get_sampling_rate(BoardId);
@@ -220,6 +246,58 @@ int BoardDataReader::InitializeBoard()
 	return res;
 }
 
+
+//  Set the state of the SRB1 connected setting on startup initialization
+//
+bool BoardDataReader::InitializeSrbOnStartup()
+{
+	try
+	{
+		if (StartSrb1CytonSet || StartSrb1DaisySet)
+		{
+			if (StartSrb1CytonSet && BoardSettings.Boards.size() > 0)
+			{
+				Logging.AddLog("BoardDataReader", "InitializeSrbOnStartup", "Starting Cyton with SRB1 on.", LogLevelInfo);
+				auto channelSettings = BoardSettings.Boards[0]->Channels.front();
+				auto settingString = FormatSrb1Command(channelSettings, true);
+				Board->config_board((char*)settingString.c_str());
+			}
+			else if (StartSrb1CytonSet)
+			{
+				Logging.AddLog("BoardDataReader", "InitializeSrbOnStartup", "Unable to set SRB1, invalid board configuration settings.", LogLevelError);
+			}
+			
+			if (StartSrb1DaisySet && BoardSettings.Boards.size() > 1)
+			{
+				Logging.AddLog("BoardDataReader", "InitializeSrbOnStartup", "Starting Daisy with SRB1 on.", LogLevelInfo);
+				auto channelSettings = BoardSettings.Boards[1]->Channels.front();
+				auto settingString = FormatSrb1Command(channelSettings, true);
+				Board->config_board((char*)settingString.c_str());
+			}
+			else if (StartSrb1DaisySet)
+			{
+				Logging.AddLog("BoardDataReader", "InitializeSrbOnStartup", "Unable to set SRB1, invalid board configuration settings.", LogLevelError);
+			}
+			
+			
+			if (!LoadBoardRegistersSettings())
+			{
+				Logging.AddLog("BoardDataReader", "InitializeSrbOnStartup", "Failed to get board configuration.", LogLevelError);
+				if (Board->is_prepared())
+				{
+					Board->release_session();
+				}
+				return false;
+			}
+		}
+		return true;
+	}
+	catch (const BrainFlowException &err)
+	{
+		Logging.AddLog("BoardDataReader", "InitializeSrbOnStartup", format("Failed to set SRB1. Error %d %s.", err.exit_code, err.what()), LogLevelError);
+	}
+	return false;
+}
 
 
 
@@ -277,9 +355,6 @@ void BoardDataReader::StartStreaming()
 			{
 				string streamingFormat = format("streaming_board://%s:%d", BoardParamaters.ip_address.c_str(), BoardParamaters.ip_port);
 				Logging.AddLog("BoardDataReader", "StartStreaming", format("Starting data stream %s",streamingFormat.c_str()), LogLevelInfo);
-//				char streamingArg[streamingFormat.size() + 1];
-//				strcpy(streamingArg, streamingFormat.c_str());
-//				streamingArg[streamingFormat.size() + 1] = 0x00;
 				Board->start_stream(50000, (char*)streamingFormat.c_str());
 			}
 			else
@@ -373,7 +448,7 @@ bool BoardDataReader::PreparedToReadBoard()
 	else if ((InvalidSampleCounter * SENSOR_SLEEP) > 3000)
 	{
 		//  have not received fresh samples in three seconds, release board and reinitialize
-		Logging.AddLog("BoardDataReader", "RunFunction", "Too long without valid sample. Reconnecting to board.", LogLevelError);
+		Logging.AddLog("BoardDataReader", "PreparedToReadBoard", "Too long without valid sample. Reconnecting to board.", LogLevelError);
 		ReleaseBoard();
 		usleep(1*USLEEP_SEC);
 		return false;
@@ -513,35 +588,42 @@ void BoardDataReader::DiscardFirstChunk()
 
 void BoardDataReader::ProcessCommandsQueue()
 {
-	if (CommandsQueue.size() > 0)
+	try
 	{
-		CommandsQueueLock.lock();
+		if (CommandsQueue.size() > 0)
+		{
+			CommandsQueueLock.lock();
 	
-		auto wasStreaming = StreamRunning;
-		StopStreaming();
+			auto wasStreaming = StreamRunning;
+			StopStreaming();
 		
-		BoardSettings.ClearBoards();
+			BoardSettings.ClearBoards();
 		
-		while (CommandsQueue.size() != 0) 
-		{
-			string nextCommand = CommandsQueue.front();
-			CommandsQueue.pop();
-			Logging.AddLog("BoardDataReader", "ProcessCommandsQueue", format("Send to board: %s",nextCommand.c_str()), LogLevelInfo);
-			Board->config_board((char*)nextCommand.c_str());
-			usleep(50*USLEEP_MILI);
+			while (CommandsQueue.size() != 0) 
+			{
+				string nextCommand = CommandsQueue.front();
+				CommandsQueue.pop();
+				Logging.AddLog("BoardDataReader", "ProcessCommandsQueue", format("Send to board: %s", nextCommand.c_str()), LogLevelInfo);
+				Board->config_board((char*)nextCommand.c_str());
+				usleep(50*USLEEP_MILI);
+			}
+		
+			if (!LoadBoardRegistersSettings())
+			{
+				Logging.AddLog("BoardDataReader", "ProcessCommandsQueue", "Error restoring board configuration.", LogLevelError);
+			}
+		
+			if (wasStreaming)
+			{
+				StartStreaming();
+			}
+		
+			CommandsQueueLock.unlock();
 		}
-		
-		if (!LoadBoardRegistersSettings())
-		{
-			Logging.AddLog("BoardDataReader", "ProcessCommandsQueue", "Error restoring board configuration.", LogLevelError);
-		}
-		
-		if (wasStreaming)
-		{
-			StartStreaming();
-		}
-		
-		CommandsQueueLock.unlock();
+	}
+	catch (const BrainFlowException &err)
+	{
+		Logging.AddLog("BoardDataReader", "ProcessCommandsQueue", format("Failed configure_board. Error %d %s.", err.exit_code, err.what()), LogLevelError);
 	}
 }
 
@@ -575,25 +657,33 @@ bool BoardDataReader::LoadBoardRegistersSettings()
 //
 bool BoardDataReader::GetRegistersString(std::string& registersString)
 {
-	registersString = "";
-	auto getRegisters = Board->config_board((char*)"?");
-	if (!ValidateRegisterSettingsString(getRegisters))
+	try
 	{
-		Logging.AddLog("BoardDataReader", "GetRegistersString", format("Invalid registers string %s", getRegisters.c_str()), LogLevelError);
-		registersString = getRegisters;
-		return false;
-	}
+		registersString = "";
+		auto getRegisters = Board->config_board((char*)"?");
+		if (!ValidateRegisterSettingsString(getRegisters))
+		{
+			Logging.AddLog("BoardDataReader", "GetRegistersString", format("Invalid registers string %s", getRegisters.c_str()), LogLevelError);
+			registersString = getRegisters;
+			return false;
+		}
 
-	auto version = Board->config_board((char*)"V");
-	if (!ValidateFirmwareString(version))
+		auto version = Board->config_board((char*)"V");
+		if (!ValidateFirmwareString(version))
+		{
+			Logging.AddLog("BoardDataReader", "GetRegistersString", format("Invalid firmware string %s", version.c_str()), LogLevelError);
+			registersString = getRegisters;
+			return false;
+		}
+
+		registersString = "Firmware: " + version + getRegisters;
+		return true;
+	}
+	catch (const BrainFlowException &err)
 	{
-		Logging.AddLog("BoardDataReader", "GetRegistersString", format("Invalid firmware string %s", version.c_str()), LogLevelError);
-		registersString = getRegisters;
-		return false;
+		Logging.AddLog("BoardDataReader", "GetRegistersString", format("Failed to get registers string. Error %d %s.", err.exit_code, err.what()), LogLevelError);
 	}
-
-	registersString = "Firmware: " + version + getRegisters;
-	return true;
+	return false;
 }
 
 string Board_ADS_Registers = "Board ADS Registers";

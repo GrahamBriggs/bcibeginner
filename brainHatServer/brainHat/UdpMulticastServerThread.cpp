@@ -5,10 +5,12 @@
 #include <iostream>
 #include <sstream>
 #include <string.h>
+#include <net/if.h>
 
 #include "brainHat.h"
 #include "UdpMulticastServerThread.h"
 #include "StringExtensions.h"
+
 
 using namespace std;
 
@@ -49,7 +51,7 @@ void UdpMulticastServerThread::Cancel()
 
 //  OpenServerSocket
 //
-int UdpMulticastServerThread::OpenServerSocket(int port, string group)
+int UdpMulticastServerThread::OpenServerSocket(int port, string group, string interface)
 {
 	//  you can't open new port if we are running in the thread
 	if(TheThread != 0)
@@ -74,6 +76,26 @@ int UdpMulticastServerThread::OpenServerSocket(int port, string group)
 	SocketAddress.sin_addr.s_addr = inet_addr(group.c_str());
 	SocketAddress.sin_port = htons(port);
 	
+
+	
+	//  if the interface is specified, set this in socket options
+	//  note, you must be running as sudo or setsockopt will fail
+	if (interface.length() > 0)
+	{
+		struct ifreq ifr;
+		memset(&ifr, 0, sizeof(ifr));
+		snprintf(ifr.ifr_name, sizeof(ifr.ifr_name), interface.c_str());
+		
+		Logging.AddLog("UdpMulticastServerThread", "OpenServerSocket", format("Setting interface %s for socket %d.", interface.c_str(), SocketFileDescriptor), LogLevelDebug);
+		int res = setsockopt(SocketFileDescriptor, SOL_SOCKET, SO_BINDTODEVICE, (void *)&ifr, sizeof(ifr)); 
+		if (res < 0) 
+		{
+			Logging.AddLog("UdpMulticastServerThread", "OpenServerSocket", format("Unable to set socket options for %s res %d.", interface.c_str(), res), LogLevelError);
+			shutdown(SocketFileDescriptor, SHUT_RDWR);
+			close(SocketFileDescriptor);
+			return -1;
+		}
+	}
 	
 	//  success
 	PortNumber = port;

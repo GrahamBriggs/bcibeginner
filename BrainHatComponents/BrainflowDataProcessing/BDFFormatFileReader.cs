@@ -67,7 +67,7 @@ namespace BrainflowDataProcessing
 
                 SetFilePropertiesFromHeader(header);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return false;
             }
@@ -100,7 +100,7 @@ namespace BrainflowDataProcessing
                 _Samples = new List<IBFSample>();
 
                 fileHandle = edfOpenFileReadOnly(fileName);
-                if ( fileHandle < 0 )
+                if (fileHandle < 0)
                 {
                     throw new Exception($"Unable to open file. Error {fileHandle}.");
                 }
@@ -115,10 +115,10 @@ namespace BrainflowDataProcessing
 
                 ReadDataRecordsCount = 0;
                 double[,] chunk;
-                for(ulong i = 0; i < header.datarecords_in_file; i++)
+                for (ulong i = 0; i < header.datarecords_in_file; i++)
                 {
                     chunk = new double[signalCount, samplesPerDataRecord];
-                    for(int j = 0; j < header.edfsignals; j++)
+                    for (int j = 0; j < header.edfsignals; j++)
                     {
                         var thisSignal = edfReadPhysicalSamples(fileHandle, j, header.signalparam[j].smp_in_datarecord);
                         for (int k = 0; k < samplesPerDataRecord; k++)
@@ -144,16 +144,16 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Create samples from a single data record (chunk of signals per sample)
         /// </summary>
-        private void CreateSamples(double[,] chunk)
+        void CreateSamples(double[,] chunk)
         {
             double dataRecordTime = StartTime.Value + (ReadDataRecordsCount * DataRecordDuration);
-            for( int i = 0; i < chunk.GetRow(0).Length; i++)
+            for (int i = 0; i < chunk.GetRow(0).Length; i++)
             {
                 IBFSample newSample = null;
-                switch ( BoardId)
+                switch (BoardId)
                 {
                     case 0:
-                        newSample = new BFCyton8Sample(chunk,i);
+                        newSample = new BFCyton8Sample(chunk, i);
                         break;
 
                     case 2:
@@ -169,11 +169,11 @@ namespace BrainflowDataProcessing
             }
         }
 
-     
+
         /// <summary>
         /// Set the file properties from the header information
         /// </summary>
-        private bool SetFilePropertiesFromHeader(EdfHeaderStruct header)
+        bool SetFilePropertiesFromHeader(EdfHeaderStruct header)
         {
             BoardId = header.recording_additional.Trim().GetBoardId();
             switch (BoardId)
@@ -191,7 +191,7 @@ namespace BrainflowDataProcessing
             DataRecordDuration = header.datarecord_duration * 1.0E-7;
 
             NumberOfChannels = brainflow.BoardShim.get_eeg_channels(BoardId).Length;
-                                                       
+
             var date = new DateTime(header.startdate_year, header.startdate_month, header.startdate_day, header.starttime_hour, header.starttime_minute, header.starttime_second);
             date = date.AddMilliseconds(header.starttime_subsecond / 10_000);
             StartTime = new DateTimeOffset(date.ToUniversalTime(), TimeSpan.FromHours(0)).ToUnixTimeInDoubleSeconds();
@@ -200,7 +200,7 @@ namespace BrainflowDataProcessing
 
             return true;
         }
-               
+
 
         protected List<IBFSample> _Samples;
     }

@@ -60,12 +60,13 @@ string FileBoardDescription(int boardId)
 	
 //  Open the  file
 //
-bool OpenBCIFileWriter::OpenFile(string fileName)
+bool OpenBCIFileWriter::OpenFile(string fileName, bool tryUsb)
 {
-	if (!CheckRecordingFolder())
+	string pathToRecFolder = "";
+	if (!CheckRecordingFolder(fileName, tryUsb, pathToRecFolder))
 		return false;
 	
-	SetFilePath(fileName, "txt");
+	SetFilePath(pathToRecFolder, fileName, "txt");
 	
 	//  open the file
 	{

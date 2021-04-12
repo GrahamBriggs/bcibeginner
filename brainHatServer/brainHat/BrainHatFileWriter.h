@@ -6,9 +6,9 @@
 #include "BFSample.h"
 #include "TimeExtensions.h"
 
-#define RECORDINGFOLDER ("/home/pi/bhRecordings/")
+#define RECORDINGFOLDER ("/home/pi/EEG")
 
-bool CheckRecordingFolder();
+bool CheckRecordingFolder(std::string sessionName, bool tryUsb, std::string& pathToRecFolder);
 
 
 class BrainHatFileWriter : public Thread
@@ -18,7 +18,7 @@ public:
 	BrainHatFileWriter();
 	virtual ~BrainHatFileWriter();
 	
-	virtual bool StartRecording(std::string fileName, int boardId, int sampleRate);
+	virtual bool StartRecording(std::string fileName, bool tryUsb, int boardId, int sampleRate);
 	
 	virtual void Cancel();
 	virtual void RunFunction();
@@ -40,8 +40,8 @@ protected:
 	
 	virtual void WriteDataToFile() = 0;
 	
-	void SetFilePath(std::string fileRootName, std::string extension);
-	virtual bool OpenFile(std::string fileName) = 0;
+	void SetFilePath(std::string pathToRecFolder, std::string sessionName, std::string extension);
+	virtual bool OpenFile(std::string fileName, bool tryUsb) = 0;
 	virtual void CloseFile() = 0;
 	
 	bool WroteHeader;

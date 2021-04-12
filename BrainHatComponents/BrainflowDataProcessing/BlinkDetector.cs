@@ -19,7 +19,7 @@ namespace BrainflowDataProcessing
         //  Delegates
         public GetBFChunkSecondsDelegate GetData;
         public GetBFSampleDelegate GetStdDevMedians;
-        
+
         //  Blink detector properties
         //  turn the dials to tune your detector
         public double NoisyStdDevThreshold { get; set; }
@@ -55,10 +55,10 @@ namespace BrainflowDataProcessing
         /// using current reading, the standard deviation from channel 0 (FP1) and channel 1 (FP2), 
         /// and the average deviaiton from channel 0,1
         /// </summary>
-        public void DetectBlinks(IBFSample currentReading, double stdDev0, double stdDevAvg0,  double stdDev1, double stdDevAvg1)
+        public void DetectBlinks(IBFSample currentReading, double stdDev0, double stdDevAvg0, double stdDev1, double stdDevAvg1)
         {
             try
-            {                   
+            {
                 CheckForBlink(currentReading, stdDev0, stdDevAvg0, Eyes.Left);
                 CheckForBlink(currentReading, stdDev1, stdDevAvg1, Eyes.Right);
             }
@@ -68,7 +68,7 @@ namespace BrainflowDataProcessing
             }
         }
 
-        
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -82,36 +82,22 @@ namespace BrainflowDataProcessing
             //
             DataFileStartTimeTag = -0.01;
             NoisyStdDevThreshold = 75.0;
-
-            DataToProcess = new ConcurrentQueue<IBFSample>();
-            NotifyAddedData = new SemaphoreSlim(0);
         }
 
 
         public double DataFileStartTimeTag { get; set; }
 
-
-        protected CancellationTokenSource CancelTokenSource { get; set; }
-        protected Task DataQueueProcessorTask { get; set; }
-        protected SemaphoreSlim NotifyAddedData { get; set; }
-        ConcurrentQueue<IBFSample> DataToProcess;
-
-
         //  Flags to keep track of left/right rising edge event by saving the reading that triggered it
         IBFSample BlinkLeftRisingEdgeTrigger;
         IBFSample BlinkRightRisingEdgeTrigger;
 
-
-       
-
-
         /// <summary>
         /// Check for Blink in the specified eye
         /// </summary>
-        private void CheckForBlink(IBFSample currentReading, double stdDev, double stdDevAvg, Eyes eye)
+        void CheckForBlink(IBFSample currentReading, double stdDev, double stdDevAvg, Eyes eye)
         {
             IBFSample trigger = (eye == Eyes.Left) ? BlinkLeftRisingEdgeTrigger : BlinkRightRisingEdgeTrigger;
-          
+
             //  search for rising and falling edge of the signal    
             if (trigger != null)
             {
@@ -137,7 +123,7 @@ namespace BrainflowDataProcessing
                     ClearTrigger(eye);
                 }
             }
-            else if (trigger == null /*&&  (stdDevAvg < NoisyStdDevThreshold)*/ && ( stdDev / stdDevAvg > BlinkUpDevThreshold) )
+            else if (trigger == null /*&&  (stdDevAvg < NoisyStdDevThreshold)*/ && (stdDev / stdDevAvg > BlinkUpDevThreshold))
             {
                 DetectedBlink?.Invoke(this, new DetectedBlinkEventArgs(eye, WinkState.Rising, currentReading.TimeStamp));
                 SetTrigger(currentReading, eye);
@@ -173,7 +159,6 @@ namespace BrainflowDataProcessing
                     break;
             }
         }
-
 
 
     }

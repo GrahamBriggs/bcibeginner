@@ -43,6 +43,6 @@ namespace BrainflowDataProcessing
             return false;
         }
 
-        protected IBrainHatFileReader FileReader;
+        IBrainHatFileReader FileReader;
     }
 }

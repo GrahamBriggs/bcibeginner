@@ -10,7 +10,7 @@
 class BroadcastStatus : public UdpMulticastServerThread
 {
 public:
-	BroadcastStatus();
+	BroadcastStatus(std::string interface = "");
 	virtual ~BroadcastStatus();
 	
 	virtual void Start();
@@ -20,6 +20,7 @@ public:
 		
 protected:
 	
+	std::string Interface;
 	
 	std::string HostName;
 	std::string Eth0Address;

@@ -58,12 +58,13 @@ void BDFFileWriter::CloseFile()
 	
 //  Open the  file
 //
-bool BDFFileWriter::OpenFile(string fileName)
+bool BDFFileWriter::OpenFile(string fileName, bool tryUsb)
 {
-	if (!CheckRecordingFolder())
+	string pathToRecFolder = "";
+	if (!CheckRecordingFolder(fileName, tryUsb, pathToRecFolder))
 		return false;
 		
-	SetFilePath(fileName, "bdf");
+	SetFilePath(pathToRecFolder, fileName, "bdf");
 	
 	return true;
 }
@@ -142,9 +143,11 @@ void BDFFileWriter::WriteHeader(BFSample* firstSample)
 		
 		if (FileHandle < 0)
 		{
-			Logging.AddLog("BDFFileWriter", "WriteHeader", "Unable to open BDF file", LogLevelError);
+			Logging.AddLog("BDFFileWriter", "WriteHeader", format("Failed to open recording file %s.", RecordingFileFullPath.c_str()), LogLevelError);
 			return;
 		}
+		
+		Logging.AddLog("BDFFileWriter", "WriteHeader", format("Opened recording file %s.", RecordingFileFullPath.c_str()), LogLevelInfo);
 		
 		int signalCount = 0;
 

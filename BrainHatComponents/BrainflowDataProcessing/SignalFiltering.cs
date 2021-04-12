@@ -27,7 +27,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Amount of raw data in seconds the filter will retain
         /// </summary>
-        public double FilterBufferLength { get;  set; }
+        public double FilterBufferLength { get; set; }
 
 
         //  Public Methods
@@ -73,7 +73,7 @@ namespace BrainflowDataProcessing
         /// </summary>
         public IBFSample[] GetFilteredData(double seconds)
         {
-            if ( FilteredData.Count > 0 )
+            if (FilteredData.Count > 0)
             {
                 var last = FilteredData.Last().TimeStamp;
                 var filtered = FilteredData.Where(x => (last - x.TimeStamp) < seconds);
@@ -118,7 +118,7 @@ namespace BrainflowDataProcessing
 
             Filter = filter;
 
-            PeriodMilliseconds = 33;   
+            PeriodMilliseconds = 33;
 
             FilterBufferLength = 10;
 
@@ -133,6 +133,7 @@ namespace BrainflowDataProcessing
         public int NumberOfChannels { get; protected set; }
         public int SampleRate { get; protected set; }
         public string Name { get; protected set; }
+        public string FilterName => Filter.Name;
 
         SignalFilter Filter;
 
@@ -140,15 +141,15 @@ namespace BrainflowDataProcessing
         public ConcurrentQueue<IBFSample> FilteredData { get; protected set; }
 
         //  Run task properties
-        protected CancellationTokenSource CancelTokenSource { get; set; }
-        protected Task MonitorRunTask { get; set; }
-        ConcurrentQueue<double> ProcessingTimes { get; set; }
+        CancellationTokenSource CancelTokenSource;
+        Task MonitorRunTask;
+        ConcurrentQueue<double> ProcessingTimes;
 
 
         /// <summary>
         /// Run function, spins and updates the filter at the specified period
         /// </summary>
-        private async Task RunSignalFilteringAsync(CancellationToken cancelToken)
+        async Task RunSignalFilteringAsync(CancellationToken cancelToken)
         {
             try
             {
@@ -168,10 +169,10 @@ namespace BrainflowDataProcessing
                         FilterSignal();
                     }
 
-                    if ( swClean.ElapsedMilliseconds >= 1000)
+                    if (swClean.ElapsedMilliseconds >= 1000)
                     {
                         var newestSample = FilteredData.LastOrDefault();
-                        if ( newestSample != null )
+                        if (newestSample != null)
                         {
                             while (newestSample.TimeStamp - FilteredData.First().TimeStamp > FilterBufferLength)
                                 FilteredData.TryDequeue(out var discard);
@@ -203,7 +204,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Apply the filter to the signal
         /// </summary>
-        private void FilterSignal()
+        void FilterSignal()
         {
             try
             {
@@ -215,14 +216,14 @@ namespace BrainflowDataProcessing
                 var filteredSamples = FilterBrainflowSample.FilterChunk(Filter, rawSamples, BoardId, NumberOfChannels, SampleRate);
 
                 var oldestSample = FilteredData.LastOrDefault()?.TimeStamp ?? filteredSamples[0].TimeStamp;
-                FilteredData.AddRange(filteredSamples.Where(x=>x.TimeStamp > oldestSample));
+                FilteredData.AddRange(filteredSamples.Where(x => x.TimeStamp > oldestSample));
 
                 sw.Stop();
                 ProcessingTimes.Enqueue(sw.Elapsed.TotalSeconds);
             }
             catch (ArgumentException ae)
             {
-                Log?.Invoke(this, new LogEventArgs(Name, this, "FilterSignal",ae, LogLevel.WARN));
+                Log?.Invoke(this, new LogEventArgs(Name, this, "FilterSignal", ae, LogLevel.WARN));
             }
             catch (Exception e)
             {

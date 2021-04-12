@@ -73,7 +73,7 @@ namespace BrainflowInterfaces
 
         }
 
-        
+
         /// <summary>
         /// Copy constructor
         /// </summary>
@@ -144,7 +144,7 @@ namespace BrainflowInterfaces
         /// <summary>
         /// Set properties from a raw sample
         /// </summary>
-        private void InitializeFromSample(double[] sample)
+        void InitializeFromSample(double[] sample)
         {
             int index = 0;
             SampleIndex = sample[index++];
@@ -187,7 +187,7 @@ namespace BrainflowInterfaces
         public BFCyton16Sample(string sample)
         {
             var fields = sample.Split(',');
-            if ( fields.Length == 32 )
+            if (fields.Length == 32)
             {
                 int index = 0;
                 SampleIndex = double.Parse(fields[index++]);
@@ -229,13 +229,13 @@ namespace BrainflowInterfaces
         /// Get TimeSamp as DateTime in local time
         /// </summary>
         public DateTime ObservationTime => DateTimeOffset.FromUnixTimeMilliseconds((long)(TimeStamp * 1000.0)).ToLocalTime().DateTime;
-       
+
 
 
         /// <summary>
         /// Exg channel methods
         /// </summary>
-        public int NumberExgChannels =>  16;
+        public int NumberExgChannels => 16;
 
         /// <summary>
         /// Get Enumerable of EXG channel data
@@ -262,7 +262,7 @@ namespace BrainflowInterfaces
                 yield return ExgCh15;
             }
         }
-        
+
 
         /// <summary>
         /// Get EXG channel data for specified channel
@@ -308,7 +308,7 @@ namespace BrainflowInterfaces
             }
         }
 
-        
+
         /// <summary>
         /// Set EXG Channel data for specified channel
         /// </summary>
@@ -603,11 +603,11 @@ namespace BrainflowInterfaces
             sample[28] = AngCh1;
             sample[29] = AngCh2;
             sample[30] = TimeStamp;
-            
+
             return sample;
 
         }
     }
 }
-    
+
 

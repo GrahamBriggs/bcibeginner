@@ -118,22 +118,22 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AppName" xml:space="preserve">
-    <value>Servidor cerebro</value>
+    <value>Servidor</value>
   </data>
   <data name="BiasDrn" xml:space="preserve">
-    <value>Drenaje sesgado</value>
+    <value>BIAS</value>
   </data>
   <data name="BiasDrp" xml:space="preserve">
-    <value>Caída sesgo</value>
+    <value>Sin BIAS</value>
   </data>
   <data name="BiasMeas" xml:space="preserve">
-    <value>Medida sesgo</value>
+    <value>icion BIAS</value>
   </data>
   <data name="BiasMeasured" xml:space="preserve">
-    <value>Sesgo medido</value>
+    <value>BIAS medido</value>
   </data>
   <data name="BiasSet" xml:space="preserve">
-    <value>Sesgo</value>
+    <value>Aplicar BIAS</value>
   </data>
   <data name="Cancel" xml:space="preserve">
     <value>Cancelar</value>
@@ -160,16 +160,16 @@
     <value>Conectado</value>
   </data>
   <data name="ConnectingToBoard" xml:space="preserve">
-    <value>Haciendo conexión</value>
+    <value>Estableciendo conexión</value>
   </data>
   <data name="ConnectionSettings" xml:space="preserve">
     <value>Configuración de conexión</value>
   </data>
   <data name="ConnectSRB1" xml:space="preserve">
-    <value>conectar SRB1</value>
+    <value>conectar REF</value>
   </data>
   <data name="ConnectSRB1Not" xml:space="preserve">
-    <value>no conecte SRB1</value>
+    <value>desconectar REF</value>
   </data>
   <data name="CurrentConfig" xml:space="preserve">
     <value>Configuración actual</value>
@@ -196,7 +196,7 @@
     <value>Habilitar la transmisión brainflow</value>
   </data>
   <data name="EnableBrainflowStreamingNot" xml:space="preserve">
-    <value>no habilitar la transmisión brainflow</value>
+    <value>des habilitar la transmisión brainflow</value>
   </data>
   <data name="Enabled" xml:space="preserve">
     <value>Activado</value>
@@ -230,10 +230,10 @@
     <value>Configuración de impedancia</value>
   </data>
   <data name="IncludeInBias" xml:space="preserve">
-    <value>Incluir en sesgo</value>
+    <value>Incluir BIAS</value>
   </data>
   <data name="InputType" xml:space="preserve">
-    <value>Aporte</value>
+    <value>Tipo de Entrada</value>
   </data>
   <data name="InvalidComPort" xml:space="preserve">
     <value>Puerto COM no válido</value>
@@ -278,7 +278,7 @@
     <value>Recargar</value>
   </data>
   <data name="RemoveFromBias" xml:space="preserve">
-    <value>Eliminar del sesgo</value>
+    <value>Desconectar BIAS</value>
   </data>
   <data name="Retrying" xml:space="preserve">
     <value>Reintentando</value>
@@ -310,20 +310,23 @@
   <data name="Slow" xml:space="preserve">
     <value>lenta</value>
   </data>
+  <data name="SRB1" xml:space="preserve">
+    <value>REF</value>
+  </data>
   <data name="SrbIs" xml:space="preserve">
-    <value>SRB1 es</value>
+    <value>REF está</value>
   </data>
   <data name="StartServer" xml:space="preserve">
     <value>Iniciar servidor</value>
   </data>
   <data name="StartServerBeforeConfigure" xml:space="preserve">
-    <value>Inicie el servidor antes de utilizar Configurar equipo.</value>
+    <value>Inicie el servidor antes de utilizar Configurar Equipo.</value>
   </data>
   <data name="StartStream" xml:space="preserve">
     <value>Iniciar transmisión</value>
   </data>
   <data name="StartWithSrb" xml:space="preserve">
-    <value>Comienza con SRB1 conectado</value>
+    <value>Comienza con REF conectado</value>
   </data>
   <data name="StopServer" xml:space="preserve">
     <value>Detener servidor</value>

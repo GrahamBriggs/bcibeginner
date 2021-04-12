@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -36,7 +37,7 @@ namespace BrainHatNetwork
             await StopMonitorAsync();
 
             MonitorCancelTokenSource = new CancellationTokenSource();
-            UdpReaderRunTask = RunUdpMulticastReaderAsync(MonitorCancelTokenSource.Token);
+            StartUdpMulticastReaders(MonitorCancelTokenSource.Token);
             ConnectionMonitorRunTask = RunConnectionStatusMonitorAsync(MonitorCancelTokenSource.Token);
             ReadLogPortTask = RunReadLogPortAsync(MonitorCancelTokenSource.Token);
             LslScannerRunTask = RunLslScannerAsync(MonitorCancelTokenSource.Token);
@@ -53,8 +54,9 @@ namespace BrainHatNetwork
             if (MonitorCancelTokenSource != null)
             {
                 MonitorCancelTokenSource.Cancel();
-                if (UdpReaderRunTask != null)
-                    await Task.WhenAll(UdpReaderRunTask, ConnectionMonitorRunTask, LslScannerRunTask, ReadLogPortTask);
+                if ( MulticastReaders != null )
+                    await Task.WhenAll(MulticastReaders);
+                await Task.WhenAll(ConnectionMonitorRunTask, LslScannerRunTask, ReadLogPortTask);
 
                 foreach (var nextServer in DiscoveredServers)
                 {
@@ -62,7 +64,8 @@ namespace BrainHatNetwork
                 }
 
                 MonitorCancelTokenSource = null;
-                UdpReaderRunTask = null;
+                MulticastReaders.Clear();
+                MulticastReaders = null;
                 ConnectionMonitorRunTask = null;
                 ReadLogPortTask = null;
             }
@@ -104,15 +107,16 @@ namespace BrainHatNetwork
             DiscoveredLslStreams = new ConcurrentDictionary<string, StreamInfo>();
         }
 
-        protected ConcurrentDictionary<string, HatClient> DiscoveredServers;
-        private ConcurrentDictionary<string, StreamInfo> DiscoveredLslStreams;
+        ConcurrentDictionary<string, HatClient> DiscoveredServers;
+        ConcurrentDictionary<string, StreamInfo> DiscoveredLslStreams;
 
         //  Thread cancel token and task
-        CancellationTokenSource MonitorCancelTokenSource { get; set; }
-        Task UdpReaderRunTask { get; set; }
-        Task ConnectionMonitorRunTask { get; set; }
-        Task LslScannerRunTask { get; set; }
-        Task ReadLogPortTask { get; set; }
+        CancellationTokenSource MonitorCancelTokenSource;
+
+        Task ConnectionMonitorRunTask;
+        Task LslScannerRunTask;
+        Task ReadLogPortTask;
+        List<Task> MulticastReaders;
 
         Stopwatch ReportNetworkTimeInterval = new Stopwatch();
 
@@ -120,7 +124,7 @@ namespace BrainHatNetwork
         /// <summary>
         /// Task to monitor when discovered servers go stale (disconnected)
         /// </summary>
-        protected async Task RunConnectionStatusMonitorAsync(CancellationToken cancelToken)
+        async Task RunConnectionStatusMonitorAsync(CancellationToken cancelToken)
         {
             try
             {
@@ -134,8 +138,15 @@ namespace BrainHatNetwork
                     {
                         foreach (var nextConnection in oldConnections)
                         {
+                            if ( nextConnection.Value.SecondsSinceLastSample < 30 )
+                            {
+                                //  glitch in the matrix, lost server status but it is still receiving streaming data
+                                continue;
+                            }
+
                             try
                             {
+                                //  remove this server
                                 Log?.Invoke(this, new LogEventArgs(nextConnection.Key, this, "RunConnectionStatusMonitor", $"Lost connection to brainHat server {nextConnection.Key}.", LogLevel.INFO));
                                 HatConnectionChanged?.Invoke(this, new HatConnectionEventArgs(HatConnectionState.Lost, nextConnection.Key));
 
@@ -159,18 +170,13 @@ namespace BrainHatNetwork
             {
                 Log?.Invoke(this, new LogEventArgs(this, "RunConnectionStatusMonitor", e, LogLevel.ERROR));
             }
-            finally
-            {
-                var test = 1;
-            }
         }
-
 
        
         /// <summary>
         /// Task to scan for LSL streams
         /// </summary>
-        private async Task RunLslScannerAsync(CancellationToken cancelToken)
+        async Task RunLslScannerAsync(CancellationToken cancelToken)
         {
             try
             {
@@ -217,12 +223,58 @@ namespace BrainHatNetwork
             }
         }
 
+        
+        /// <summary>
+        /// Start a UDP multicast reader thread for each available network interface
+        /// </summary>
+        void StartUdpMulticastReaders(CancellationToken cancelToken)
+        {
+            MulticastReaders = new List<Task>();
+
+            // list of UdpClients to send multicasts
+            List<UdpClient> sendClients = new List<UdpClient>();
+
+            // join multicast group on all available network interfaces
+            NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+
+            foreach (NetworkInterface networkInterface in networkInterfaces)
+            {
+                if ((!networkInterface.Supports(NetworkInterfaceComponent.IPv4)) ||
+                    (networkInterface.OperationalStatus != OperationalStatus.Up))
+                {
+                    continue;
+                }
+
+                IPInterfaceProperties adapterProperties = networkInterface.GetIPProperties();
+                UnicastIPAddressInformationCollection unicastIPAddresses = adapterProperties.UnicastAddresses;
+                IPAddress ipAddress = null;
+
+                foreach (UnicastIPAddressInformation unicastIPAddress in unicastIPAddresses)
+                {
+                    if (unicastIPAddress.Address.AddressFamily != AddressFamily.InterNetwork)
+                    {
+                        continue;
+                    }
+
+                    ipAddress = unicastIPAddress.Address;
+                    break;
+                }
+
+                if (ipAddress == null)
+                {
+                    continue;
+                }
+
+                MulticastReaders.Add(RunUdpMulticastReaderAsync(cancelToken, ipAddress));
+            }
+        }
+
 
         /// <summary>
         /// Task to read from the server UDP multicast socket.
         /// This function will initiate creation of HatClient for discovered brainHat server.
         /// </summary>
-        protected async Task RunUdpMulticastReaderAsync(CancellationToken cancelToken)
+        async Task RunUdpMulticastReaderAsync(CancellationToken cancelToken, IPAddress interfaceAddress)
         {
             try
             {
@@ -236,7 +288,7 @@ namespace BrainHatNetwork
                     udpClient.Client.Bind(localpt);
 
                     //  join the multicast group
-                    udpClient.JoinMulticastGroup(IPAddress.Parse(BrainHatNetworkAddresses.MulticastGroupAddress));
+                    udpClient.JoinMulticastGroup(IPAddress.Parse(BrainHatNetworkAddresses.MulticastGroupAddress), interfaceAddress);
                     
 
                     //  spin until canceled
@@ -266,7 +318,7 @@ namespace BrainHatNetwork
         /// <summary>
         /// Process whatever we read from UDP data stream
         /// </summary>
-        private async Task ProcessReceivedResult(UdpReceiveResult receiveResult)
+        async Task ProcessReceivedResult(UdpReceiveResult receiveResult)
         {
             try
             {
@@ -292,11 +344,11 @@ namespace BrainHatNetwork
             }
         }
 
-       
+              
         /// <summary>
         /// Process network connection status message
         /// </summary>
-        protected async Task ProcessNetworkStatus(UriArgParser argParser)
+        async Task ProcessNetworkStatus(UriArgParser argParser)
         {
             try
             {
@@ -306,6 +358,9 @@ namespace BrainHatNetwork
                 if (hostName.Length > 0)
                 {
                     var serverStatus = JsonConvert.DeserializeObject<BrainHatServerStatus>(status);
+
+                    if (serverStatus.IpAddress.Length == 0)
+                        return;
 
                     //  check the list of discovered servers
                     if (!DiscoveredServers.ContainsKey(hostName))
@@ -318,13 +373,17 @@ namespace BrainHatNetwork
                         var server = DiscoveredServers[hostName];
 
                         //  update server connection state
+                        var updateTime = server.TimeStamp;
+
                         await server.UpdateConnection(serverStatus);
-                        server.TimeStamp = serverStatus.TimeStamp;
                         serverStatus.OffsetTime = DateTimeOffset.UtcNow - serverStatus.TimeStamp;
+                        server.TimeStamp = DateTimeOffset.UtcNow;
                         server.OffsetTime = serverStatus.OffsetTime;
                         server.CytonSRB1 = serverStatus.CytonSRB1;
                         server.DaisySRB1 = serverStatus.DaisySRB1;
                         server.IsStreaming = serverStatus.IsStreaming;
+                        server.Eth0Address = serverStatus.Eth0Address;
+                        server.Wlan0Address = serverStatus.Wlan0Address;
 
                         //  set raw data status for the event message
                         serverStatus.ReceivingRaw = server.ReceivingRaw;
@@ -344,7 +403,7 @@ namespace BrainHatNetwork
         /// <summary>
         /// Create a new HatClient for the discovered server
         /// </summary>
-        private bool CreateNewHatClient(BrainHatServerStatus serverStatus)
+        bool CreateNewHatClient(BrainHatServerStatus serverStatus)
         {
             if (!DiscoveredLslStreams.ContainsKey(serverStatus.HostName))
             {
@@ -382,7 +441,7 @@ namespace BrainHatNetwork
         /// <summary>
         /// Send connection status update event
         /// </summary>
-        private void SendConnectionStatusUpdateEvents(BrainHatServerStatus status)
+        void SendConnectionStatusUpdateEvents(BrainHatServerStatus status)
         {
             try
             {
@@ -417,7 +476,7 @@ namespace BrainHatNetwork
         //  Remote Log Monitor
         #region RemoteLogMonitor
 
-        private async Task RunReadLogPortAsync(CancellationToken cancelToken)
+        async Task RunReadLogPortAsync(CancellationToken cancelToken)
         {
             try
             {
@@ -486,7 +545,7 @@ namespace BrainHatNetwork
         /// <summary>
         /// Pass through to the log function for the data processor component
         /// </summary>
-        private void OnComponentLog(object sender, LogEventArgs e)
+        void OnComponentLog(object sender, LogEventArgs e)
         {
             Log?.Invoke(sender, e);
         }

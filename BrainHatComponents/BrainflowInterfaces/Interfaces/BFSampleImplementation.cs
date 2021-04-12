@@ -88,11 +88,10 @@ namespace BrainflowInterfaces
 
         }
 
-        protected double[] ExgChannels;
-        protected double[] AcelChannels;
-        protected double[] OtherChannels;
-        protected double[] AnalogChannels;
-
+        double[] ExgChannels;
+        double[] AcelChannels;
+        double[] OtherChannels;
+        double[] AnalogChannels;
 
 
         public BFSampleImplementation()

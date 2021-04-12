@@ -21,7 +21,7 @@ namespace BrainflowInterfaces
 
     public class RangeObservableCollection<T> : ObservableCollection<T>
     {
-        private bool _suppressNotification = false;
+        bool _suppressNotification = false;
 
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
@@ -45,7 +45,7 @@ namespace BrainflowInterfaces
         }
     }
 
-   
+
 
     public class SmartCollection<T> : ObservableCollection<T>
     {
@@ -73,7 +73,7 @@ namespace BrainflowInterfaces
 
             this.OnPropertyChanged(new PropertyChangedEventArgs("Count"));
             this.OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
-         //   this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            //   this.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
         public void Reset(IEnumerable<T> range)

@@ -14,13 +14,13 @@ namespace BrainflowDataProcessing
         public int BoardId { get; protected set; }
 
         public int SampleRate { get; protected set; }
-        
+
         public int NumberOfChannels { get; protected set; }
-        
+
         public double? StartTime { get; protected set; }
-        
+
         public double? EndTime { get; protected set; }
-        
+
         public double Duration
         {
             get
@@ -35,7 +35,7 @@ namespace BrainflowDataProcessing
         public IEnumerable<IBFSample> Samples => _Samples;
 
         public bool IsValidFile => (BoardId >= 0 && NumberOfChannels > 0 && SampleRate > 0 && StartTime.HasValue && EndTime.HasValue);
-        
+
         /// <summary>
         /// Open the file and read the header, first record and last record (to calculate duration)
         /// does not save any other samples from the file
@@ -85,7 +85,7 @@ namespace BrainflowDataProcessing
         bool IsCompleteLine(string nextLine)
         {
             var tokens = nextLine.Split(',');
-            switch ( BoardId )
+            switch (BoardId)
             {
                 case 0:
                     return tokens.Length >= 23;
@@ -133,11 +133,11 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Create a sample from a single line of ascii text
         /// </summary>
-        private IBFSample CreateSample(string nextLine)
+        IBFSample CreateSample(string nextLine)
         {
             IBFSample newSample = null;
 
-            switch ( BoardId )
+            switch (BoardId)
             {
                 case 0:
                     newSample = new BFCyton8Sample(nextLine);
@@ -152,7 +152,7 @@ namespace BrainflowDataProcessing
             }
 
             //  check the timestamp for valid data, this indicates we read a partial line for example the file is actively being written
-            if (Math.Abs(newSample.TimeStamp-0) < 0.0000001)
+            if (Math.Abs(newSample.TimeStamp - 0) < 0.0000001)
                 return null;
 
             //  cache the start time of the first record
@@ -168,7 +168,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Parse a single line of header text
         /// </summary>
-        private void ParseHeaderLine(string nextLine)
+        void ParseHeaderLine(string nextLine)
         {
             if (nextLine.Contains("%Number of channels"))
             {
@@ -195,8 +195,6 @@ namespace BrainflowDataProcessing
             }
         }
 
-      
-
-        protected List<IBFSample> _Samples;
+        List<IBFSample> _Samples;
     }
 }

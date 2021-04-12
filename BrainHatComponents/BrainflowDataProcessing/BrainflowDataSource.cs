@@ -46,6 +46,7 @@ namespace BrainflowDataProcessing
                 return true;
             }
 
+            Log?.Invoke(this, new LogEventArgs(this, "LoadDataFile", $"Failed to load data file {fileName}.", LogLevel.ERROR));
             return false;
         }
 
@@ -57,6 +58,6 @@ namespace BrainflowDataProcessing
             return UnfilteredData.Where(x => x.TimeStamp >= from && x.TimeStamp <= to).ToArray();
         }
 
-        protected List<IBFSample> UnfilteredData;
+        List<IBFSample> UnfilteredData;
     }
 }

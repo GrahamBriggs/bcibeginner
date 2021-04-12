@@ -24,7 +24,7 @@ namespace BrainflowDataProcessing
         }
 
         public abstract double[] RunFilterFunction(double[] data, int sampleRate);
-
+                
         protected object MethodObject;
         protected MethodInfo Method;
         protected object[] Parameters;
@@ -37,9 +37,9 @@ namespace BrainflowDataProcessing
     public class SignalFilterFunctionDataSampleRate : SignalFilterFunction
     {
         public SignalFilterFunctionDataSampleRate(object methodObject, MethodInfo method, object[] parameters)
-            :base(methodObject, method, parameters)
+            : base(methodObject, method, parameters)
         {
-           
+
         }
 
         public override double[] RunFilterFunction(double[] data, int sampleRate)
@@ -66,7 +66,7 @@ namespace BrainflowDataProcessing
         public override double[] RunFilterFunction(double[] data, int sampleRate)
         {
             Parameters[0] = data;
-          
+
             return (double[])Method.Invoke(MethodObject, Parameters);
         }
     }
@@ -79,7 +79,7 @@ namespace BrainflowDataProcessing
     {
         public double[] ApplyFilter(double[] data, int sampleRate)
         {
-            foreach ( var nextFilterFunction in FilterFunctions )
+            foreach (var nextFilterFunction in FilterFunctions)
             {
                 data = nextFilterFunction.RunFilterFunction(data, sampleRate);
             }
@@ -100,8 +100,8 @@ namespace BrainflowDataProcessing
 
         public string Name { get; protected set; }
 
-        protected List<SignalFilterFunction> FilterFunctions;
-       
+        List<SignalFilterFunction> FilterFunctions;
+
     }
 
 
@@ -124,15 +124,15 @@ namespace BrainflowDataProcessing
                     var doc = XDocument.Load(reader);
 
                     var filters = doc.Element("brainHatSignalFilters")?.Element("Filters")?.Elements("Filter");
-                    if ( filters == null )
+                    if (filters == null)
                     {
                         throw new Exception("Document does not hae a <Filters> element.");
                     }
 
-                    foreach (var nextFilter in filters )
+                    foreach (var nextFilter in filters)
                     {
                         var filterName = nextFilter.Element("Name")?.Value;
-                        if ( filterName == null || Filters.ContainsKey(filterName) )
+                        if (filterName == null || Filters.ContainsKey(filterName))
                         {
                             throw new Exception("Filter does not have a name or name is duplicated.");
                         }
@@ -140,7 +140,7 @@ namespace BrainflowDataProcessing
                         var newFilter = new SignalFilter(filterName);
 
                         var functions = nextFilter.Element("Functions")?.Elements("Function");
-                        if ( functions == null )
+                        if (functions == null)
                         {
                             throw new Exception($"Filter {filterName} does not have any functions.");
                         }
@@ -175,12 +175,12 @@ namespace BrainflowDataProcessing
             }
         }
 
-        
+
         /// <summary>
         /// Add a function to the filter
         /// will determine if this function has dynamic parameters of data[] only, or data[] and sampling_rate
         /// </summary>
-        private static void AddSignalFilterFunction(SignalFilter filter, MethodInfo mi, Dictionary<string, string> paramDict, object[] parameters)
+        static void AddSignalFilterFunction(SignalFilter filter, MethodInfo mi, Dictionary<string, string> paramDict, object[] parameters)
         {
             if (paramDict.ContainsKey("sampling_rate"))
                 filter.AddFunction(new SignalFilterFunctionDataSampleRate(typeof(DataFilter).Assembly, mi, parameters));
@@ -194,24 +194,120 @@ namespace BrainflowDataProcessing
         /// </summary>
         public void LoadDefaultFilter()
         {
-            var newFilter = new SignalFilter("bandpass");
-            MethodInfo mi = typeof(DataFilter).GetMethod("perform_bandpass", BindingFlags.Public | BindingFlags.Static);
+            Filters.Clear();
+
+            CreateDefaultFilterNotch60();
+
+            CreateDefaultFilterNotch50();
+        }
+
+
+        /// <summary>
+        /// Create a default filter for 60Hz mains noise
+        /// </summary>
+        static void CreateDefaultFilterNotch60()
+        {
+            var newFilter = new SignalFilter("default60");
+
+            MethodInfo mi = typeof(DataFilter).GetMethod("perform_bandstop", BindingFlags.Public | BindingFlags.Static);
             var paramDict = new Dictionary<string, string>
             {
                 ["data"] = "",
                 ["sampling_rate"] = "0",
-                ["center_freq"] = "15.0",
-                ["band_width"] = "5.0",
-                ["order"] = "2",
-                ["filter_type"] = "0",
-                ["ripple"] = "0.0"
+                ["center_freq"] = "60.0",
+                ["band_width"] = "2.0",
+                ["order"] = "6",
+                ["filter_type"] = "1",
+                ["ripple"] = "1.0"
             };
 
             //  create object array from parameters, casting to proper type
             object[] parameters = mi.GetParameters().Select(p => paramDict[p.Name].Length > 0 ? Convert.ChangeType(paramDict[p.Name], p.ParameterType) : null).ToArray();
             newFilter.AddFunction(new SignalFilterFunctionDataSampleRate(typeof(DataFilter).Assembly, mi, parameters));
 
-            Filters.Clear();
+            mi = typeof(DataFilter).GetMethod("perform_bandpass", BindingFlags.Public | BindingFlags.Static);
+            paramDict = new Dictionary<string, string>
+            {
+                ["data"] = "",
+                ["sampling_rate"] = "0",
+                ["center_freq"] = "25.5",
+                ["band_width"] = "47",
+                ["order"] = "2",
+                ["filter_type"] = "0",
+                ["ripple"] = "0.0"
+            };
+
+            //  create object array from parameters, casting to proper type
+            parameters = mi.GetParameters().Select(p => paramDict[p.Name].Length > 0 ? Convert.ChangeType(paramDict[p.Name], p.ParameterType) : null).ToArray();
+            newFilter.AddFunction(new SignalFilterFunctionDataSampleRate(typeof(DataFilter).Assembly, mi, parameters));
+
+            mi = typeof(DataFilter).GetMethod("perform_wavelet_denoising", BindingFlags.Public | BindingFlags.Static);
+            paramDict = new Dictionary<string, string>
+            {
+                ["data"] = "",
+                ["wavelet"] = "db12",
+                ["decomposition_level"] = "3",
+            };
+
+            //  create object array from parameters, casting to proper type
+            parameters = mi.GetParameters().Select(p => paramDict[p.Name].Length > 0 ? Convert.ChangeType(paramDict[p.Name], p.ParameterType) : null).ToArray();
+            newFilter.AddFunction(new SignalFilterFunctionData(typeof(DataFilter).Assembly, mi, parameters));
+
+            Filters.Add(newFilter.Name, newFilter);
+        }
+
+
+        /// <summary>
+        /// Create a default filter for 60Hz mains noise
+        /// </summary>
+        static void CreateDefaultFilterNotch50()
+        {
+            var newFilter = new SignalFilter("default50");
+
+            MethodInfo mi = typeof(DataFilter).GetMethod("perform_bandstop", BindingFlags.Public | BindingFlags.Static);
+            var paramDict = new Dictionary<string, string>
+            {
+                ["data"] = "",
+                ["sampling_rate"] = "0",
+                ["center_freq"] = "50.0",
+                ["band_width"] = "2.0",
+                ["order"] = "6",
+                ["filter_type"] = "1",
+                ["ripple"] = "1.0"
+            };
+
+            //  create object array from parameters, casting to proper type
+            object[] parameters = mi.GetParameters().Select(p => paramDict[p.Name].Length > 0 ? Convert.ChangeType(paramDict[p.Name], p.ParameterType) : null).ToArray();
+            newFilter.AddFunction(new SignalFilterFunctionDataSampleRate(typeof(DataFilter).Assembly, mi, parameters));
+
+            mi = typeof(DataFilter).GetMethod("perform_bandpass", BindingFlags.Public | BindingFlags.Static);
+            paramDict = new Dictionary<string, string>
+            {
+                ["data"] = "",
+                ["sampling_rate"] = "0",
+                ["center_freq"] = "25.5",
+                ["band_width"] = "47",
+                ["order"] = "2",
+                ["filter_type"] = "0",
+                ["ripple"] = "0.0"
+            };
+
+            //  create object array from parameters, casting to proper type
+            parameters = mi.GetParameters().Select(p => paramDict[p.Name].Length > 0 ? Convert.ChangeType(paramDict[p.Name], p.ParameterType) : null).ToArray();
+            newFilter.AddFunction(new SignalFilterFunctionDataSampleRate(typeof(DataFilter).Assembly, mi, parameters));
+
+            mi = typeof(DataFilter).GetMethod("perform_wavelet_denoising", BindingFlags.Public | BindingFlags.Static);
+            paramDict = new Dictionary<string, string>
+            {
+                ["data"] = "",
+                ["wavelet"] = "db12",
+                ["decomposition_level"] = "3",
+            };
+
+            //  create object array from parameters, casting to proper type
+            parameters = mi.GetParameters().Select(p => paramDict[p.Name].Length > 0 ? Convert.ChangeType(paramDict[p.Name], p.ParameterType) : null).ToArray();
+            newFilter.AddFunction(new SignalFilterFunctionData(typeof(DataFilter).Assembly, mi, parameters));
+
             Filters.Add(newFilter.Name, newFilter);
         }
 
@@ -245,7 +341,7 @@ namespace BrainflowDataProcessing
         }
 
         //  The filter collection
-        protected Dictionary<string, SignalFilter> Filters;
+        static Dictionary<string, SignalFilter> Filters;
 
     }
 
@@ -291,6 +387,6 @@ namespace BrainflowDataProcessing
             }
         }
 
-        
+
     }
 }
