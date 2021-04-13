@@ -11,8 +11,9 @@ For more detailed information, see the published document here:
 **[brainHat Software System Description](https://docs.google.com/document/d/e/2PACX-1vTXQGazx1bMeUP3yy8naeh7qg_c4RRRfAiN7E3Sr6DkLWUqhxE9w7PBIjzVfpdaYlxAuEuS9O4nrpYw/pub)**
 
 For a quick overview of what the system can do, see the videos here:
+- **[brainHat Mobile](https://youtu.be/QxUTBgYqoTs)**
 - **[brainHat Viewer](https://www.youtube.com/watch?v=tYAy1uis2tA)**
-- **[brainHat Beta One Video](https://youtu.be/rwSlOQfDRk4)**
+- **[brainHat Server - Plug and Play LSL](https://youtu.be/rwSlOQfDRk4)**
 
 ### brainHat Servers
 See brainHatServer/brainHat for the C++ server program for the Raspberry Pi. Run it from the command line, or use the included scripts to configure it as a background daemon.
