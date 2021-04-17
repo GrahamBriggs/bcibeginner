@@ -18,7 +18,7 @@ public:
 	BoardDataReader(ConnectionChangedCallbackFn connectionChangedFn, NewSampleCallbackFn newSampleFn);
 	virtual ~BoardDataReader();
 	
-	int Start(int board_id, struct BrainFlowInputParams params, bool srb1On);
+	int Start(int boardId, struct BrainFlowInputParams params, bool srb1On);
 	
 	virtual void Cancel();
 	

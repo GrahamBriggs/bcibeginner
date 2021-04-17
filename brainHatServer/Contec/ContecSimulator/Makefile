@@ -5,7 +5,7 @@
 
 #VisualGDB: AutoSourceFiles		#<--- remove this line to disable auto-updating of SOURCEFILES and EXTERNAL_LIBS
 
-TARGETNAME := brainHat
+TARGETNAME := ContecSimulator
 #TARGETTYPE can be APP, STATIC or SHARED
 TARGETTYPE := APP
 
@@ -33,7 +33,13 @@ LINKER_SCRIPT := $(CONFIGURATION_LINKER_SCRIPT)
 endif
 
 ifneq ($(LINKER_SCRIPT),)
+
+ifeq ($(TOOLCHAIN_SUBTYPE),iar)
+LDFLAGS += --config $(LINKER_SCRIPT)
+else
 LDFLAGS += -T$(LINKER_SCRIPT)
+endif
+
 endif
 
 ifeq ($(AS),)
@@ -45,7 +51,13 @@ AS := $(CC)
 ASFLAGS := $(CFLAGS) $(ASFLAGS)
 endif
 
-ifeq ($(TOOLCHAIN_SUBTYPE),armcc)
+ifeq ($(TOOLCHAIN_SUBTYPE),iar)
+	CC_DEPENDENCY_FILE_SPECIFIER := --dependencies=m
+	ASM_DEPENDENCY_FILE_SPECIFIER := && echo > 
+	CXXFLAGS += --c++
+	COMMONFLAGS += --silent
+
+else ifeq ($(TOOLCHAIN_SUBTYPE),armcc)
 	CC_DEPENDENCY_FILE_SPECIFIER := --depend
 	ASM_DEPENDENCY_FILE_SPECIFIER := --depend
 	USING_KEIL_TOOLCHAIN := 1
@@ -64,7 +76,7 @@ error:
 	$(error Invalid configuration, please check your inputs)
 endif
 
-SOURCEFILES := BDFFileWriter.cpp BoardDataSource.cpp BoardIds.cpp BrainHatFileWriter.cpp BroadcastStatus.cpp CommandServer.cpp BoardFileSimulator.cpp brainHat.cpp ContecDataReader.cpp CytonBoardSettings.cpp OpenBCIFileWriter.cpp Logger.cpp NetworkExtensions.cpp Parser.cpp BroadcastData.cpp BoardDataReader.cpp SerialPort.cpp TCPServerThread.cpp TerminalDisplay.cpp Thread.cpp TimeExtensions.cpp UdpMulticastServerThread.cpp
+SOURCEFILES := ContecSimulator.cpp SerialPort.cpp
 EXTERNAL_LIBS := 
 EXTERNAL_LIBS_COPIED := $(foreach lib, $(EXTERNAL_LIBS),$(BINARYDIR)/$(notdir $(lib)))
 
@@ -81,6 +93,11 @@ CXXFLAGS += $(addprefix -D,$(PREPROCESSOR_MACROS))
 
 ifeq ($(USING_KEIL_TOOLCHAIN),1)
 	ASFLAGS +=$(call macros-to-preprocesor-directives, $(PREPROCESSOR_MACROS))
+else ifeq ($(TOOLCHAIN_SUBTYPE),iar)
+	ASFLAGS := $(subst --cpu=,--cpu ,$(ASFLAGS))
+	ASFLAGS := $(subst --fpu=,--fpu ,$(ASFLAGS))
+	ASFLAGS := $(subst --silent,-S ,$(ASFLAGS))
+	ASFLAGS += $(addprefix -D,$(PREPROCESSOR_MACROS))
 else
 	ASFLAGS += $(addprefix -D,$(PREPROCESSOR_MACROS))
 endif
@@ -164,6 +181,14 @@ $(BINARYDIR)/$(basename $(TARGETNAME)).bin: $(BINARYDIR)/$(TARGETNAME)
 $(BINARYDIR)/$(basename $(TARGETNAME)).ihex: $(BINARYDIR)/$(TARGETNAME)
 	$(OBJCOPY) --i32 $< --output $@
 
+else ifeq ($(TOOLCHAIN_SUBTYPE),iar)
+
+$(BINARYDIR)/$(basename $(TARGETNAME)).bin: $(BINARYDIR)/$(TARGETNAME)
+	$(OBJCOPY) --silent --bin $< $@
+
+$(BINARYDIR)/$(basename $(TARGETNAME)).ihex: $(BINARYDIR)/$(TARGETNAME)
+	$(OBJCOPY) --silent --bin $< $@
+
 else
 
 $(BINARYDIR)/$(basename $(TARGETNAME)).bin: $(BINARYDIR)/$(TARGETNAME)
@@ -182,6 +207,9 @@ endif
 
 ifeq ($(TARGETTYPE),APP)
 $(BINARYDIR)/$(TARGETNAME): $(all_objs) $(EXTERNAL_LIBS) $(EXTRA_DEPENDENCIES)
+ifeq ($(DETACH_CODE_COVERAGE),1)
+	$(VISUALGDB_DIR)/VisualGDB.exe /decover $@ $(all_objs)
+endif
 	$(LD) -o $@ $(LDFLAGS) $(START_GROUP) $(all_objs) $(LIBRARY_LDFLAGS) $(END_GROUP)
 endif
 
@@ -225,11 +253,5 @@ $(BINARYDIR)/%.o : %.cc $(all_make_files) |$(BINARYDIR)
 
 $(BINARYDIR)/%.o : %.cxx $(all_make_files) |$(BINARYDIR)
 	$(CC) $(CFLAGS) $(CXXFLAGS) -c $< -o $@ $(CC_DEPENDENCY_FILE_SPECIFIER)F $(@:.o=.dep)
-
-
-	
-#Install
-install:
-	cp $(BINARYDIR)/hatSimulator /usr/sbin
 
 #VisualGDB: GeneratedRules				#<--- All lines below are auto-generated. Remove this line to suppress auto-generation of file rules.

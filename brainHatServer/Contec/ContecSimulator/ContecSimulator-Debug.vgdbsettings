@@ -3,29 +3,24 @@
   <ConfigurationName>Debug</ConfigurationName>
   <Project xsi:type="com.visualgdb.project.linux">
     <CustomSourceDirectories>
-      <Directories>
-        <SourceDirMappingEntry>
-          <RemoteDir>/home/pi/Source/bcibeginner/BrainHatComponents/brainflow/cpp-package/src</RemoteDir>
-          <LocalDir>C:\Users\grahambriggs\source\tpc_bci\bciBeginner\BrainHatComponents\brainflow\cpp-package\src</LocalDir>
-        </SourceDirMappingEntry>
-      </Directories>
+      <Directories />
       <PathStyle>RemoteUnix</PathStyle>
     </CustomSourceDirectories>
     <AutoProgramSPIFFSPartition>true</AutoProgramSPIFFSPartition>
     <BuildHost>
-      <HostName>brainHat2</HostName>
+      <HostName>brainHat1</HostName>
       <Transport>SSH</Transport>
       <UserName>pi</UserName>
     </BuildHost>
     <MainSourceTransferCommand>
       <SkipWhenRunningCommandList>false</SkipWhenRunningCommandList>
       <RemoteHost>
-        <HostName>bci3</HostName>
+        <HostName>brainHat1</HostName>
         <Transport>SSH</Transport>
         <UserName>pi</UserName>
       </RemoteHost>
       <LocalDirectory>$(ProjectDir)</LocalDirectory>
-      <RemoteDirectory>/home/pi/Source/VGDB/brainHat</RemoteDirectory>
+      <RemoteDirectory>/home/pi/Source/VGDB/ContecSim</RemoteDirectory>
       <FileMasks>
         <string>*.cpp</string>
         <string>*.h</string>
@@ -67,6 +62,10 @@
     <MakeConfigurationName>Debug</MakeConfigurationName>
     <MakeCommandTemplate>
       <SkipWhenRunningCommandList>false</SkipWhenRunningCommandList>
+      <RemoteHost>
+        <HostName>BuildMachine</HostName>
+        <Transport>BuiltinShortcut</Transport>
+      </RemoteHost>
       <Command>$(ToolchainMake)</Command>
       <Arguments>$(ToolchainMakeArgs)</Arguments>
       <WorkingDirectory>$(BuildDir)</WorkingDirectory>
@@ -97,12 +96,6 @@
     <ExtraSettings>
       <HideErrorsInSystemHeaders>true</HideErrorsInSystemHeaders>
       <SupportLightweightReferenceAnalysis>true</SupportLightweightReferenceAnalysis>
-      <DiscoverySettings>
-        <Mode>Disabled</Mode>
-        <SearchInProjectDir>true</SearchInProjectDir>
-        <SearchInSourceDirs>true</SearchInSourceDirs>
-        <SearchInIncludeSubdirs>true</SearchInIncludeSubdirs>
-      </DiscoverySettings>
       <CheckForClangFormatFiles>true</CheckForClangFormatFiles>
       <FormattingEngine xsi:nil="true" />
     </ExtraSettings>
@@ -117,14 +110,14 @@
     <AdditionalGDBSettings>
       <Features>
         <DisableAutoDetection>false</DisableAutoDetection>
-        <UseFrameParameter>true</UseFrameParameter>
-        <SimpleValuesFlagSupported>true</SimpleValuesFlagSupported>
-        <ListLocalsSupported>true</ListLocalsSupported>
-        <ByteLevelMemoryCommandsAvailable>true</ByteLevelMemoryCommandsAvailable>
-        <ThreadInfoSupported>true</ThreadInfoSupported>
-        <PendingBreakpointsSupported>true</PendingBreakpointsSupported>
-        <SupportTargetCommand>true</SupportTargetCommand>
-        <ReliableBreakpointNotifications>true</ReliableBreakpointNotifications>
+        <UseFrameParameter>false</UseFrameParameter>
+        <SimpleValuesFlagSupported>false</SimpleValuesFlagSupported>
+        <ListLocalsSupported>false</ListLocalsSupported>
+        <ByteLevelMemoryCommandsAvailable>false</ByteLevelMemoryCommandsAvailable>
+        <ThreadInfoSupported>false</ThreadInfoSupported>
+        <PendingBreakpointsSupported>false</PendingBreakpointsSupported>
+        <SupportTargetCommand>false</SupportTargetCommand>
+        <ReliableBreakpointNotifications>false</ReliableBreakpointNotifications>
       </Features>
       <EnableSmartStepping>false</EnableSmartStepping>
       <FilterSpuriousStoppedNotifications>false</FilterSpuriousStoppedNotifications>
@@ -148,14 +141,14 @@
     <LaunchGDBSettings xsi:type="GDBLaunchParametersNewInstance">
       <DebuggedProgram>$(TargetPath)</DebuggedProgram>
       <GDBServerPort>2000</GDBServerPort>
-      <ProgramArguments>--board-id -50</ProgramArguments>
+      <ProgramArguments />
       <ArgumentEscapingMode>Auto</ArgumentEscapingMode>
     </LaunchGDBSettings>
     <GenerateCtrlBreakInsteadOfCtrlC>false</GenerateCtrlBreakInsteadOfCtrlC>
     <SuppressArgumentVariablesCheck>false</SuppressArgumentVariablesCheck>
     <X11WindowMode>Local</X11WindowMode>
     <KeepConsoleAfterExit>false</KeepConsoleAfterExit>
-    <RunGDBUnderSudo>true</RunGDBUnderSudo>
+    <RunGDBUnderSudo>false</RunGDBUnderSudo>
     <DeploymentMode>Auto</DeploymentMode>
     <DeployWhenLaunchedWithoutDebugging>true</DeployWhenLaunchedWithoutDebugging>
     <StripDebugSymbolsDuringDeployment>false</StripDebugSymbolsDuringDeployment>

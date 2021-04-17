@@ -4,14 +4,16 @@
 #include <iostream>
 #include <EDFfile.h>
 #include <board_shim.h>
+#include <iomanip>
+#include <sstream>
+#include <dirent.h>
+
 #include "brainHat.h"
 #include "BDFFileWriter.h"
 #include "StringExtensions.h"
 #include "TimeExtensions.h"
 #include "BFSample.h"
-#include <iomanip>
-#include <sstream>
-#include <dirent.h>
+#include "BoardIds.h"
 #include "FileExtensions.h"
 
 
@@ -74,12 +76,16 @@ bool BDFFileWriter::OpenFile(string fileName, bool tryUsb)
 
 string GetEquipmentName(int boardId)
 {
-	switch (boardId)
+	switch ((BrainhatBoardIds)boardId)
 	{
-	case 0:
+	case BrainhatBoardIds::CYTON_BOARD:
 		return "Cyton";
-	case 2:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 		return "Cyton+Daisy";
+	case BrainhatBoardIds::GANGLION_BOARD:
+		return "Ganglion";
+	case BrainhatBoardIds::CONTEC_KT88:
+		return "ContecKT88";
 	default:
 		return "";
 	}
@@ -88,14 +94,16 @@ string GetEquipmentName(int boardId)
 
 string GetSampleNameShort(int boardId)
 {
-	switch (boardId)
+	switch ((BrainhatBoardIds)boardId)
 	{
-	case 0:
+	case BrainhatBoardIds::CYTON_BOARD:
 		return "CY08";
-	case 2:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 		return "CY16";
-	case 1:
+	case BrainhatBoardIds::GANGLION_BOARD:
 		return "GAN4";
+	case BrainhatBoardIds::CONTEC_KT88:
+		return "KT88";
 	default:
 		return "";
 	}

@@ -11,6 +11,7 @@
 #include "BoardFileSimulator.h"
 #include "StringExtensions.h"
 #include "BFCyton8.h"
+#include "BoardIds.h"
 
 
 using namespace std;
@@ -160,16 +161,16 @@ bool BoardFileSimulator::LoadFile(std::string fileName)
 //  TODO - finish this function for all supported boards
 void BoardFileSimulator::AddSample(string readLine)
 {
-	switch ((BoardIds)BoardId)
+	switch ((BrainhatBoardIds)BoardId)
 	{
-	case BoardIds::GANGLION_BOARD:
+	case BrainhatBoardIds::GANGLION_BOARD:
 		break;
 		
-	case BoardIds::CYTON_BOARD:
+	case BrainhatBoardIds::CYTON_BOARD:
 		DataRecords.push_back(new Cyton8Sample(readLine));
 		break;
 		
-	case BoardIds::CYTON_DAISY_BOARD:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 		break;
 		
 	}
@@ -210,7 +211,7 @@ void BoardFileSimulator::ReadHeaderLine(string readLine)
 			BoardId = (int)BoardIds::CYTON_DAISY_BOARD;
 			break;
 		default:
-			BoardId = -99;
+			BoardId = (int)BrainhatBoardIds::UNDEFINED;
 			break;
 		}
 	}	

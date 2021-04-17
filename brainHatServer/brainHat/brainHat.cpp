@@ -5,12 +5,14 @@
 #include <net/if.h>
 #include <ifaddrs.h>
 
+
 #include "brainHat.h"
 #include "Logger.h"
 #include "StringExtensions.h"
 #include "BroadcastData.h"
 #include "BroadcastStatus.h"
 #include "BoardDataReader.h"
+#include "ContecDataReader.h"
 #include "CommandServer.h"
 #include "OpenBciDataFile.h"
 #include "BDFFileWriter.h"
@@ -18,7 +20,10 @@
 #include "TimeExtensions.h"
 #include "Parser.h"
 #include "UriParser.h"
+#include "BoardIds.h"
 #include "BrainHatFileWriter.h"
+#include "BFSample.h"
+#include "BFCyton16.h"
 
 
 
@@ -39,7 +44,7 @@ CommandServer ComServer(HandleServerRequest);
 BoardDataSource* DataSource = NULL;
 
 //  Command line arguments
-int Board_Id = 0;
+int BoardId = 0;
 bool RecordToUsb = true;
 bool StartSrbOn = false;
 string DemoFileName = "";
@@ -47,8 +52,10 @@ struct BrainFlowInputParams InputParams;
 
 
 //  Data Reader
+ContecDataReader ContecReader(BoardConnectionStateChanged, NewSample);
 BoardDataReader BoardReader(BoardConnectionStateChanged, NewSample);
 BoardFileSimulator DemoFileReader(BoardConnectionStateChanged, NewSample);
+
 
 //  File Recorder
 BrainHatFileWriter* FileWriter;
@@ -60,7 +67,7 @@ bool parse_args(int argc, char *argv[]);
 void RunBoardData();
 void RunFileData();
 bool ProcessKeyboardInput(string input); 
-bool LiveData() { return Board_Id >= 0; }
+bool LiveData() { return BoardId != (int)BrainhatBoardIds::UNDEFINED; }
 void StartStatusBroadcast();
 void StopStatusBroadcast();
 
@@ -71,12 +78,12 @@ int main(int argc, char *argv[])
 {
 	if (!ParseArguments(argc, argv))
 		return -1;
-		
+
 	//BoardShim::set_log_file((char*)"./brainflowLogs.txt");
 	BoardShim::set_log_level(6);
 	
 	//  start program threads
-	Logging.Start();
+	//  TODO - logging disabled Logging.Start();
 	ComServer.Start();
 	StartStatusBroadcast();
 	
@@ -99,15 +106,11 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-
-//  Run the program with data from the live board
-//
-void RunBoardData()
-{	
-	BoardReader.Start(Board_Id, InputParams, StartSrbOn);
+void RunBrainflowBoardData()
+{
+	Logging.AddLog("main", "RunBrainflowBoardData", "Starting board data. Enter Q to quit.", LogLevelInfo);
 	
-	Logging.AddLog("main", "RunBoardData", "Starting board data. Enter Q to quit.", LogLevelInfo);
-	
+	BoardReader.Start(BoardId, InputParams, StartSrbOn);
 	string input;
 	while (true)
 	{
@@ -119,6 +122,40 @@ void RunBoardData()
 			BoardReader.Cancel();
 			break;
 		}
+	}
+}
+
+void RunContecBoardData()
+{
+	Logging.AddLog("main", "RunContecBoardData", "Starting board data. Enter Q to quit.", LogLevelInfo);
+	
+	ContecReader.Start(BoardId, InputParams, StartSrbOn);
+	string input;
+	while (true)
+	{
+		getline(cin, input);
+		toUpper(input);
+		
+		if (!ProcessKeyboardInput(input))
+		{
+			ContecReader.Cancel();
+			break;
+		}
+	}
+}
+
+//  Run the program with data from the live board
+//
+void RunBoardData()
+{	
+	
+	switch ((BrainhatBoardIds)BoardId)
+	{
+	default:
+		RunBrainflowBoardData();
+		
+	case BrainhatBoardIds::CONTEC_KT88:
+		RunContecBoardData();
 	}
 }
 
@@ -151,12 +188,13 @@ void RunFileData()
 }
 
 
+
 //  Handle samples from the data source
 void NewSample(BFSample* sample)
 {
 	//  broadcast it
 	DataBroadcaster.AddData(sample->Copy());
-	
+
 	if (IsRecording())
 		FileWriter->AddData(sample->Copy());
 	
@@ -240,7 +278,7 @@ bool HandleRecordingRequest(UriArgParser& requestParser)
 			}
 			
 			
-			FileWriter->StartRecording(fileName, RecordToUsb, Board_Id, DataSource->GetSampleRate());
+			FileWriter->StartRecording(fileName, RecordToUsb, BoardId, DataSource->GetSampleRate());
 		}
 		else if (enable == "false")
 		{
@@ -351,7 +389,19 @@ bool ProcessKeyboardInput(string input)
 	return true;
 }
 
-
+bool SupportedBoard()
+{
+	switch ((BrainhatBoardIds)BoardId)
+	{
+	default:
+		return false;
+		
+	case BrainhatBoardIds::CYTON_BOARD:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
+	case BrainhatBoardIds::CONTEC_KT88:
+		return true;
+	}
+}
 //  Parse the command line arguments for the brainHat program
 //
 bool ParseArguments(int argc, char *argv[])
@@ -369,13 +419,14 @@ bool ParseArguments(int argc, char *argv[])
 		//  for file data, check demo file name
 		if(LiveData() && DemoFileName.size() > 0 )
 		{
-			Board_Id == -99;
+			BoardId = (int)BrainhatBoardIds::UNDEFINED;
 		}
 		
 		//  for live data, check supported boards
-		if(LiveData() && !(Board_Id == 0 || Board_Id == 1 || Board_Id == 2))
+		//  todo function for supported boards
+		if(LiveData() && !SupportedBoard())
 		{
-			cout << "Invalid startup parameters. This program only supports --board-id 0|1|2 (Cyton, Ganglion, Cyton+Daisy) Exiting program." << endl;
+			cout << "Invalid startup parameters. This board is not supported. Exiting program." << endl;
 			getchar();
 			return false;
 		}
@@ -387,7 +438,7 @@ bool ParseArguments(int argc, char *argv[])
 	else
 	{
 		// no command line args,  default to Cyton board on the default port
-		Board_Id = 0;
+		BoardId = (int)BrainhatBoardIds::CYTON_BOARD;
 		InputParams.serial_port = "/dev/ttyUSB0";
 	}
 	
@@ -469,7 +520,7 @@ bool parse_args(int argc, char *argv[])
 			if (i + 1 < argc)
 			{
 				i++;
-				Board_Id = std::stoi(std::string(argv[i]));
+				BoardId = std::stoi(std::string(argv[i]));
 			}
 			else
 			{

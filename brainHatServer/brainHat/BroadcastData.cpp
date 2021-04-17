@@ -1,6 +1,7 @@
 #include <list>
 #include <unistd.h>
 #include <iostream>
+#include <lsl_cpp.h>
 
 #include "brainHat.h"
 #include "BroadcastData.h"
@@ -12,8 +13,9 @@
 #include "BFSample.h"
 #include "BrainHatServerStatus.h"
 #include "NetworkExtensions.h"
+#include "BoardIds.h"
 
-#include <lsl_cpp.h>
+
 
 using namespace std;
 using json = nlohmann::json;
@@ -58,16 +60,31 @@ void BroadcastData::SetBoard(int boardId, int sampleRate)
 //  Stream name for board
 string StreamName(int boardId)
 {
-	switch (boardId)
+	switch ((BrainhatBoardIds)boardId)
 	{
-	case 0:
+	case BrainhatBoardIds::CYTON_BOARD:
 		return "Cyton8_BFSample";
-	case 2:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 		return "Cyton16_BFSample";
-	case 1:
+	case BrainhatBoardIds::GANGLION_BOARD:
 		return "Ganglion_BFSample";
 	default:
 		return "BFSample";
+	}
+}
+
+
+//  Stream name for board
+string ManufacturerName(int boardId)
+{
+	switch ((BrainhatBoardIds)boardId)
+	{
+	case BrainhatBoardIds::CYTON_BOARD:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
+	case BrainhatBoardIds::GANGLION_BOARD:
+		return "OpenBCI";
+	default:
+		return "Unknown";
 	}
 }
 
@@ -76,12 +93,12 @@ string StreamName(int boardId)
 //
 void BroadcastData::SetupLslForBoard()
 {
-	int numChannels, accelChannels, otherChannels, analogChannels;
-	BoardShim::get_exg_channels(BoardId, &numChannels);
-	BoardShim::get_accel_channels(BoardId, &accelChannels);
-	BoardShim::get_other_channels(BoardId, &otherChannels);
-	BoardShim::get_analog_channels(BoardId, &analogChannels);
+	int numChannels = getNumberOfExgChannels(BoardId);
+	int accelChannels = getNumberOfAccelChannels(BoardId);
+	int otherChannels = getNumberOfOtherChannels(BoardId);
+	int analogChannels = getNumberOfAnalogChannels(BoardId);
 	
+	//  calculate sample size, is number of data elements plus time stamp plus sample index
 	SampleSize = 2 + numChannels + accelChannels + otherChannels + analogChannels;
 	
 	lsl::stream_info info(StreamName(BoardId), "BFSample", SampleSize, SampleRate, lsl::cf_double64, HostName);
@@ -90,7 +107,7 @@ void BroadcastData::SetupLslForBoard()
 	cout << response;
 
 	// add some description fields
-	info.desc().append_child_value("manufacturer", "OpenBCI");
+	info.desc().append_child_value("manufacturer", ManufacturerName(BoardId));
 	info.desc().append_child_value("boardId", format("%d", BoardId));
 	lsl::xml_element chns = info.desc().append_child("channels");
 	

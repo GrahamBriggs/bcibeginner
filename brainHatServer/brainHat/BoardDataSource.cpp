@@ -7,9 +7,11 @@
 #include <math.h>
 #include <chrono>
 
+
 #include "brainHat.h"
 #include "BoardDataSource.h"
 #include "StringExtensions.h"
+#include "BoardIds.h"
 #include "BFCyton8.h"
 #include "BFCyton16.h"
 
@@ -34,7 +36,7 @@ BoardDataSource::BoardDataSource()
 //
 void BoardDataSource::Init()
 {
-	BoardId = -99;
+	BoardId = (int)BrainhatBoardIds::UNDEFINED;
 	SampleRate = -1;
 	DataRows = 0;
 	
@@ -90,6 +92,7 @@ void BoardDataSource::EnableBoard(bool enable)
 	}
 }
 
+int hackFd = -1;
 
 //  Inspect the data stream and report statistics on a regular basis
 //

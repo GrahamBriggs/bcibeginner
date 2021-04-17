@@ -6,6 +6,7 @@
 #include "BFSample.h"
 #include <iomanip>
 #include "FileExtensions.h"
+#include "BoardIds.h"
 
 using namespace std;
 
@@ -44,11 +45,11 @@ void OpenBCIFileWriter::CloseFile()
 //
 string FileBoardDescription(int boardId)
 {
-	switch (boardId)
+	switch ((BrainhatBoardIds)boardId)
 	{
-	case 0:
+	case BrainhatBoardIds::CYTON_BOARD:
 		return "OpenBCI_GUI$BoardCytonSerial";
-	case 2:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 		return "OpenBCI_GUI$BoardCytonSerialDaisy";
 	default:
 		return "Unknown?";

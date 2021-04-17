@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "json.hpp"
+#include "BoardIds.h"
 
 struct BrainHatServerStatus
 {
@@ -37,7 +38,7 @@ public:
 		Wlan0Mode = "";
 		DataPort = 0;
 		LogPort = 0;
-		BoardId = -99;
+		BoardId = (int)BrainhatBoardIds::UNDEFINED;
 		SampleRate = 0;
 		CytonSRB1 = -1;
 		DaisySRB1 = -1;
