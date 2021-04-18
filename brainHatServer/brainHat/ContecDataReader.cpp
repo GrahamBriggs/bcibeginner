@@ -100,6 +100,8 @@ void ContecDataReader::Cancel()
 {
 	Thread::Cancel();
 	
+	StopStreaming();
+	
 	ReleaseBoard();
 }
 
@@ -219,22 +221,25 @@ bool ContecDataReader::StartStreaming()
 		serialPutchar(BoardComPortFd, 0x90);
 		serialPutchar(BoardComPortFd, 0x09);
 		//  get response
-		if(!ReadSerialPortResponse(BoardComPortFd))
-			return false;
+		ReadSerialPortResponse(BoardComPortFd);
+//		if(!ReadSerialPortResponse(BoardComPortFd))
+//			return false;
 			
 		cout << "Start streaming send 0x90 0x03" << endl;
 		serialPutchar(BoardComPortFd, 0x90);
 		serialPutchar(BoardComPortFd, 0x03);
 		//  get response
-		if(!ReadSerialPortResponse(BoardComPortFd))
-			return false;
+		ReadSerialPortResponse(BoardComPortFd);
+//		if(!ReadSerialPortResponse(BoardComPortFd))
+//			return false;
 			
 		cout << "Start streaming send 0x90 0x06" << endl;
 		serialPutchar(BoardComPortFd, 0x90);
 		serialPutchar(BoardComPortFd, 0x06);
 		//  get response
-		if(!ReadSerialPortResponse(BoardComPortFd))
-			return false;
+		ReadSerialPortResponse(BoardComPortFd);
+//		if(!ReadSerialPortResponse(BoardComPortFd))
+//			return false;
 			
 		cout << "Start streaming send 0x90 0x01" << endl;
 		serialPutchar(BoardComPortFd, 0x90);
@@ -242,8 +247,8 @@ bool ContecDataReader::StartStreaming()
 		//  get the expected response, the next two bytes before stream starts
 		auto response1 = serialGetchar(BoardComPortFd);
 		auto response2 = serialGetchar(BoardComPortFd);
-		if (response1 == -1 || response2 == -1)
-			return false;
+//		if (response1 == -1 || response2 == -1)
+//			return false;
 			
 		cout << "Streaming started: " << response1 << " " << response2 << endl;
 		StreamRunning = true;
@@ -260,6 +265,10 @@ void ContecDataReader::StopStreaming()
 	{
 		try
 		{
+			cout << "Start streaming send 0x90 0x02" << endl;
+			serialPutchar(BoardComPortFd, 0x90);
+			serialPutchar(BoardComPortFd, 0x02);
+			
 			StreamRunning = false;
 		}
 		catch (const BrainFlowException &err)
