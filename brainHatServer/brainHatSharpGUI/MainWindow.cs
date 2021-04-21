@@ -39,7 +39,7 @@ namespace brainHatSharpGUI
 
 
         Logging Logger;
-        BoardDataReader BrainflowBoard;
+        IBoardDataReader BrainflowBoard;
         StatusBroadcastServer BroadcastStatus;
         LSLDataBroadcast LslBroadcast;
         TcpipCommandServer CommandServer;
@@ -333,7 +333,9 @@ namespace brainHatSharpGUI
             DataLatencyTimer = new System.Diagnostics.Stopwatch();
             DataLatencyTimer.Start();
 
-            BrainflowBoard = new BoardDataReader();
+            //  TODO - what kind of board
+            //BrainflowBoard = new BoardDataReader();
+            BrainflowBoard = new ContecDataReader();
             BrainflowBoard.ConnectToBoard += OnConnectToBoard;
             BrainflowBoard.Log += OnLog;
 
@@ -514,9 +516,11 @@ namespace brainHatSharpGUI
         /// </summary>
         private void buttonConfigureBoard_Click(object sender, EventArgs e)
         {
+
             if (BrainflowBoard != null && ConfigWindow == null)
             {
-                ConfigWindow = new ConfigurationWindow(BrainflowBoard);
+                //  TODO
+                ConfigWindow = new ConfigurationWindow(null/*BrainflowBoard*/);
                 ConfigWindow.Log += OnLog;
                 ConfigWindow.FormClosed += ConfigurationWindowFormClosed;
                 ConfigWindow.Show();

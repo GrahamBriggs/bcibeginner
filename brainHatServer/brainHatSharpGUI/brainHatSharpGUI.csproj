@@ -69,6 +69,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BoardDataReaderInterface.cs" />
+    <Compile Include="ContecDataReader.cs" />
     <Compile Include="BoardDataReader.cs" />
     <Compile Include="ImpedanceSettings.cs">
       <SubType>Form</SubType>

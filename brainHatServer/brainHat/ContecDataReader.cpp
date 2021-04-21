@@ -12,8 +12,7 @@
 #include "ContecDataReader.h"
 #include "StringExtensions.h"
 #include "TimeExtensions.h"
-#include "BFCyton8.h"
-#include "BFCyton16.h"
+#include "BFSampleGeneric.h"
 #include "CytonBoardConfiguration.h"
 #include "board_controller.h"
 #include "SerialPort.h"
@@ -142,6 +141,9 @@ int ContecDataReader::InitializeBoard()
 	
 	if (BoardComPortFd < 0)
 		return -1;
+	
+	serialFlush(BoardComPortFd);
+		
 			
 	bool newConnection = SampleRate < 0;
 	SampleRate = 100;	
@@ -220,6 +222,7 @@ bool ContecDataReader::StartStreaming()
 		cout << "Start streaming 0x90 0x09" << endl;
 		serialPutchar(BoardComPortFd, 0x90);
 		serialPutchar(BoardComPortFd, 0x09);
+		
 		//  get response
 		ReadSerialPortResponse(BoardComPortFd);
 //		if(!ReadSerialPortResponse(BoardComPortFd))
@@ -368,7 +371,7 @@ void ContecDataReader::FindHeader()
 
 //  Output the current raw read buffer to the console
 //
-void OutputToConsole(char* readBuffer, int readCounter, int elapsedMs)
+void OutputBinaryToConsole(char* readBuffer, int readCounter, double* channelData, int elapsedMs)
 {
 	printf("\033[2J\033[1;1H");
 	
@@ -378,9 +381,21 @@ void OutputToConsole(char* readBuffer, int readCounter, int elapsedMs)
 	
 	cout << "Read " << readCounter << " samples in " << setfill('0') << setw(3) << elapsedMs << " ms | " << setfill('0') << setw(2) << timeNow->tm_hour << ":" << setfill('0') << setw(2) << timeNow->tm_min  << ":" << setfill('0') << setw(2) << timeNow->tm_sec << endl;
 	for (int i = 0; i < 32; i++)
-		cout <<  "Byte" << setw(2) << setfill('0') << i << "   "  << format(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(readBuffer[i])) << "   "  << format("%02x",readBuffer[i]) << "   "  << setfill('0') << setw(3) << format("%d",readBuffer[i]) <<  endl;
+	{
+		//  trace out each of the 32 bytes
+		cout <<  "Byte" << setw(2) << setfill('0') << i << "   "  << format(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(readBuffer[i])) << "   "  << format("%02x", readBuffer[i]) << "   "  << setfill('0') << setw(3) << format("%d", readBuffer[i]);
+		//  in the first 20 rows, put the calculated channel data
+		if (i < 20)
+		{
+			cout << "  " << setw(6) << channelData[i];
+		}
+		cout << endl;
+	}
 }
 
+
+ChronoTimer timer;
+int readCounter = 0;
 
 //  Board reading / control thread run function
 //
@@ -391,9 +406,9 @@ void ContecDataReader::RunFunction()
 	int bytesRead = 0;
 	char readBuffer[32] = "";
 	int invalidReads = 0;
-	ChronoTimer timer;
+
 	timer.Start();
-	int readCounter = 0;
+	readCounter = 0;
 	
 	while (ThreadRunning)
 	{
@@ -435,17 +450,16 @@ void ContecDataReader::RunFunction()
 			if (bytesRead == 32 && readBuffer[31] == 0xA0)
 			{
 				readCounter++;	//  count this complete sample reading
-				
-				//  report the current reading to the console three times a second
-				if (timer.ElapsedMilliseconds() > 333)
-				{
-					OutputToConsole(readBuffer, readCounter, timer.ElapsedMilliseconds());
-					readCounter = 0;
-					timer.Reset();
-				}
+				ProcessData(readBuffer);
 			}
 			else
 			{
+				cout << "Lost sync " << bytesRead << endl;
+				for (int i = 0; i < bytesRead; i++)
+				{
+					cout << "Lost sync byte " << i << " " << (int)readBuffer[i] << endl;
+				}
+					
 				readingInSync = false;	//  failed to sync with last frame
 			}
 			bytesRead = 0;
@@ -458,13 +472,85 @@ void ContecDataReader::RunFunction()
 // Process a chunk of data read from the board
 // send to broadcast thread and logging if enabled
 //
-void ContecDataReader::ProcessData(double *sample)
+void ContecDataReader::ProcessData(char *readBuffer)
 {
-	//  'improve' the time stamp to be more accurate
-	double period, oldestSampleTime;
-	//CalculateReadingTimeThisChunk(chunk, sampleCount, period, oldestSampleTime);
+	double channelData[20] = { MISSING_VALUE };
 	
-	//  do something with the dat
+	int channelCount = 0;
+	//  make 11 bit numbers with one sign bit from the array of bytes
+	for(int i = 0 ; i < 24 ; i += 3)
+	{
+		//  first number, set first 8 bits
+		uint16_t num1 = readBuffer[i];
+		//  add three more bits from the next byte
+		num1 += ((readBuffer[i + 1] & 0x07) * 256);
+		//  sign bit
+		int value1 = num1;
+		if (readBuffer[i + 1] & 0x08)
+			value1 *= -1;
+		channelData[channelCount++] = value1;
+
+		//  set the first four bits of the second number using last four bits of second byte
+		uint16_t num2 = ((readBuffer[i + 1] & 0xF0) >> 4);
+		//  set the remaining bits of the second number using the third byte
+		num2 += (16* (readBuffer[i + 2] & 0x7F));
+		//  sign bit
+		int value2 = num2;
+		if (readBuffer[i + 2] & 0x08)
+			value2 *= -1;
+		channelData[channelCount++] = value2;
+	}
+	
+	channelCount = 0;
+	for (int i = 24; i < 30; i += 3)
+	{
+		//  first number, set first 8 bits
+		uint16_t num1 = readBuffer[i];
+		//  add three more bits from the next byte
+		num1 += ((readBuffer[i + 1] & 0x07) * 256);
+		//  sign bit
+		int value1 = num1;
+		if (readBuffer[i + 1] & 0x08)
+			value1 *= -1;
+		channelData[channelCount++] = value1;
+
+		//  set the first four bits of the second number using last four bits of second byte
+		uint16_t num2 = ((readBuffer[i + 1] & 0xF0) >> 4);
+		//  set the remaining bits of the second number using the third byte
+		num2 += (16* (readBuffer[i + 2] & 0x7F));
+		//  sign bit
+		int value2 = num2;
+		if (readBuffer[i + 2] & 0x08)
+			value2 *= -1;
+		channelData[channelCount++] = value2;
+	}
+	
+	//  fill the sample with 16 EEG plus 4 other channels
+	GenericSample* newSample = new GenericSample(16, 0, 4, 1);
+	
+	//  set the parsed data to the data structure
+	//  TODO - if there is to be any math done on channelData before booking it as EEG data,
+	//  then we would do this here on the channelData[] elements
+	//
+	
+	//  put first 16 numbers into EXG channels
+	for (int i = 0; i < 16; i++)
+		newSample->SetExg(i, channelData[i]);
+	
+	//  put next four numbers into Other channels
+	for (int i = 0; i < 4; i++)
+		newSample->SetOther(i, channelData[i + 16]);
+	
+	NewSampleCallback(newSample);
+	
+	//  report the current reading to the console three times a second
+	if(timer.ElapsedMilliseconds() > 333)
+	{
+		OutputBinaryToConsole(readBuffer, readCounter, channelData, timer.ElapsedMilliseconds());
+		readCounter = 0;
+		timer.Reset();
+	}
+	
 }
 
 

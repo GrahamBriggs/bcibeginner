@@ -66,8 +66,8 @@ string StreamName(int boardId)
 		return "Cyton8_BFSample";
 	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 		return "Cyton16_BFSample";
-	case BrainhatBoardIds::GANGLION_BOARD:
-		return "Ganglion_BFSample";
+	case BrainhatBoardIds::CONTEC_KT88:
+		return "ContecKT88_BFSample";
 	default:
 		return "BFSample";
 	}
@@ -83,6 +83,10 @@ string ManufacturerName(int boardId)
 	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 	case BrainhatBoardIds::GANGLION_BOARD:
 		return "OpenBCI";
+		
+	case BrainhatBoardIds::CONTEC_KT88:
+		return "Contec";
+		
 	default:
 		return "Unknown";
 	}
@@ -206,7 +210,7 @@ void BroadcastData::BroadcastDataToLslOutlet()
 		delete(*nextSample);
 	}
 	
-	//  monitor performance, generate warning any time the queue is backed up more than two reads (we are reading at 20 hz)
+	//  monitor performance, generate warning any time the queue is backed up more than one second
 	if(queueCount > SampleRate )
 	{
 		Logging.AddLog("BroadcastData", "BroadcastDataToLslOutlet", format("Broadcast is more than one second behind. Queue size %d", queueCount), LogLevelWarn);

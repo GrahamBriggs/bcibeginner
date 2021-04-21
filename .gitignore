@@ -24,3 +24,5 @@ BrainHatComponents/EDFfile/EDFfile/Release
 BrainHatComponents/EDFfile/Release
 brainHatServer/Contec/ContecSimulator/Debug
 brainHatServer/Contec/Debug
+brainHatServer/Contec/ContecFileReader/ContecFileReader/ContecFileReader/Debug
+brainHatServer/Contec/ContecFileReader/ContecFileReader/Debug

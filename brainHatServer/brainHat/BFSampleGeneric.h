@@ -9,41 +9,115 @@ class GenericSample : public BFSample
 {
 protected:
 	
+	int ExgChannelCount;
 	double* ExgData;
-	int ChannelCount;
+	int AccelChannelCount;
+	double* AccelData;
+	int OtherChannelCount;
+	double* OtherData;
+	int AnalogChannelCount;
+	double* AnalogData;
+	
 	
 public:
 	
 	//  Generic EEG sample with X channels
-	GenericSample(int channels)
+	GenericSample(int exgChannels, int accelChannels, int otherChannels, int analogChannels)
 	{
-		ExgData = new double[channels];
+		ExgData = NULL;
+		ExgChannelCount = exgChannels;
+		if (exgChannels > 0)
+			ExgData = new double[exgChannels];
+		
+		AccelData = NULL;
+		AccelChannelCount = accelChannels;
+		if (accelChannels > 0)
+			AccelData = new double[accelChannels];
+		
+		OtherData = NULL;
+		OtherChannelCount = otherChannels;
+		if (otherChannels > 0)
+			OtherData = new double[otherChannels];
+		
+		AnalogData = NULL;
+		AnalogChannelCount = analogChannels;
+		if (analogChannels > 0)
+			AnalogData = new double[analogChannels];
+		
 		Init();
 	}
 
 	//  Copy Constructor
-	GenericSample(GenericSample* copy)
+	GenericSample(BFSample* copy)
 	{
 		TimeStamp = copy->TimeStamp;
 		SampleIndex = copy->SampleIndex;
 		
-		ExgData = new double[copy->GetNumberOfExgChannels()];
-		for (int i = 0; i < copy->GetNumberOfExgChannels(); i++)
-			ExgData[i] = copy->GetExg(i);
+		ExgData = NULL;
+		ExgChannelCount = copy->GetNumberOfExgChannels();
+		if (copy->GetNumberOfExgChannels() > 0)
+		{
+			ExgData = new double[copy->GetNumberOfExgChannels()];
+			for (int i = 0; i < copy->GetNumberOfExgChannels(); i++)
+				ExgData[i] = copy->GetExg(i);
+		}
+		
+		AccelData = NULL;
+		AccelChannelCount = copy->GetNumberOfAccelChannels();
+		if (copy->GetNumberOfAccelChannels() > 0)
+		{
+			AccelData = new double[copy->GetNumberOfAccelChannels()];
+			for (int i = 0; i < copy->GetNumberOfAccelChannels(); i++)
+				AccelData[i] = copy->GetAccel(i);
+		}
+		
+		OtherData = NULL;
+		OtherChannelCount = copy->GetNumberOfOtherChannels();
+		if (copy->GetNumberOfOtherChannels() > 0)
+		{
+			OtherData = new double[copy->GetNumberOfOtherChannels()];
+			for (int i = 0; i < copy->GetNumberOfOtherChannels(); i++)
+				OtherData[i] = copy->GetOther(i);
+		}
+		
+		AnalogData = NULL;
+		AnalogChannelCount = copy->GetNumberOfAnalogChannels();
+		if (copy->GetNumberOfAnalogChannels() > 0)
+		{
+			AnalogData = new double[copy->GetNumberOfAnalogChannels()];
+			for (int i = 0; i < copy->GetNumberOfAnalogChannels(); i++)
+				AnalogData[i] = copy->GetAnalog(i);
+		}
 	}
 	
 	//  Destructor
 	virtual ~GenericSample()
 	{
-		delete ExgData;
+		if (ExgData != NULL)
+			delete ExgData;
+		if (AccelData != NULL)
+			delete AccelData;
+		if (OtherData != NULL)
+			delete OtherData;
+		if (AnalogData != NULL)
+			delete AnalogData;
 	}
 	
 	void Init()
 	{
 		SampleIndex = MISSING_VALUE;
 		
-		for (int i = 0; i < ChannelCount; i++)
+		for (int i = 0; i < ExgChannelCount; i++)
 			ExgData[i] = MISSING_VALUE;
+		
+		for (int i = 0; i < AccelChannelCount; i++)
+			AccelData[i] = MISSING_VALUE;
+		
+		for (int i = 0; i < OtherChannelCount; i++)
+			OtherData[i] = MISSING_VALUE;
+		
+		for (int i = 0; i < AnalogChannelCount; i++)
+			AnalogData[i] = MISSING_VALUE;
 		
 		TimeStamp = MISSING_VALUE;
 	}
@@ -56,50 +130,96 @@ public:
 	
 	
 	//  EXG Channels
-	virtual int GetNumberOfExgChannels() { return 16;}
+	virtual int GetNumberOfExgChannels() { return ExgChannelCount;}
 	//
 	virtual double GetExg(int channel)
 	{
-		if (channel < ChannelCount)
+		if (channel < ExgChannelCount)
 			return ExgData[channel];
 		else
 			return MISSING_VALUE;
 	}
+	//
+	virtual double SetExg(int channel, double value)
+	{
+		if (channel < ExgChannelCount)
+			ExgData[channel] = value;
+	}
 	
 	
 	//  Accelerometer Channels
-	virtual int GetNumberOfAccelChannels() { return 0;}
+	virtual int GetNumberOfAccelChannels() { return AccelChannelCount;}
 	//
 	virtual double GetAccel(int channel)
 	{
-		return MISSING_VALUE;
+		if (channel < AccelChannelCount)
+			return AccelData[channel];
+		else
+			return MISSING_VALUE;
+	}
+	//
+	virtual double SetAccel(int channel, double value)
+	{
+		if (channel < AccelChannelCount)
+			AccelData[channel] = value;
 	}
 	
 	//  Other Channels
-	virtual int GetNumberOfOtherChannels() { return 0;}
+	virtual int GetNumberOfOtherChannels() { return OtherChannelCount;}
 	//
 	virtual double GetOther(int channel)
 	{
+		if (channel < OtherChannelCount)
+			return OtherData[channel];
+		else
 			return MISSING_VALUE;
+	}
+	//
+	virtual double SetOther(int channel, double value)
+	{
+		if (channel < OtherChannelCount)
+			OtherData[channel] = value;
 	}
 	
 	//  Analog Channels
-	virtual int GetNumberOfAnalogChannels() { return 0;}
+	virtual int GetNumberOfAnalogChannels() { return AnalogChannelCount;}
 	//
 	virtual double GetAnalog(int channel)
 	{
+		if (channel < AnalogChannelCount)
+			return AnalogData[channel];
+		else
 			return MISSING_VALUE;
+	}
+	//
+	virtual double SetAnalog(int channel, double value)
+	{
+		if (channel < AnalogChannelCount)
+			AnalogData[channel] = value;
 	}
 	
 	
 	//  Convert to a raw sample
 	virtual void AsRawSample(double* sample)
-	{					
-		sample[0] = SampleIndex;
-		for (int i = 0; i < ChannelCount; i++)
-			sample[1 + i] = ExgData[i];
-		sample[1 + ChannelCount] = TimeStamp;
+	{		
+		int indexCount = 0;
+		sample[indexCount++] = SampleIndex;
+		
+		for (int i = 0; i < ExgChannelCount; i++)
+			sample[indexCount++] = ExgData[i];
+		
+		for (int i = 0; i < AccelChannelCount; i++)
+			sample[indexCount++] = AccelData[i];
+		
+		for (int i = 0; i < OtherChannelCount; i++)
+			sample[indexCount++] = OtherData[i];
+		
+		for (int i = 0; i < AnalogChannelCount; i++)
+			sample[indexCount++] = AnalogData[i];
+		
+		sample[indexCount] = TimeStamp;
 	}
+	
 	
 	//  Convert to json
 	virtual void AsJson(std::string& json)
@@ -108,9 +228,24 @@ public:
 
 		j["SampleIndex"] = SampleIndex;
 		
-		for (int i = 0; i < ChannelCount; i++)
+		for (int i = 0; i < ExgChannelCount; i++)
 		{
-			j[format("ExgCh%d",i).c_str()] = ExgData[i];
+			j[format("ExgCh%d", i).c_str()] = ExgData[i];
+		}
+		
+		for (int i = 0; i < AccelChannelCount; i++)
+		{
+			j[format("AcelCh%d", i).c_str()] = AccelData[i];
+		}
+		
+		for (int i = 0; i < OtherChannelCount; i++)
+		{
+			j[format("Other%d", i).c_str()] = OtherData[i];
+		}
+		
+		for (int i = 0; i < AnalogChannelCount; i++)
+		{
+			j[format("AngCh%d", i).c_str()] = AnalogData[i];
 		}
 		
 		j["TimeStamp"] = TimeStamp;

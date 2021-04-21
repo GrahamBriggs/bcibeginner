@@ -58,7 +58,7 @@ protected:
 	//
 	void EstablishConnectionWithBoard();
 	bool PreparedToReadBoard();
-	void ProcessData(double *sample);
+	void ProcessData(char* readBuffer);
 	BFSample* ParseRawData(double *sample);
 	void CalculateReadingTimeThisChunk(double** chunk, int samples, double& period, double& oldestSampleTime);
 	
