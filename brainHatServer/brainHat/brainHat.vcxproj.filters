@@ -140,13 +140,7 @@
     <ClInclude Include="NetworkExtensions.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="BFCyton8.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
     <ClInclude Include="BFSample.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
-    <ClInclude Include="BFCyton16.h">
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="BoardDataSource.h">
@@ -200,7 +194,10 @@
     <ClInclude Include="SerialPort.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="BFSampleGeneric.h">
+    <ClInclude Include="BFSampleImplementation.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="SampleIndexCounter.h">
       <Filter>Header files</Filter>
     </ClInclude>
   </ItemGroup>

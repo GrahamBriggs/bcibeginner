@@ -1,15 +1,19 @@
 #include <iostream>
 #include "SerialPort.h"
 #include <unistd.h>
-
+#include <vector>
+#include <sstream>
+#include <fstream>
 
 using namespace std;
 
 int fd;
 bool streamRunning;
 int indexCounter = 0;
+ifstream dataFile;
 
 void SimulateDeviceReadCommand();
+void SimulateDeviceStream();
 
 int main(int argc, char *argv[])
 {
@@ -20,6 +24,15 @@ int main(int argc, char *argv[])
 	{
 		return -1;
 	}
+	
+	dataFile.open("ContecDataRaw.txt");
+
+	if (! dataFile.is_open())
+	{
+		return -1;
+	}
+	
+	
 		
 	while (true)
 	{
@@ -30,17 +43,19 @@ int main(int argc, char *argv[])
 			
 		if (streamRunning)
 		{
-			indexCounter++;
-			
-			serialPutchar(fd, 0xA0);
+			SimulateDeviceStream();
 		
-			serialPutchar(fd, indexCounter);
-			serialPrintf(fd, "BCDEFGHIJKLMNOPQRSTUVWXYZABCDE");
-			if (indexCounter == 256)
-				indexCounter = 0;
+//			indexCounter++;
+//			
+//			serialPutchar(fd, 0xA0);
+//		
+//			serialPutchar(fd, indexCounter);
+//			serialPrintf(fd, "BCDEFGHIJKLMNOPQRSTUVWXYZABCDE");
+//			if (indexCounter == 256)
+//				indexCounter = 0;
 		}
 		
-		usleep(10000);
+		usleep(7000);
 	}
 	
 	
@@ -58,10 +73,10 @@ void SimulateDeviceReadCommand()
 	
 	if (read(fd, readBuff, 2) == 2)
 	{
-		streamRunning = false;
-		
 		if (readBuff[0] == 0x90 && readBuff[1] == 0x09)
 		{
+			streamRunning = false;
+			
 			cout << "Respond to 0x90 0x09" << endl;
 			serialPutchar(fd, 0xE0);
 			serialPutchar(fd, 0x09);
@@ -89,17 +104,46 @@ void SimulateDeviceReadCommand()
 			serialPutchar(fd, 0x01);
 			streamRunning = true;
 		}
-		// I made this last one up, if the one above is start stream, this one might be stop stream?
-		else if(readBuff[0] == 0x90 && readBuff[1] == 0x00)
+		else if(readBuff[0] == 0x90 && readBuff[1] == 0x02)
 		{
-			cout << "Respond to 0x90 0x00" << endl;
+			cout << "Respond to 0x90 0x02" << endl;
 			serialPutchar(fd, 0xE0);
-			serialPutchar(fd, 0x00);
+			serialPutchar(fd, 0x02);
 			streamRunning = false;
 		}
 	}
 	else
 	{
 		serialFlush(fd);
+	}
+}
+
+
+void SimulateDeviceStream()
+{
+	string readLine;
+
+	if (!dataFile.eof())
+	{
+		getline(dataFile, readLine);
+		if (readLine.size() != 0)
+		{
+			int number = 0;
+			stringstream ss(readLine);         //convert my_string into string stream
+
+			istringstream hex_chars_stream(readLine);
+			unsigned int c;
+			while (hex_chars_stream >> std::hex >> c)
+			{
+				serialPutchar(fd, c);	
+			}	
+		}
+	}
+	
+	else
+	{	
+		dataFile.clear();
+		dataFile.seekg(0);
+		cout << "Reading from file" << endl;
 	}
 }

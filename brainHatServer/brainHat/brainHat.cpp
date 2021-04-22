@@ -22,8 +22,7 @@
 #include "UriParser.h"
 #include "BoardIds.h"
 #include "BrainHatFileWriter.h"
-#include "BFSample.h"
-#include "BFCyton16.h"
+
 
 
 
@@ -82,8 +81,11 @@ int main(int argc, char *argv[])
 	//BoardShim::set_log_file((char*)"./brainflowLogs.txt");
 	BoardShim::set_log_level(6);
 	
-	//  start program threads
-	//  TODO - logging disabled Logging.Start();
+	//  start logging thread
+	//  todo logging is disconnected for Contec board console output
+	if((BrainhatBoardIds)BoardId != BrainhatBoardIds::CONTEC_KT88)  
+		Logging.Start() ;
+	
 	ComServer.Start();
 	StartStatusBroadcast();
 	

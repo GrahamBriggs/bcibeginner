@@ -12,8 +12,7 @@
 #include "BoardDataReader.h"
 #include "StringExtensions.h"
 #include "BoardIds.h"
-#include "BFCyton8.h"
-#include "BFCyton16.h"
+#include "BFSampleImplementation.h"
 #include "CytonBoardConfiguration.h"
 #include "board_controller.h"
 
@@ -533,19 +532,11 @@ void BoardDataReader::ProcessData(double **chunk, int sampleCount)
 
 //  Parse the raw data and create a sample type for this board
 //
-BFSample* BoardDataReader::ParseRawData(double** chunk, int sampleCount)
+BFSample* BoardDataReader::ParseRawData(double** chunk, int sampleIndex)
 {
-	switch ((BrainhatBoardIds)BoardId)
-	{	
-	case BrainhatBoardIds::CYTON_BOARD:
-		return new Cyton8Sample(chunk, sampleCount);
-	case BrainhatBoardIds::CYTON_DAISY_BOARD:
-		return new Cyton16Sample(chunk, sampleCount);
-	case BrainhatBoardIds::GANGLION_BOARD:
-		return NULL;	//  TODO Ganglion
-	default :
-		return NULL;
-	}
+	auto newSample = new Sample(BoardId);
+	newSample->InitializeFromChunk(chunk, sampleIndex);
+	return newSample;
 }
 
 

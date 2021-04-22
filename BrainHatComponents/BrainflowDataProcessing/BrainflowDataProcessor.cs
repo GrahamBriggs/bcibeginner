@@ -296,7 +296,7 @@ namespace BrainflowDataProcessing
         public BrainflowDataProcessor(string name, int boardId, int sampleRate)
         {
             BoardId = boardId;
-            NumberOfChannels = BoardShim.get_exg_channels(boardId).Length;
+            NumberOfChannels = BrainhatBoardShim.GetNumberOfExgChannels(boardId);
             SampleRate = sampleRate;
             Name = name;
 

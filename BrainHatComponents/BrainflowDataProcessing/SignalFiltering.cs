@@ -112,7 +112,7 @@ namespace BrainflowDataProcessing
         public SignalFiltering(string name, int boardId, int sampleRate, SignalFilter filter)
         {
             BoardId = boardId;
-            NumberOfChannels = BoardShim.get_exg_channels(BoardId).Length;
+            NumberOfChannels = BrainhatBoardShim.GetNumberOfExgChannels(BoardId);
             SampleRate = sampleRate;
             Name = name;
 

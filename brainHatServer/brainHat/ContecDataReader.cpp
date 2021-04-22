@@ -12,7 +12,7 @@
 #include "ContecDataReader.h"
 #include "StringExtensions.h"
 #include "TimeExtensions.h"
-#include "BFSampleGeneric.h"
+#include "BFSampleImplementation.h"
 #include "CytonBoardConfiguration.h"
 #include "board_controller.h"
 #include "SerialPort.h"
@@ -28,7 +28,8 @@ using namespace chrono;
 //    -  ConnectionChanged will be called on first discovery of board parameters, then on connect / disconnect state
 //    -  NewSample will be called when new data is read from the board
 //
-ContecDataReader::ContecDataReader(ConnectionChangedCallbackFn connectionChangedFn, NewSampleCallbackFn newSampleFn)
+ContecDataReader::ContecDataReader(ConnectionChangedCallbackFn connectionChangedFn, NewSampleCallbackFn newSampleFn):
+	SampleIndex((int)BrainhatBoardIds::CONTEC_KT88)
 {
 	Init();
 
@@ -387,7 +388,7 @@ void OutputBinaryToConsole(char* readBuffer, int readCounter, double* channelDat
 		//  in the first 20 rows, put the calculated channel data
 		if (i < 20)
 		{
-			cout << "  " << setw(6) << channelData[i];
+			cout << "  " << setw(6) << setfill(' ') << channelData[i];
 		}
 		cout << endl;
 	}
@@ -468,6 +469,27 @@ void ContecDataReader::RunFunction()
 	}
 }
 
+void GetNumbersFromTripleOctet(char* readBuffer, int pos, double& value1, double& value2)
+{
+	//  first number, set first 8 bits
+	uint16_t num1 = readBuffer[pos];
+	//  add three more bits from the next byte
+	num1 += ((readBuffer[pos + 1] & 0x07) * 256);
+	value1 = num1;
+	//  sign bit
+	if (readBuffer[pos + 1] & 0x08)
+		value1 *= -1;
+	
+	//  set the first four bits of the second number using last four bits of second byte
+	uint16_t num2 = ((readBuffer[pos + 1] & 0xF0) >> 4);
+	//  set the remaining bits of the second number using the third byte
+	num2 += (16* (readBuffer[pos + 2] & 0x7F));
+	value2 = num2;
+	//  sign bit
+	if (readBuffer[pos + 2] & 0x08)
+		value2 *= -1;
+}
+
 
 // Process a chunk of data read from the board
 // send to broadcast thread and logging if enabled
@@ -475,64 +497,33 @@ void ContecDataReader::RunFunction()
 void ContecDataReader::ProcessData(char *readBuffer)
 {
 	double channelData[20] = { MISSING_VALUE };
-	
 	int channelCount = 0;
-	//  make 11 bit numbers with one sign bit from the array of bytes
-	for(int i = 0 ; i < 24 ; i += 3)
+	
+	//  process the array of 31 bytes into numbers
+	//  we assume that every triple octet yields two 12 bit numbers (11 bits plus sign)
+	//  there is one extra byte, assumed to be at beginning if startAt = 1, or end if startAt = 0
+	int startAtByte = 0;
+	for(int i = startAtByte; i < 30 ; i += 3)
 	{
-		//  first number, set first 8 bits
-		uint16_t num1 = readBuffer[i];
-		//  add three more bits from the next byte
-		num1 += ((readBuffer[i + 1] & 0x07) * 256);
-		//  sign bit
-		int value1 = num1;
-		if (readBuffer[i + 1] & 0x08)
-			value1 *= -1;
-		channelData[channelCount++] = value1;
-
-		//  set the first four bits of the second number using last four bits of second byte
-		uint16_t num2 = ((readBuffer[i + 1] & 0xF0) >> 4);
-		//  set the remaining bits of the second number using the third byte
-		num2 += (16* (readBuffer[i + 2] & 0x7F));
-		//  sign bit
-		int value2 = num2;
-		if (readBuffer[i + 2] & 0x08)
-			value2 *= -1;
-		channelData[channelCount++] = value2;
+		GetNumbersFromTripleOctet(readBuffer, i, channelData[channelCount], channelData[channelCount+1]);
+		channelCount += 2;
 	}
 	
-	channelCount = 0;
-	for (int i = 24; i < 30; i += 3)
-	{
-		//  first number, set first 8 bits
-		uint16_t num1 = readBuffer[i];
-		//  add three more bits from the next byte
-		num1 += ((readBuffer[i + 1] & 0x07) * 256);
-		//  sign bit
-		int value1 = num1;
-		if (readBuffer[i + 1] & 0x08)
-			value1 *= -1;
-		channelData[channelCount++] = value1;
-
-		//  set the first four bits of the second number using last four bits of second byte
-		uint16_t num2 = ((readBuffer[i + 1] & 0xF0) >> 4);
-		//  set the remaining bits of the second number using the third byte
-		num2 += (16* (readBuffer[i + 2] & 0x7F));
-		//  sign bit
-		int value2 = num2;
-		if (readBuffer[i + 2] & 0x08)
-			value2 *= -1;
-		channelData[channelCount++] = value2;
-	}
+	//  create a sample with 16 EEG plus 4 other channels
+	Sample* newSample = new Sample(16, 0, 4, 0);
 	
-	//  fill the sample with 16 EEG plus 4 other channels
-	GenericSample* newSample = new GenericSample(16, 0, 4, 1);
+	// set sample index and time stamp
+	newSample->SampleIndex = SampleIndex.GetNextSampleIndex();
+	newSample->TimeStamp = (double)GetUnixTimeMilliseconds() / 1000.0;
 	
 	//  set the parsed data to the data structure
 	//  TODO - if there is to be any math done on channelData before booking it as EEG data,
 	//  then we would do this here on the channelData[] elements
 	//
+	//  for example, to set EXG channel zero with the result of contec channel zero minus contec channel 7 would look like the following
+	//	newSample->SetExg(0, channelData[0] - channelData[7]);
 	
+	//  initial implementation, first 16 numbers go into EEG channels
 	//  put first 16 numbers into EXG channels
 	for (int i = 0; i < 16; i++)
 		newSample->SetExg(i, channelData[i]);

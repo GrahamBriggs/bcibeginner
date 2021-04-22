@@ -42,7 +42,7 @@ namespace BrainflowDataProcessing
             BandPowersCollection = new ConcurrentDictionary<string, IBFSample>();
             for (int j = 0; j < BandPowerCalc.NumberOfBands; j++)
             {
-                BandPowers[j] = BFSample.MakeNewSample(BoardId);
+                BandPowers[j] = new BFSampleImplementation(BoardId);
 
                 var key = (BandPowerCalc.BandPowerCalcRangeList[j].Item1 + (BandPowerCalc.BandPowerCalcRangeList[j].Item2 - BandPowerCalc.BandPowerCalcRangeList[j].Item1) / 2).BandPowerKey();
                 BandPowersCollection.TryAdd(key, BandPowers[j]);
@@ -128,7 +128,7 @@ namespace BrainflowDataProcessing
         public BandPowerMonitor(string name, int boardId, int sampleRate)
         {
             BoardId = boardId;
-            NumberOfChannels = BoardShim.get_exg_channels(BoardId).Length;
+            NumberOfChannels = BrainhatBoardShim.GetNumberOfExgChannels(boardId);
             SampleRate = sampleRate;
             Name = name;
 

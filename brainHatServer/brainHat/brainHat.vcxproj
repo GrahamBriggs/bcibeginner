@@ -73,8 +73,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BDFFileWriter.h" />
-    <ClInclude Include="BFCyton16.h" />
-    <ClInclude Include="BFSampleGeneric.h" />
+    <ClInclude Include="BFSampleImplementation.h" />
     <ClInclude Include="BoardDataSource.h" />
     <ClInclude Include="BoardIds.h" />
     <ClInclude Include="ContecDataReader.h" />
@@ -92,11 +91,11 @@
     <ClInclude Include="Logger.h" />
     <ClInclude Include="NetworkAddresses.h" />
     <ClInclude Include="NetworkExtensions.h" />
-    <ClInclude Include="BFCyton8.h" />
     <ClInclude Include="BFSample.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="BroadcastData.h" />
     <ClInclude Include="BoardDataReader.h" />
+    <ClInclude Include="SampleIndexCounter.h" />
     <ClInclude Include="SerialPort.h" />
     <ClInclude Include="StringExtensions.h" />
     <ClInclude Include="TCPServerThread.h" />

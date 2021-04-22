@@ -157,7 +157,7 @@ namespace BrainflowDataProcessing
 
                     //  write header
                     file.WriteLine("%OpenBCI Raw EEG Data");
-                    file.WriteLine($"%Number of channels = {brainflow.BoardShim.get_exg_channels(BoardId).Length}");
+                    file.WriteLine($"%Number of channels = {BrainhatBoardShim.GetNumberOfExgChannels(BoardId)}");
                     file.WriteLine($"%Sample Rate = {SampleRate} Hz");
                     file.WriteLine($"%Board = {FileBoardDescription()}");
                     file.WriteLine("%Logger = brainHat");

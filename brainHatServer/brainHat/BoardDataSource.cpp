@@ -12,8 +12,6 @@
 #include "BoardDataSource.h"
 #include "StringExtensions.h"
 #include "BoardIds.h"
-#include "BFCyton8.h"
-#include "BFCyton16.h"
 
 
 using namespace std;

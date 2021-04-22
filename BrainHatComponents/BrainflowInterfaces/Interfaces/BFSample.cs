@@ -34,33 +34,12 @@ namespace BrainflowInterfaces
         double GetAnalogDataForChannel(int channel);
         void SetAnalogDataForChannel(int channel, double data);
 
+        void InitializeFromText(string text);
+        void InitializeFromSample(double[] data);
+
         double[] AsRawSample();
     }
 
 
-    public static class BFSample
-    {
-        public static IBFSample MakeNewSample(this IBFSample value)
-        {
-            if (value is BFCyton8Sample cyton8Sample)
-                return new BFCyton8Sample(cyton8Sample);
-            else if (value is BFCyton16Sample cyton16Sample)
-                return new BFCyton16Sample(cyton16Sample);
-            else
-                return null;    // TODO - ganglion
-        }
-
-        public static IBFSample MakeNewSample(this int value)
-        {
-            switch (value)
-            {
-                case 0:
-                    return new BFCyton8Sample();
-                case 2:
-                    return new BFCyton16Sample();
-                default:
-                    return null;    // TODO - ganglion
-            }
-        }
-    }
+  
 }

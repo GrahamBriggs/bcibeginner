@@ -36,7 +36,8 @@ namespace BrainflowDataProcessing
 
         public IEnumerable<IBFSample> Samples => _Samples;
 
-        public bool IsValidFile => (BoardId >= 0 && NumberOfChannels > 0 && SampleRate > 0 && StartTime.HasValue && EndTime.HasValue);
+
+        public bool IsValidFile => (BrainhatBoardShim.IsSupportedBoard(BoardId)  && NumberOfChannels > 0 && SampleRate > 0 && StartTime.HasValue && EndTime.HasValue);
 
 
         /// <summary>
@@ -150,22 +151,13 @@ namespace BrainflowDataProcessing
             for (int i = 0; i < chunk.GetRow(0).Length; i++)
             {
                 IBFSample newSample = null;
-                switch (BoardId)
+                newSample = new BFSampleImplementation(BoardId);
+                if (newSample != null)
                 {
-                    case 0:
-                        newSample = new BFCyton8Sample(chunk, i);
-                        break;
-
-                    case 2:
-                        newSample = new BFCyton16Sample(chunk, i);
-                        break;
-
-                    default:
-                        throw new Exception("Board type not supported");
+                    newSample.InitializeFromSample(chunk.GetColumn(i));
+                    newSample.TimeStamp = StartTime.Value + newSample.TimeStamp;
+                    _Samples.Add(newSample);
                 }
-
-                newSample.TimeStamp = StartTime.Value + newSample.TimeStamp;
-                _Samples.Add(newSample);
             }
         }
 
@@ -190,7 +182,7 @@ namespace BrainflowDataProcessing
             SampleRate = (int)(header.signalparam[0].smp_in_datarecord / (header.datarecord_duration * 1.0E-7));
             DataRecordDuration = header.datarecord_duration * 1.0E-7;
 
-            NumberOfChannels = brainflow.BoardShim.get_eeg_channels(BoardId).Length;
+            NumberOfChannels = BrainhatBoardShim.GetNumberOfExgChannels(BoardId);
 
             var date = new DateTime(header.startdate_year, header.startdate_month, header.startdate_day, header.starttime_hour, header.starttime_minute, header.starttime_second);
             date = date.AddMilliseconds(header.starttime_subsecond / 10_000);

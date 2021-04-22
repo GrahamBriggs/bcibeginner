@@ -10,7 +10,7 @@
 #include "brainHat.h"
 #include "BoardFileSimulator.h"
 #include "StringExtensions.h"
-#include "BFCyton8.h"
+#include "BFSampleImplementation.h"
 #include "BoardIds.h"
 
 
@@ -161,19 +161,10 @@ bool BoardFileSimulator::LoadFile(std::string fileName)
 //  TODO - finish this function for all supported boards
 void BoardFileSimulator::AddSample(string readLine)
 {
-	switch ((BrainhatBoardIds)BoardId)
-	{
-	case BrainhatBoardIds::GANGLION_BOARD:
-		break;
-		
-	case BrainhatBoardIds::CYTON_BOARD:
-		DataRecords.push_back(new Cyton8Sample(readLine));
-		break;
-		
-	case BrainhatBoardIds::CYTON_DAISY_BOARD:
-		break;
-		
-	}
+	auto newSample = new Sample(BoardId);
+	newSample->InitializeFromText(readLine);
+	DataRecords.push_back(newSample);
+	
 }
 
 

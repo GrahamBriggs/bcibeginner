@@ -40,7 +40,7 @@ namespace BrainHatNetwork
 
         public int SampleRate { get; set; }
 
-        public int NumberOfChannels => brainflow.BoardShim.get_exg_channels(BoardId).Length;
+        public int NumberOfChannels => BrainhatBoardShim.GetNumberOfExgChannels(BoardId);
 
         public SrbSet CytonSRB1 { get; set; }
 
@@ -243,7 +243,6 @@ namespace BrainHatNetwork
                     catch (Exception ex)
                     {
                         Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadDataPortAsync", ex, LogLevel.WARN));
-                        await Task.Delay(500);
                     }
                     sw.Restart();
 
@@ -279,27 +278,12 @@ namespace BrainHatNetwork
         {
             for (int s = 0; s < num; s++)
             {
-                IBFSample nextSample = null;
-                switch (BoardId)
-                {
-                    case 0:
-                        nextSample = BFCyton8Sample.FromChunkRow(buffer, s);
-                        break;
-
-                    case 2:
-                        nextSample = BFCyton16Sample.FromChunkRow(buffer, s);
-                        break;
-
-                    default:
-                        return;  //  TODO ganglion
-                }
-
+                IBFSample nextSample = new BFSampleImplementation(BoardId);
+                nextSample.InitializeFromSample(buffer.GetRow(s));
                 RawDataReceived?.Invoke(this, new BFSampleEventArgs(nextSample));
                 LogRawDataProcessingPerformance(nextSample);
             }
         }
-
-
 
         int RecordsCount = 0;
         System.Diagnostics.Stopwatch CountRecordsTimer;

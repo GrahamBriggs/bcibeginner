@@ -10,6 +10,7 @@
 #include "BFSample.h"
 #include "TimeExtensions.h"
 #include "CytonBoardSettings.h"
+#include "SampleIndexCounter.h"
 
 
 class ContecDataReader : public BoardDataSource
@@ -55,6 +56,7 @@ protected:
 	//  Run function reading loop
 	ChronoTimer ReadTimer;
 	int InvalidSampleCounter;
+	SampleIndexCounter SampleIndex;
 	//
 	void EstablishConnectionWithBoard();
 	bool PreparedToReadBoard();

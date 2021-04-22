@@ -34,7 +34,7 @@ namespace BrainflowDataProcessing
 
         public IEnumerable<IBFSample> Samples => _Samples;
 
-        public bool IsValidFile => (BoardId >= 0 && NumberOfChannels > 0 && SampleRate > 0 && StartTime.HasValue && EndTime.HasValue);
+        public bool IsValidFile => (BrainhatBoardShim.IsSupportedBoard(BoardId) && NumberOfChannels > 0 && SampleRate > 0 && StartTime.HasValue && EndTime.HasValue);
 
         /// <summary>
         /// Open the file and read the header, first record and last record (to calculate duration)
@@ -82,20 +82,6 @@ namespace BrainflowDataProcessing
         }
 
 
-        bool IsCompleteLine(string nextLine)
-        {
-            var tokens = nextLine.Split(',');
-            switch (BoardId)
-            {
-                case 0:
-                    return tokens.Length >= 23;
-                case 2:
-                    return tokens.Length >= 31;
-                default:
-                    return false;
-            }
-        }
-
         /// <summary>
         /// Open the file and read it into memory
         /// </summary>
@@ -136,21 +122,9 @@ namespace BrainflowDataProcessing
         IBFSample CreateSample(string nextLine)
         {
             IBFSample newSample = null;
-
-            switch (BoardId)
-            {
-                case 0:
-                    newSample = new BFCyton8Sample(nextLine);
-                    break;
-
-                case 2:
-                    newSample = new BFCyton16Sample(nextLine);
-                    break;
-
-                default:
-                    throw new Exception($"Board ID is not set.");
-            }
-
+            newSample = new BFSampleImplementation(BoardId);
+            newSample.InitializeFromText(nextLine);
+           
             //  check the timestamp for valid data, this indicates we read a partial line for example the file is actively being written
             if (Math.Abs(newSample.TimeStamp - 0) < 0.0000001)
                 return null;
@@ -185,11 +159,11 @@ namespace BrainflowDataProcessing
                 switch (parse[1].Trim())
                 {
                     case "OpenBCI_GUI$BoardCytonSerial":
-                        BoardId = 0;
+                        BoardId = (int)(BrainhatBoardIds.CYTON_BOARD);
                         break;
 
                     case "OpenBCI_GUI$BoardCytonSerialDaisy":
-                        BoardId = 2;
+                        BoardId = (int)(BrainhatBoardIds.CYTON_DAISY_BOARD);
                         break;
                 }
             }

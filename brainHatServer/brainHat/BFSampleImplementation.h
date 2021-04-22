@@ -4,8 +4,9 @@
 #include "Parser.h"
 #include "BFSample.h"
 #include "StringExtensions.h"
+#include "BoardIds.h"
 
-class GenericSample : public BFSample
+class Sample : public BFSample
 {
 protected:
 	
@@ -22,7 +23,7 @@ protected:
 public:
 	
 	//  Generic EEG sample with X channels
-	GenericSample(int exgChannels, int accelChannels, int otherChannels, int analogChannels)
+	Sample(int exgChannels, int accelChannels, int otherChannels, int analogChannels)
 	{
 		ExgData = NULL;
 		ExgChannelCount = exgChannels;
@@ -46,9 +47,55 @@ public:
 		
 		Init();
 	}
+	
+	//  Generic EEG sample with X channels
+	Sample(int boardId)
+	{
+		switch ((BrainhatBoardIds)boardId)
+		{
+		case BrainhatBoardIds::CYTON_BOARD:
+			ExgChannelCount = 8;
+			AccelChannelCount = 3;
+			OtherChannelCount = 7;
+			AnalogChannelCount = 3;
+			break;
+			
+		case BrainhatBoardIds::CYTON_DAISY_BOARD:
+			ExgChannelCount = 16;
+			AccelChannelCount = 3;
+			OtherChannelCount = 7;
+			AnalogChannelCount = 3;
+			break;
+			
+		case BrainhatBoardIds::CONTEC_KT88:
+			ExgChannelCount = 16;
+			AccelChannelCount = 0;
+			OtherChannelCount = 4;
+			AnalogChannelCount = 0;
+			break;
+		}
+			
+		ExgData = NULL;
+		if (ExgChannelCount > 0)
+			ExgData = new double[ExgChannelCount];
+		
+		AccelData = NULL;
+		if (AccelChannelCount > 0)
+			AccelData = new double[AccelChannelCount];
+		
+		OtherData = NULL;
+		if (OtherChannelCount > 0)
+			OtherData = new double[OtherChannelCount];
+		
+		AnalogData = NULL;
+		if (AnalogChannelCount > 0)
+			AnalogData = new double[AnalogChannelCount];
+		
+		Init();
+	}
 
 	//  Copy Constructor
-	GenericSample(BFSample* copy)
+	Sample(BFSample* copy)
 	{
 		TimeStamp = copy->TimeStamp;
 		SampleIndex = copy->SampleIndex;
@@ -90,8 +137,52 @@ public:
 		}
 	}
 	
+	
+	//  Construct from a brainflow get_board_data chunk
+	void InitializeFromChunk(double** chunk, int sampleIndex)
+	{
+		int indexCount = 0;
+		SampleIndex = chunk[indexCount++][sampleIndex];
+		
+		for(int i = 0; i < ExgChannelCount; i++)
+			ExgData[i] = chunk[indexCount++][sampleIndex];
+		
+		for (int i = 0; i < AccelChannelCount; i++)
+			AccelData[i] = chunk[indexCount++][sampleIndex];
+		
+		for (int i = 0; i < OtherChannelCount; i++)
+			OtherData[i] = chunk[indexCount++][sampleIndex];
+		
+		for (int i = 0; i < AnalogChannelCount; i++)
+			AnalogData[i] = chunk[indexCount++][sampleIndex];
+
+		TimeStamp = chunk[indexCount][sampleIndex];
+	}
+	
+	
+	//  Construct from OpenBCI_GUI format text file raw data string
+	void InitializeFromText(std::string rawData)
+	{
+		Parser parser(rawData, ",");
+		SampleIndex = parser.GetNextDouble();
+		
+		for (int i = 0; i < ExgChannelCount; i++)
+			ExgData[i] = parser.GetNextDouble();
+		
+		for (int i = 0; i < AccelChannelCount; i++)
+			AccelData[i] = parser.GetNextDouble();
+		
+		for (int i = 0; i < OtherChannelCount; i++)
+			OtherData[i] = parser.GetNextDouble();
+		
+		for (int i = 0; i < AnalogChannelCount; i++)
+			AnalogData[i] = parser.GetNextDouble();
+		
+		TimeStamp = parser.GetNextDouble();
+	}
+	
 	//  Destructor
-	virtual ~GenericSample()
+	virtual ~Sample()
 	{
 		if (ExgData != NULL)
 			delete ExgData;
@@ -125,7 +216,7 @@ public:
 	
 	virtual BFSample* Copy()
 	{
-		return new GenericSample(this);
+		return new Sample(this);
 	}
 	
 	
@@ -140,7 +231,7 @@ public:
 			return MISSING_VALUE;
 	}
 	//
-	virtual double SetExg(int channel, double value)
+	virtual void SetExg(int channel, double value)
 	{
 		if (channel < ExgChannelCount)
 			ExgData[channel] = value;
@@ -158,7 +249,7 @@ public:
 			return MISSING_VALUE;
 	}
 	//
-	virtual double SetAccel(int channel, double value)
+	virtual void SetAccel(int channel, double value)
 	{
 		if (channel < AccelChannelCount)
 			AccelData[channel] = value;
@@ -175,7 +266,7 @@ public:
 			return MISSING_VALUE;
 	}
 	//
-	virtual double SetOther(int channel, double value)
+	virtual void SetOther(int channel, double value)
 	{
 		if (channel < OtherChannelCount)
 			OtherData[channel] = value;
@@ -192,7 +283,7 @@ public:
 			return MISSING_VALUE;
 	}
 	//
-	virtual double SetAnalog(int channel, double value)
+	virtual void SetAnalog(int channel, double value)
 	{
 		if (channel < AnalogChannelCount)
 			AnalogData[channel] = value;
