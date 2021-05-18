@@ -158,7 +158,8 @@ void Logger::ResetDisplay()
 void Logger::PauseDisplayOutput()
 {
 	DisplayOutputEnabled = false;
-	Display.SetColour(BLACK,WHITE);
+	Display.SetColour(WHITE,BLACK);
+	LogLastLevelDisplayed = LogLevelOff;
 }
 
 

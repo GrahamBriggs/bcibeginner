@@ -41,6 +41,8 @@ int edfGetHeaderAsJson(int fileHandle, int size, char* headerAsJson)
 
         return header.size();
     }
+	
+	return 0;
 }
 
 
@@ -416,6 +418,8 @@ int  edfSetSubsecondStarttime(int fileHandle, int subsecond)
 	{
 		OpenFiles[fileHandle]->starttime_subsecond = subsecond;
 	}
+	
+	return res;
 }
 
 

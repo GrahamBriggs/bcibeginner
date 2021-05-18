@@ -613,14 +613,14 @@ namespace BrainflowDataProcessing
             var difference = sample.SampleIndex.SampleIndexDifference(LastSampleIndex);
             LastSampleIndex = nextIndex;
 
-            switch (BoardId)
+            switch ((BrainhatBoardIds)BoardId)
             {
-                case 0:
+                default:
                     if (difference > 1)
                         CountMissingIndex++;
                     break;
 
-                case 2:
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
                     if (difference > 2)
                         CountMissingIndex++;
                     break;

@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+
 
 //  BrainhatBoardIds
 //  wrapper around brainflow board ids to support additional hardware external to brainflow board shim
@@ -42,3 +44,9 @@ int getNumberOfExgChannels(int boardId);
 int getNumberOfAccelChannels(int boardId);
 int getNumberOfOtherChannels(int boardId);
 int getNumberOfAnalogChannels(int boardId);
+
+
+std::string getSampleName(int boardId);
+std::string getSampleNameShort(int boardId);
+std::string getEquipmentName(int boardId);
+std::string getManufacturerName(int boardId);

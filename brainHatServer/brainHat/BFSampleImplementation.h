@@ -51,29 +51,10 @@ public:
 	//  Generic EEG sample with X channels
 	Sample(int boardId)
 	{
-		switch ((BrainhatBoardIds)boardId)
-		{
-		case BrainhatBoardIds::CYTON_BOARD:
-			ExgChannelCount = 8;
-			AccelChannelCount = 3;
-			OtherChannelCount = 7;
-			AnalogChannelCount = 3;
-			break;
-			
-		case BrainhatBoardIds::CYTON_DAISY_BOARD:
-			ExgChannelCount = 16;
-			AccelChannelCount = 3;
-			OtherChannelCount = 7;
-			AnalogChannelCount = 3;
-			break;
-			
-		case BrainhatBoardIds::CONTEC_KT88:
-			ExgChannelCount = 16;
-			AccelChannelCount = 0;
-			OtherChannelCount = 4;
-			AnalogChannelCount = 0;
-			break;
-		}
+		ExgChannelCount = getNumberOfExgChannels(boardId);
+		AccelChannelCount = getNumberOfAccelChannels(boardId);
+		OtherChannelCount = getNumberOfOtherChannels(boardId);
+		AnalogChannelCount = getNumberOfAnalogChannels(boardId);
 			
 		ExgData = NULL;
 		if (ExgChannelCount > 0)

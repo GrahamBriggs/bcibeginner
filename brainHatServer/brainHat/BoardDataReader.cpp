@@ -91,7 +91,7 @@ int BoardDataReader::Start(int boardId, struct BrainFlowInputParams params, bool
 	LastSampleIndex = -1;
 	
 	
-	BoardDataSource::Start();
+	Thread::Start();
 	
 	return 0;
 }

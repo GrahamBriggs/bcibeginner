@@ -57,41 +57,6 @@ void BroadcastData::SetBoard(int boardId, int sampleRate)
 }
 
 
-//  Stream name for board
-string StreamName(int boardId)
-{
-	switch ((BrainhatBoardIds)boardId)
-	{
-	case BrainhatBoardIds::CYTON_BOARD:
-		return "Cyton8_BFSample";
-	case BrainhatBoardIds::CYTON_DAISY_BOARD:
-		return "Cyton16_BFSample";
-	case BrainhatBoardIds::CONTEC_KT88:
-		return "ContecKT88_BFSample";
-	default:
-		return "BFSample";
-	}
-}
-
-
-//  Stream name for board
-string ManufacturerName(int boardId)
-{
-	switch ((BrainhatBoardIds)boardId)
-	{
-	case BrainhatBoardIds::CYTON_BOARD:
-	case BrainhatBoardIds::CYTON_DAISY_BOARD:
-	case BrainhatBoardIds::GANGLION_BOARD:
-		return "OpenBCI";
-		
-	case BrainhatBoardIds::CONTEC_KT88:
-		return "Contec";
-		
-	default:
-		return "Unknown";
-	}
-}
-
 
 //  Configure the LSL stream for the specific board
 //
@@ -105,13 +70,13 @@ void BroadcastData::SetupLslForBoard()
 	//  calculate sample size, is number of data elements plus time stamp plus sample index
 	SampleSize = 2 + numChannels + accelChannels + otherChannels + analogChannels;
 	
-	lsl::stream_info info(StreamName(BoardId), "BFSample", SampleSize, SampleRate, lsl::cf_double64, HostName);
+	lsl::stream_info info(getSampleName(BoardId), "BFSample", SampleSize, SampleRate, lsl::cf_double64, HostName);
 	
 	auto response = lsl_library_info();
 	cout << response;
 
 	// add some description fields
-	info.desc().append_child_value("manufacturer", ManufacturerName(BoardId));
+	info.desc().append_child_value("manufacturer", getManufacturerName(BoardId));
 	info.desc().append_child_value("boardId", format("%d", BoardId));
 	lsl::xml_element chns = info.desc().append_child("channels");
 	

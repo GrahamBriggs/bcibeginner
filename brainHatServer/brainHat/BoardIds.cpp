@@ -1,8 +1,10 @@
 #include <board_shim.h>
 #include "BoardIds.h"
 
+using namespace std;
 
-
+//   Number of EXG channels
+//
 int getNumberOfExgChannels(int boardId)
 {
 	switch ((BrainhatBoardIds)boardId)
@@ -10,7 +12,7 @@ int getNumberOfExgChannels(int boardId)
 	case BrainhatBoardIds::UNDEFINED:
 		return 0;
 	case BrainhatBoardIds::CONTEC_KT88:
-		return 16;
+		return 20;
 	default:
 		int numChannels;
 		BoardShim::get_exg_channels(boardId, &numChannels);
@@ -18,6 +20,9 @@ int getNumberOfExgChannels(int boardId)
 	}
 }
 
+
+//  Number of accelerometer channels
+//
 int getNumberOfAccelChannels(int boardId)
 {
 	switch ((BrainhatBoardIds)boardId)
@@ -33,6 +38,9 @@ int getNumberOfAccelChannels(int boardId)
 	}
 }
 
+
+//  Number of other channels
+//
 int getNumberOfOtherChannels(int boardId)
 {
 	switch ((BrainhatBoardIds)boardId)
@@ -40,7 +48,7 @@ int getNumberOfOtherChannels(int boardId)
 	case BrainhatBoardIds::UNDEFINED:
 		return 0;
 	case BrainhatBoardIds::CONTEC_KT88:
-		return 2;
+		return 0;
 	default:
 		int otherChannels;
 		BoardShim::get_other_channels(boardId, &otherChannels);
@@ -48,6 +56,9 @@ int getNumberOfOtherChannels(int boardId)
 	}
 }
 
+
+// Number of analog channels
+//
 int getNumberOfAnalogChannels(int boardId)
 {
 	switch ((BrainhatBoardIds)boardId)
@@ -60,5 +71,87 @@ int getNumberOfAnalogChannels(int boardId)
 		int analogChannels;
 		BoardShim::get_analog_channels(boardId, &analogChannels);
 		return analogChannels;
+	}
+}
+
+
+	
+//  Sample name
+//  Used by LSL stream
+string getSampleName(int boardId)
+{
+	switch ((BrainhatBoardIds)boardId)
+	{
+	case BrainhatBoardIds::CYTON_BOARD:
+		return "Cyton8_BFSample";
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
+		return "Cyton16_BFSample";
+	case BrainhatBoardIds::GANGLION_BOARD:
+		return "Ganglion_BFSample";
+	case BrainhatBoardIds::CONTEC_KT88:
+		return "ContecKT88_BFSample";
+	default:
+		return "BFSample";
+	}
+}
+	
+
+//  Sample name short form
+//  Used by BDF file writer
+string getSampleNameShort(int boardId)
+{
+	switch ((BrainhatBoardIds)boardId)
+	{
+	case BrainhatBoardIds::CYTON_BOARD:
+		return "CY08";
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
+		return "CY16";
+	case BrainhatBoardIds::GANGLION_BOARD:
+		return "GAN4";
+	case BrainhatBoardIds::CONTEC_KT88:
+		return "KT88";
+	default:
+		return "BF";
+	}
+}
+
+
+
+//  Equipment manufacturer name
+//
+string getEquipmentName(int boardId)
+{
+	switch ((BrainhatBoardIds)boardId)
+	{
+	case BrainhatBoardIds::CYTON_BOARD:
+		return "Cyton";
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
+		return "Cyton+Daisy";
+	case BrainhatBoardIds::GANGLION_BOARD:
+		return "Ganglion";
+	case BrainhatBoardIds::CONTEC_KT88:
+		return "ContecKT88";
+	default:
+		return "";
+	}
+}
+
+
+//  Board manufacturer
+//
+string getManufacturerName(int boardId)
+{
+	switch ((BrainhatBoardIds)boardId)
+	{
+	case BrainhatBoardIds::CYTON_BOARD:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
+	case BrainhatBoardIds::GANGLION_BOARD:
+		return "OpenBCI";
+		
+	case BrainhatBoardIds::CONTEC_KT88:
+		return "Contec";
+		
+	default:
+		return "Unknown";
 	}
 }

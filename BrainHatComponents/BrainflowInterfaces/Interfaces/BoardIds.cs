@@ -57,7 +57,7 @@ namespace BrainflowInterfaces
             switch ( (BrainhatBoardIds)boardId)
             {
                 case BrainhatBoardIds.CONTEC_KT88:
-                    return 16;
+                    return 20;
 
                 default:
                     return BoardShim.get_exg_channels(boardId).Length;
@@ -81,7 +81,7 @@ namespace BrainflowInterfaces
             switch ((BrainhatBoardIds)boardId)
             {
                 case BrainhatBoardIds.CONTEC_KT88:
-                    return 4;
+                    return 0;
 
                 default:
                     return BoardShim.get_other_channels(boardId).Length;
@@ -100,20 +100,7 @@ namespace BrainflowInterfaces
             }
         }
 
-        /// <summary>
-        /// Get equipment type description string for boardId
-        /// </summary>
-        public static string GetEquipmentName(this int value)
-        {
-            switch (value)
-            {
-                case 0:
-                    return "Cyton";
-                case 2:
-                    return "Cyton+Daisy";
-            }
-            return "Unknown";
-        }
+
 
 
         /// <summary>
@@ -121,16 +108,18 @@ namespace BrainflowInterfaces
         /// </summary>
         public static string GetSampleName(this int value)
         {
-            switch (value)
+            switch ((BrainhatBoardIds)value)
             {
-                case 0:
+                case BrainhatBoardIds.CYTON_BOARD:
                     return "Cyton8_BFSample";
-                case 2:
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
                     return "Cyton16_BFSample";
-                case 1:
+                case BrainhatBoardIds.GANGLION_BOARD:
                     return "Ganglion_BFSample";
+                case BrainhatBoardIds.CONTEC_KT88:
+                    return "ContecKT88_BFSample";
                 default:
-                    return "";
+                    return "BFSample";
             }
         }
 
@@ -140,22 +129,45 @@ namespace BrainflowInterfaces
         /// </summary>
         public static string GetSampleNameShort(this int value)
         {
-            switch (value)
+            switch ((BrainhatBoardIds)value)
             {
-                case 0:
+                case BrainhatBoardIds.CYTON_BOARD:
                     return "CY08";
-                case 2:
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
                     return "CY16";
-                case 1:
+                case BrainhatBoardIds.GANGLION_BOARD:
                     return "GAN4";
+                case BrainhatBoardIds.CONTEC_KT88:
+                    return "KT88";
                 default:
-                    return "";
+                    return "BF";
             }
         }
 
 
+
         /// <summary>
-        /// Get board ID from the string
+        /// Get equipment type description string for boardId
+        /// </summary>
+        public static string GetEquipmentName(this int value)
+        {
+            switch ((BrainhatBoardIds)value)
+            {
+                case BrainhatBoardIds.CYTON_BOARD:
+                    return "Cyton";
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
+                    return "Cyton+Daisy";
+                case BrainhatBoardIds.GANGLION_BOARD:
+                    return "Ganglion";
+                case BrainhatBoardIds.CONTEC_KT88:
+                    return "ContecKT88";
+            }
+            return "Unknown";
+        }
+
+
+        /// <summary>
+        /// Get board ID from the sample name string
         /// </summary>
         public static int GetBoardId(this string value)
         {
@@ -170,6 +182,9 @@ namespace BrainflowInterfaces
                 case "GAN4":
                 case "Ganglion_BFSample":
                     return 1;
+                case "KT88":
+                case "ContecKT88_BFSample":
+                    return -50;
                 default:
                     return -99;
             }

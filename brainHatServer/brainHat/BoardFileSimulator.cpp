@@ -41,7 +41,7 @@ BoardFileSimulator::~BoardFileSimulator()
 //
 string BoardFileSimulator::ReportSource()
 {
-	return format("Demo File board %d at %d Hz.", FileName.c_str(), BoardId, SampleRate);
+	return format("Demo File board %d at %d Hz", BoardId, SampleRate);
 }
 
 

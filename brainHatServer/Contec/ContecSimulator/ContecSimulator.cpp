@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 //				indexCounter = 0;
 		}
 		
-		usleep(7000);
+		usleep(4900);
 	}
 	
 	
@@ -76,6 +76,8 @@ void SimulateDeviceReadCommand()
 		if (readBuff[0] == 0x90 && readBuff[1] == 0x09)
 		{
 			streamRunning = false;
+			dataFile.clear();
+			dataFile.seekg(0);
 			
 			cout << "Respond to 0x90 0x09" << endl;
 			serialPutchar(fd, 0xE0);

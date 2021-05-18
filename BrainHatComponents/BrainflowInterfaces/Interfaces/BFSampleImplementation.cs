@@ -125,39 +125,13 @@ namespace BrainflowInterfaces
             TimeStamp = copy.TimeStamp;
         }
 
+
         public BFSampleImplementation(int boardId)
         {
-            switch ((BrainhatBoardIds)boardId)
-            {
-                case BrainhatBoardIds.CYTON_BOARD: 
-                    ExgChannels = new double[8];
-                    AcelChannels = new double[3];
-                    OtherChannels = new double[7];
-                    AnalogChannels = new double[3];
-                    break;
-
-                case BrainhatBoardIds.CYTON_DAISY_BOARD: 
-                    ExgChannels = new double[16];
-                    AcelChannels = new double[3];
-                    OtherChannels = new double[7];
-                    AnalogChannels = new double[3];
-                    break;
-
-                case BrainhatBoardIds.CONTEC_KT88:
-                    ExgChannels = new double[16];
-                    AcelChannels = new double[0];
-                    OtherChannels = new double[4];
-                    AnalogChannels = new double[0];
-                    break;
-
-                //  not supported
-                default:
-                    ExgChannels = new double[0];
-                    AcelChannels = new double[0];
-                    OtherChannels = new double[0];
-                    AnalogChannels = new double[0];
-                    break;
-            }
+            ExgChannels = new double[BrainhatBoardShim.GetNumberOfExgChannels(boardId)];
+            AcelChannels = new double[BrainhatBoardShim.GetNumberOfAccelChannels(boardId)];
+            OtherChannels = new double[BrainhatBoardShim.GetNumberOfOtherChannels(boardId)];
+            AnalogChannels = new double[BrainhatBoardShim.GetNumberOfAnalogChannels(boardId)];
         }
 
 

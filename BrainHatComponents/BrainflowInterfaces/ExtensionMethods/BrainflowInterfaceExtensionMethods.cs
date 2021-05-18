@@ -112,6 +112,7 @@ namespace BrainflowInterfaces
                 case BrainhatBoardIds.CYTON_DAISY_BOARD: 
                     //  Cyton+Daisy 0-254 samples per second in increments of 2
                     return ((1.0 / sampleRate) * (value.SampleIndexDifference(lastSampleIndex)/2.0));
+                
                 default:
                     return 0;       
             }

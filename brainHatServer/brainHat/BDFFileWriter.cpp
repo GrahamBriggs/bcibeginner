@@ -73,45 +73,6 @@ bool BDFFileWriter::OpenFile(string fileName, bool tryUsb)
 
 
 
-
-string GetEquipmentName(int boardId)
-{
-	switch ((BrainhatBoardIds)boardId)
-	{
-	case BrainhatBoardIds::CYTON_BOARD:
-		return "Cyton";
-	case BrainhatBoardIds::CYTON_DAISY_BOARD:
-		return "Cyton+Daisy";
-	case BrainhatBoardIds::GANGLION_BOARD:
-		return "Ganglion";
-	case BrainhatBoardIds::CONTEC_KT88:
-		return "ContecKT88";
-	default:
-		return "";
-	}
-}
-
-
-string GetSampleNameShort(int boardId)
-{
-	switch ((BrainhatBoardIds)boardId)
-	{
-	case BrainhatBoardIds::CYTON_BOARD:
-		return "CY08";
-	case BrainhatBoardIds::CYTON_DAISY_BOARD:
-		return "CY16";
-	case BrainhatBoardIds::GANGLION_BOARD:
-		return "GAN4";
-	case BrainhatBoardIds::CONTEC_KT88:
-		return "KT88";
-	default:
-		return "";
-	}
-}
-
-
-
-
 //  Write all of the available data in the queue to the file
 //
 void BDFFileWriter::WriteDataToFile()
@@ -265,8 +226,8 @@ void BDFFileWriter::WriteHeader(BFSample* firstSample)
 		edfSetPatientAdditional(FileHandle, "");
 		edfSetAdminCode(FileHandle, "");
 		edfSetTechnician(FileHandle, "");
-		edfSetEquipment(FileHandle, GetEquipmentName(BoardId).c_str());
-		edfSetRecordingAdditional(FileHandle, GetSampleNameShort(BoardId).c_str());
+		edfSetEquipment(FileHandle, getEquipmentName(BoardId).c_str());
+		edfSetRecordingAdditional(FileHandle, getSampleNameShort(BoardId).c_str());
 
 		WroteHeader = true;
 	}

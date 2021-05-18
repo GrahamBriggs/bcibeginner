@@ -126,12 +126,14 @@ namespace BrainflowDataProcessing
 
         string FileBoardDescription()
         {
-            switch (BoardId)
+            switch ((BrainhatBoardIds)BoardId)
             {
-                case 0:
+                case BrainhatBoardIds.CYTON_BOARD:
                     return "OpenBCI_GUI$BoardCytonSerial";
-                case 2:
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
                     return "OpenBCI_GUI$BoardCytonSerialDaisy";
+                case BrainhatBoardIds.CONTEC_KT88:
+                    return "Contec_KT88";
                 default:
                     return "Unknown?";
             }

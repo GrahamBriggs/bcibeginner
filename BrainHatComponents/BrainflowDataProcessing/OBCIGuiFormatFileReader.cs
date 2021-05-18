@@ -165,6 +165,10 @@ namespace BrainflowDataProcessing
                     case "OpenBCI_GUI$BoardCytonSerialDaisy":
                         BoardId = (int)(BrainhatBoardIds.CYTON_DAISY_BOARD);
                         break;
+
+                    case "Contec_KT88":
+                        BoardId = (int)BrainhatBoardIds.CONTEC_KT88;
+                        break;
                 }
             }
         }

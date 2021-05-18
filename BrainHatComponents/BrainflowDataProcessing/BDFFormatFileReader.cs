@@ -168,11 +168,12 @@ namespace BrainflowDataProcessing
         bool SetFilePropertiesFromHeader(EdfHeaderStruct header)
         {
             BoardId = header.recording_additional.Trim().GetBoardId();
-            switch (BoardId)
+
+            switch ((BrainhatBoardIds)BoardId)
             {
-                case 0:
-                case 1:
-                case 2:
+                case BrainhatBoardIds.CYTON_BOARD:
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
+                case BrainhatBoardIds.CONTEC_KT88:
                     break;
 
                 default:

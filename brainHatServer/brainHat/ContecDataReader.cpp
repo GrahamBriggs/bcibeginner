@@ -50,6 +50,8 @@ ContecDataReader::~ContecDataReader()
 //
 void ContecDataReader::Init()
 {
+	BoardDataSource::Init();
+	
 	BoardComPortFd = -1;
 	BoardOn = true;
 	IsConnected = false;
@@ -58,7 +60,7 @@ void ContecDataReader::Init()
 	ConnectionChangedDelegate = NULL;
 	InvalidSampleCounter = 0;
 	
-	BoardDataSource::Init();
+	RawConsoleEnabled = false;
 }
 
 
@@ -88,7 +90,7 @@ int ContecDataReader::Start(int board_id, struct BrainFlowInputParams params, bo
 	
 	LastSampleIndex = -1;
 	
-	BoardDataSource::Start();
+	Thread::Start();
 	
 	return 0;
 }
@@ -194,22 +196,29 @@ void ContecDataReader::ReleaseBoard()
 
 
 //  Keep reading from the serial port until read times out
-bool ReadSerialPortResponse(int fd)
+bool ContecDataReader::ReadSerialPortResponse()
 {
+	vector<int> responses;
 	int bytesRead = 0;
 	bool response = false;
-	auto readChar = serialGetchar(fd);
+	auto readChar = serialGetchar(BoardComPortFd);
 	while (readChar > -1 && bytesRead < 256)
 	{
 		bytesRead++;
 		response = true;
-		cout << readChar;
-		readChar = serialGetchar(fd);
+		responses.push_back(readChar);
+		readChar = serialGetchar(BoardComPortFd);
 	}
 		
-	if(response)
-		cout << endl;
-	
+	if (response)
+	{
+		string responseString = "";
+		for (int i = 0; i < responses.size(); i++)
+			responseString += format("%02x ", responses[i]);
+		
+		Logging.AddLog("ContecDataReader", "ReadSerialPortResponse", format("Response: %s", responseString.c_str()), LogLevelDebug);
+	}
+		
 	return response;
 }
 
@@ -220,43 +229,41 @@ bool ContecDataReader::StartStreaming()
 {
 	if (!StreamRunning)
 	{
-		cout << "Start streaming 0x90 0x09" << endl;
+		StreamRunning = false;
+		
+		Logging.AddLog("ContecDataReader", "StartStreaming", "Sending >> 0x90 0x09", LogLevelDebug);
 		serialPutchar(BoardComPortFd, 0x90);
 		serialPutchar(BoardComPortFd, 0x09);
-		
 		//  get response
-		ReadSerialPortResponse(BoardComPortFd);
-//		if(!ReadSerialPortResponse(BoardComPortFd))
-//			return false;
+		ReadSerialPortResponse();
 			
-		cout << "Start streaming send 0x90 0x03" << endl;
+		Logging.AddLog("ContecDataReader", "StartStreaming", "Sending >> 0x90 0x03", LogLevelDebug);
 		serialPutchar(BoardComPortFd, 0x90);
 		serialPutchar(BoardComPortFd, 0x03);
 		//  get response
-		ReadSerialPortResponse(BoardComPortFd);
-//		if(!ReadSerialPortResponse(BoardComPortFd))
-//			return false;
+		ReadSerialPortResponse();
 			
-		cout << "Start streaming send 0x90 0x06" << endl;
+		Logging.AddLog("ContecDataReader", "StartStreaming", "Sending >> 0x90 0x06", LogLevelDebug);
 		serialPutchar(BoardComPortFd, 0x90);
 		serialPutchar(BoardComPortFd, 0x06);
 		//  get response
-		ReadSerialPortResponse(BoardComPortFd);
-//		if(!ReadSerialPortResponse(BoardComPortFd))
-//			return false;
-			
-		cout << "Start streaming send 0x90 0x01" << endl;
+		ReadSerialPortResponse();
+		
+		Logging.AddLog("ContecDataReader", "StartStreaming", "Sending >> 0x90 0x01", LogLevelDebug);
 		serialPutchar(BoardComPortFd, 0x90);
 		serialPutchar(BoardComPortFd, 0x01);
 		//  get the expected response, the next two bytes before stream starts
 		auto response1 = serialGetchar(BoardComPortFd);
 		auto response2 = serialGetchar(BoardComPortFd);
-//		if (response1 == -1 || response2 == -1)
-//			return false;
-			
-		cout << "Streaming started: " << response1 << " " << response2 << endl;
+		if (response1 == -1 || response2 == -1)
+		{
+			return false;
+		}
+		
+		Logging.AddLog("ContecDataReader", "StartStreaming", format("Response << %d %d",response1, response2), LogLevelDebug);
 		StreamRunning = true;
 	}
+	
 	return StreamRunning;
 }
 
@@ -267,18 +274,11 @@ void ContecDataReader::StopStreaming()
 {
 	if (StreamRunning)
 	{
-		try
-		{
-			cout << "Start streaming send 0x90 0x02" << endl;
-			serialPutchar(BoardComPortFd, 0x90);
-			serialPutchar(BoardComPortFd, 0x02);
+		Logging.AddLog("ContecDataReader", "StopStreaming", "Sending >> 0x90 0x02", LogLevelDebug);
+		serialPutchar(BoardComPortFd, 0x90);
+		serialPutchar(BoardComPortFd, 0x02);
 			
-			StreamRunning = false;
-		}
-		catch (const BrainFlowException &err)
-		{
-			Logging.AddLog("ContecDataReader", "StopStreaming", format("Failed to release to board. Error %d %s.", err.exit_code, err.what()), LogLevelError);
-		}
+		StreamRunning = false;
 	}
 }
 
@@ -347,26 +347,28 @@ bool ContecDataReader::PreparedToReadBoard()
 //
 void ContecDataReader::FindHeader()
 {
-	cout << "Looking for header ..." <<  endl;
+	Logging.AddLog("ContecDataReader", "FindHeader", "Looking for header.", LogLevelInfo);
+	
 	auto readChar = serialGetchar(BoardComPortFd);
 	int invalidReads = 0;
 	while (readChar != 0xA0)
 	{
 		readChar = serialGetchar(BoardComPortFd);
-		cout << "Read byte: " << readChar << endl;
+		Logging.AddLog("ContecDataReader", "FindHeader", format("Did not find header. Read byte: %02x", readChar), LogLevelWarn);
 		
 		if (readChar == -1)
 		{
 			invalidReads++;
 			if (invalidReads > 3)
 			{
-				cout << "Three seconds without reading data. Releasing board " << readChar << endl;
+				Logging.AddLog("ContecDataReader", "FindHeader", "Three seconds without reading data. Releasing board.", LogLevelError);
 				ReleaseBoard();
 				return;
 			}
 		}
 	}	
-	cout << "Found header ..." <<  endl;
+	
+	Logging.AddLog("ContecDataReader", "FindHeader", "Found header", LogLevelInfo);
 }
 
 
@@ -440,7 +442,7 @@ void ContecDataReader::RunFunction()
 					invalidReads++;
 					if (invalidReads > 3)
 					{
-						cout << "More than 3 seconds without reading from the port. Releasing board" << endl;
+						Logging.AddLog("ContecDataReader", "RunFunction", "Three seconds without reading data. Releasing board.", LogLevelError);
 						ReleaseBoard();
 						break;
 					}
@@ -453,12 +455,14 @@ void ContecDataReader::RunFunction()
 				readCounter++;	//  count this complete sample reading
 				ProcessData(readBuffer);
 			}
-			else
+			else if ( BoardReady() )
 			{
 				cout << "Lost sync " << bytesRead << endl;
 				for (int i = 0; i < bytesRead; i++)
 				{
-					cout << "Lost sync byte " << i << " " << (int)readBuffer[i] << endl;
+					string responsesString = "";
+					responsesString += format("%02x ", readBuffer[i]);
+					Logging.AddLog("ContecDataReader", "RunFunction", format("Lost sync. Bytes: %s", responsesString.c_str()), LogLevelWarn);
 				}
 					
 				readingInSync = false;	//  failed to sync with last frame
@@ -468,6 +472,7 @@ void ContecDataReader::RunFunction()
 		}
 	}
 }
+
 
 void GetNumbersFromTripleOctet(char* readBuffer, int pos, double& value1, double& value2)
 {
@@ -532,16 +537,18 @@ void ContecDataReader::ProcessData(char *readBuffer)
 	for (int i = 0; i < 4; i++)
 		newSample->SetOther(i, channelData[i + 16]);
 	
+	InspectDataStream(newSample);
+	
 	NewSampleCallback(newSample);
 	
 	//  report the current reading to the console three times a second
 	if(timer.ElapsedMilliseconds() > 333)
 	{
-		OutputBinaryToConsole(readBuffer, readCounter, channelData, timer.ElapsedMilliseconds());
+		if ( RawConsoleEnabled )
+			OutputBinaryToConsole(readBuffer, readCounter, channelData, timer.ElapsedMilliseconds());
 		readCounter = 0;
 		timer.Reset();
 	}
-	
 }
 
 

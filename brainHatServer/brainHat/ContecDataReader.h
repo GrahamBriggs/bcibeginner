@@ -19,7 +19,7 @@ public:
 	ContecDataReader(ConnectionChangedCallbackFn connectionChangedFn, NewSampleCallbackFn newSampleFn);
 	virtual ~ContecDataReader();
 	
-	int Start(int board_id, struct BrainFlowInputParams params, bool srb1On);
+	virtual int Start(int board_id, struct BrainFlowInputParams params, bool srb1On);
 	
 	virtual void Cancel();
 	
@@ -30,6 +30,8 @@ public:
 	
 	virtual bool RequestSetSrb1(int board, bool enable) {return false;}
 	virtual bool RequestEnableStreaming(bool enable);
+	
+	virtual void EnableRawConsole(bool enable) { RawConsoleEnabled = enable;}
 	
 protected:
 	
@@ -52,6 +54,7 @@ protected:
 
 	bool StartStreaming();
 	void StopStreaming();
+	bool ReadSerialPortResponse();
 	
 	//  Run function reading loop
 	ChronoTimer ReadTimer;
@@ -66,4 +69,5 @@ protected:
 	
 	void FindHeader();
 	
+	bool RawConsoleEnabled;	
 };

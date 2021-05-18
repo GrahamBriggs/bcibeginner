@@ -34,7 +34,7 @@ BoardDataSource::BoardDataSource()
 //
 void BoardDataSource::Init()
 {
-	BoardId = (int)BrainhatBoardIds::UNDEFINED;
+	BoardId = -199;//TODO (int)BrainhatBoardIds::UNDEFINED;
 	SampleRate = -1;
 	DataRows = 0;
 	
