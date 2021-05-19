@@ -85,8 +85,8 @@ namespace BrainHatNetwork
 
         }
 
-        public int BoardId { get; protected set; }
-        public int SampleRate { get; protected set; }
+        public int BoardId { get; private set; }
+        public int SampleRate { get; private set; }
         int SampleSize;
 
 

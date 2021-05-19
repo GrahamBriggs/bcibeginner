@@ -41,6 +41,6 @@ namespace PlatformHelper
 
         public static bool Linux => _LibraryEnvironment == LibraryEnvironment.Linux;
       
-        private static LibraryEnvironment _LibraryEnvironment = LibraryEnvironment.Unknown;
+        static LibraryEnvironment _LibraryEnvironment = LibraryEnvironment.Unknown;
     }
 }

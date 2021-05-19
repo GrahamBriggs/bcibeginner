@@ -30,11 +30,11 @@ namespace BrainflowDataProcessing
         public double? StartTime => UnfilteredData?.First()?.TimeStamp;
         public double? EndTime => UnfilteredData?.Last()?.TimeStamp;
 
-        public int BoardId { get; protected set; }
-        public int NumberOfChannels { get; protected set; }
-        public int SampleRate { get; protected set; }
+        public int BoardId { get; private set; }
+        public int NumberOfChannels { get; private set; }
+        public int SampleRate { get; private set; }
 
-        public async Task<bool> LoadDataFile(string fileName)
+        public async Task<bool> LoadDataFileAsync(string fileName)
         {
             try
             {

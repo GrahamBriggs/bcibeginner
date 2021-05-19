@@ -149,7 +149,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Stop a specific signal filter task
         /// </summary>
-        public async Task StopSignalFiltering(string filterName)
+        public async Task StopSignalFilteringAsync(string filterName)
         {
             if (ActiveFilters.ContainsKey(filterName))
             {

@@ -129,7 +129,7 @@ namespace BrainHatNetwork
         /// Update the connection information
         /// Force restart if ports have changed
         /// </summary>
-        public async Task UpdateConnection(IBrainHatServerConnection connection)
+        public async Task UpdateConnectionAsync(IBrainHatServerConnection connection)
         {
             Eth0Address = connection.Eth0Address;
             Wlan0Address = connection.Wlan0Address;
@@ -185,7 +185,7 @@ namespace BrainHatNetwork
         }
 
         StreamInfo StreamInfo;
-        public int SampleSize { get; protected set; }
+        public int SampleSize { get; private set; }
 
         //  Read data port task
         CancellationTokenSource RunTaskCancelTokenSource;

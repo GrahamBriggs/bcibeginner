@@ -16,9 +16,9 @@ namespace BrainflowDataProcessing
         //  Events
         public event LogEventDelegate Log;
 
-        public int BoardId { get; protected set; }
+        public int BoardId { get; private set; }
 
-        public int SampleRate { get; protected set; }
+        public int SampleRate { get; private set; }
 
         public bool IsLogging => FileWriterCancelTokenSource != null;
 
@@ -40,7 +40,7 @@ namespace BrainflowDataProcessing
             FileWritingTask = RunFileWriter(FileWriterCancelTokenSource.Token);
         }
 
-        public string FileName { get; protected set; }
+        public string FileName { get; private set; }
 
         public double FileDuration => FileTimer.Elapsed.TotalSeconds;
 

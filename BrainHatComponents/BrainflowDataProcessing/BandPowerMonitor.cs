@@ -142,10 +142,10 @@ namespace BrainflowDataProcessing
 
 
         //  Board Properties
-        public int BoardId { get; protected set; }
-        public int NumberOfChannels { get; protected set; }
-        public int SampleRate { get; protected set; }
-        public string Name { get; protected set; }
+        public int BoardId { get; private set; }
+        public int NumberOfChannels { get; private set; }
+        public int SampleRate { get; private set; }
+        public string Name { get; private set; }
 
         //  Band Power Calculator
         BandPowerCalculator BandPowerCalc;

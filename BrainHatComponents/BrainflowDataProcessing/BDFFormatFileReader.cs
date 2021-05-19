@@ -13,15 +13,15 @@ namespace BrainflowDataProcessing
     public class BDFFormatFileReader : IBrainHatFileReader
     {
         //  Public Properties
-        public int BoardId { get; protected set; }
+        public int BoardId { get; private set; }
 
-        public int SampleRate { get; protected set; }
+        public int SampleRate { get; private set; }
 
-        public int NumberOfChannels { get; protected set; }
+        public int NumberOfChannels { get; private set; }
 
-        public double? StartTime { get; protected set; }
+        public double? StartTime { get; private set; }
 
-        public double? EndTime { get; protected set; }
+        public double? EndTime { get; private set; }
 
         public double Duration
         {
@@ -34,10 +34,12 @@ namespace BrainflowDataProcessing
             }
         }
 
-        public IEnumerable<IBFSample> Samples => _Samples;
-
 
         public bool IsValidFile => (BrainhatBoardShim.IsSupportedBoard(BoardId)  && NumberOfChannels > 0 && SampleRate > 0 && StartTime.HasValue && EndTime.HasValue);
+
+        List<IBFSample> _Samples;
+        public IEnumerable<IBFSample> Samples => _Samples;
+
 
 
         /// <summary>
@@ -45,7 +47,7 @@ namespace BrainflowDataProcessing
         /// does not save any samples from the file
         /// Returns true if the file has a valid header
         /// </summary>
-        public async Task<bool> ReadFileForHeader(string fileName)
+        public async Task<bool> ReadFileForHeaderAsync(string fileName)
         {
             using (var fileReader = await FileSystemExtensionMethods.WaitForFileAsync(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
@@ -88,7 +90,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Open the file and read the data into memory
         /// </summary>
-        public async Task<bool> ReadFile(string fileName)
+        public async Task<bool> ReadFileAsync(string fileName)
         {
             int fileHandle = -1;
             try
@@ -195,6 +197,6 @@ namespace BrainflowDataProcessing
         }
 
 
-        protected List<IBFSample> _Samples;
+       
     }
 }

@@ -91,9 +91,9 @@ namespace BrainflowDataProcessing
            
         }
 
-        public int BoardId { get; protected set; }
-        public int NumberOfChannels { get; protected set; }
-        public int SampleRate { get; protected set; }
+        public int BoardId { get; private set; }
+        public int NumberOfChannels { get; private set; }
+        public int SampleRate { get; private set; }
 
 
         //  Define bands and ranges in this list

@@ -98,7 +98,7 @@ namespace BrainflowDataProcessing
             FilterFunctions = new List<SignalFilterFunction>();
         }
 
-        public string Name { get; protected set; }
+        public string Name { get; private set; }
 
         List<SignalFilterFunction> FilterFunctions;
 

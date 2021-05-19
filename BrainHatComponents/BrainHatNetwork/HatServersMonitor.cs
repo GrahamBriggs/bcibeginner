@@ -377,7 +377,7 @@ namespace BrainHatNetwork
                         //  update server connection state
                         var updateTime = server.TimeStamp;
 
-                        await server.UpdateConnection(serverStatus);
+                        await server.UpdateConnectionAsync(serverStatus);
                         serverStatus.OffsetTime = DateTimeOffset.UtcNow - serverStatus.TimeStamp;
                         server.TimeStamp = DateTimeOffset.UtcNow;
                         server.OffsetTime = serverStatus.OffsetTime;
