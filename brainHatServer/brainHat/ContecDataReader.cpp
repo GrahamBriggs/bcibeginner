@@ -24,6 +24,7 @@ using namespace chrono;
 
 
 //  Contec Data Reader, reads data from Contec device
+//  This driver is a work in progress, and may not get finished ...
 //  Construct with callback functions:
 //    -  ConnectionChanged will be called on first discovery of board parameters, then on connect / disconnect state
 //    -  NewSample will be called when new data is read from the board
