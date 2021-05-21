@@ -426,7 +426,7 @@ void ContecDataReader::RunFunction()
 		invalidReads = 0;
 		
 		//  keep reading while we are in sync and stream is running
-		while (readingInSync && PreparedToReadBoard())
+		while (ThreadRunning && readingInSync && PreparedToReadBoard())
 		{
 			//  each pass of this loop we will keep reading until we have 32 bytes read from the port
 			while (bytesRead < 32 )
@@ -469,6 +469,9 @@ void ContecDataReader::RunFunction()
 			}
 			bytesRead = 0;
 			memset(readBuffer, 0x00, 32);
+			
+			if (!ThreadRunning)
+				break;
 		}
 	}
 }
