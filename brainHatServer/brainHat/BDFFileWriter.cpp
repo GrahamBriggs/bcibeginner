@@ -4,14 +4,16 @@
 #include <iostream>
 #include <EDFfile.h>
 #include <board_shim.h>
+#include <iomanip>
+#include <sstream>
+#include <dirent.h>
+
 #include "brainHat.h"
 #include "BDFFileWriter.h"
 #include "StringExtensions.h"
 #include "TimeExtensions.h"
 #include "BFSample.h"
-#include <iomanip>
-#include <sstream>
-#include <dirent.h>
+#include "BoardIds.h"
 #include "FileExtensions.h"
 
 
@@ -68,39 +70,6 @@ bool BDFFileWriter::OpenFile(string fileName, bool tryUsb)
 	
 	return true;
 }
-
-
-
-
-string GetEquipmentName(int boardId)
-{
-	switch (boardId)
-	{
-	case 0:
-		return "Cyton";
-	case 2:
-		return "Cyton+Daisy";
-	default:
-		return "";
-	}
-}
-
-
-string GetSampleNameShort(int boardId)
-{
-	switch (boardId)
-	{
-	case 0:
-		return "CY08";
-	case 2:
-		return "CY16";
-	case 1:
-		return "GAN4";
-	default:
-		return "";
-	}
-}
-
 
 
 
@@ -257,8 +226,8 @@ void BDFFileWriter::WriteHeader(BFSample* firstSample)
 		edfSetPatientAdditional(FileHandle, "");
 		edfSetAdminCode(FileHandle, "");
 		edfSetTechnician(FileHandle, "");
-		edfSetEquipment(FileHandle, GetEquipmentName(BoardId).c_str());
-		edfSetRecordingAdditional(FileHandle, GetSampleNameShort(BoardId).c_str());
+		edfSetEquipment(FileHandle, getEquipmentName(BoardId).c_str());
+		edfSetRecordingAdditional(FileHandle, getSampleNameShort(BoardId).c_str());
 
 		WroteHeader = true;
 	}

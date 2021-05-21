@@ -10,7 +10,8 @@
 
 using namespace std;
 
-
+//  Get list of interface,address for IPvv
+//
 list<tuple<string, string>> GetNetworkIp4Addresses()
 {
 	list<tuple<string, string>> addressList;
@@ -39,6 +40,8 @@ list<tuple<string, string>> GetNetworkIp4Addresses()
 }
 
 
+//  Get list of interface,address for IPv6
+//
 list<tuple<string, string>> GetNetworkIp6Addresses()
 {
 	list<tuple<string, string>> addressList;
@@ -69,9 +72,26 @@ list<tuple<string, string>> GetNetworkIp6Addresses()
 }
 
 
+//  Get the host name
+//
 string GetHostName()
 {
 	char host[1024];
 	gethostname(host, 1024);
 	return string(host);
+}
+
+
+
+typedef unsigned long uint32;
+
+uint32 SockAddrToUint32(struct sockaddr * a)
+{
+	return ((a)&&(a->sa_family == AF_INET)) ? ntohl(((struct sockaddr_in *)a)->sin_addr.s_addr) : 0;
+}
+
+// convert a numeric IP address into its string representation
+void Inet_NtoA(uint32 addr, char * ipbuf)
+{
+	sprintf(ipbuf, "%li.%li.%li.%li", (addr >> 24) & 0xFF, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, (addr >> 0) & 0xFF);
 }

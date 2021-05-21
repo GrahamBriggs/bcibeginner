@@ -149,7 +149,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Stop a specific signal filter task
         /// </summary>
-        public async Task StopSignalFiltering(string filterName)
+        public async Task StopSignalFilteringAsync(string filterName)
         {
             if (ActiveFilters.ContainsKey(filterName))
             {
@@ -296,7 +296,7 @@ namespace BrainflowDataProcessing
         public BrainflowDataProcessor(string name, int boardId, int sampleRate)
         {
             BoardId = boardId;
-            NumberOfChannels = BoardShim.get_exg_channels(boardId).Length;
+            NumberOfChannels = BrainhatBoardShim.GetNumberOfExgChannels(boardId);
             SampleRate = sampleRate;
             Name = name;
 
@@ -613,14 +613,14 @@ namespace BrainflowDataProcessing
             var difference = sample.SampleIndex.SampleIndexDifference(LastSampleIndex);
             LastSampleIndex = nextIndex;
 
-            switch (BoardId)
+            switch ((BrainhatBoardIds)BoardId)
             {
-                case 0:
+                default:
                     if (difference > 1)
                         CountMissingIndex++;
                     break;
 
-                case 2:
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
                     if (difference > 2)
                         CountMissingIndex++;
                     break;

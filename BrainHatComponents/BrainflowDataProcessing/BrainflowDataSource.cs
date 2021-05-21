@@ -30,20 +30,27 @@ namespace BrainflowDataProcessing
         public double? StartTime => UnfilteredData?.First()?.TimeStamp;
         public double? EndTime => UnfilteredData?.Last()?.TimeStamp;
 
-        public int BoardId { get; protected set; }
-        public int NumberOfChannels { get; protected set; }
-        public int SampleRate { get; protected set; }
+        public int BoardId { get; private set; }
+        public int NumberOfChannels { get; private set; }
+        public int SampleRate { get; private set; }
 
-        public async Task<bool> LoadDataFile(string fileName)
+        public async Task<bool> LoadDataFileAsync(string fileName)
         {
-            BrainHatFileReader reader = new BrainHatFileReader();
-            if ( await reader.LoadDataFileAsync(fileName) )
+            try
             {
-                BoardId = reader.BoardId;
-                NumberOfChannels = reader.NumberOfChannels;
-                SampleRate = reader.SampleRate;
-                UnfilteredData = new List<IBFSample>(reader.Samples);
-                return true;
+                BrainHatFileReader reader = new BrainHatFileReader();
+                if (await reader.LoadDataFileAsync(fileName))
+                {
+                    BoardId = reader.BoardId;
+                    NumberOfChannels = reader.NumberOfChannels;
+                    SampleRate = reader.SampleRate;
+                    UnfilteredData = new List<IBFSample>(reader.Samples);
+                    return true;
+                }
+            }
+            catch (Exception e)
+            {
+                Log?.Invoke(this, new LogEventArgs(this, "LoadDataFile", e, LogLevel.ERROR));
             }
 
             Log?.Invoke(this, new LogEventArgs(this, "LoadDataFile", $"Failed to load data file {fileName}.", LogLevel.ERROR));

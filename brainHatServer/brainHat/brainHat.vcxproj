@@ -73,8 +73,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BDFFileWriter.h" />
-    <ClInclude Include="BFCyton16.h" />
+    <ClInclude Include="BFSampleImplementation.h" />
     <ClInclude Include="BoardDataSource.h" />
+    <ClInclude Include="BoardIds.h" />
+    <ClInclude Include="ContecDataReader.h" />
     <ClInclude Include="CytonBoardConfiguration.h" />
     <ClInclude Include="BrainHatFileWriter.h" />
     <ClInclude Include="BrainHatServerStatus.h" />
@@ -89,11 +91,12 @@
     <ClInclude Include="Logger.h" />
     <ClInclude Include="NetworkAddresses.h" />
     <ClInclude Include="NetworkExtensions.h" />
-    <ClInclude Include="BFCyton8.h" />
     <ClInclude Include="BFSample.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="BroadcastData.h" />
     <ClInclude Include="BoardDataReader.h" />
+    <ClInclude Include="SampleIndexCounter.h" />
+    <ClInclude Include="SerialPort.h" />
     <ClInclude Include="StringExtensions.h" />
     <ClInclude Include="TCPServerThread.h" />
     <ClInclude Include="TerminalDisplay.h" />
@@ -108,11 +111,13 @@
   <ItemGroup>
     <ClCompile Include="BDFFileWriter.cpp" />
     <ClCompile Include="BoardDataSource.cpp" />
+    <ClCompile Include="BoardIds.cpp" />
     <ClCompile Include="BrainHatFileWriter.cpp" />
     <ClCompile Include="BroadcastStatus.cpp" />
     <ClCompile Include="CommandServer.cpp" />
     <ClCompile Include="BoardFileSimulator.cpp" />
     <ClCompile Include="brainHat.cpp" />
+    <ClCompile Include="ContecDataReader.cpp" />
     <ClCompile Include="CytonBoardSettings.cpp" />
     <ClCompile Include="OpenBCIFileWriter.cpp" />
     <ClCompile Include="Logger.cpp" />
@@ -120,6 +125,7 @@
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="BroadcastData.cpp" />
     <ClCompile Include="BoardDataReader.cpp" />
+    <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="TCPServerThread.cpp" />
     <ClCompile Include="TerminalDisplay.cpp" />
     <ClCompile Include="Thread.cpp" />

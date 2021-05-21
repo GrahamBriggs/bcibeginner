@@ -108,12 +108,15 @@ Logger::~Logger()
 //
 void Logger::AddLog(LogEvent log)
 {
+	if (ThreadRunning)
 	{
-		LockMutex lockQueue(QueueMutex);
-		CommandQueue.push(new LoggerLog(log));
-	}
+		{
+			LockMutex lockQueue(QueueMutex);
+			CommandQueue.push(new LoggerLog(log));
+		}
 	
-	Notify();
+		Notify();
+	}
 }
 
 
@@ -155,7 +158,8 @@ void Logger::ResetDisplay()
 void Logger::PauseDisplayOutput()
 {
 	DisplayOutputEnabled = false;
-	Display.SetColour(BLACK,WHITE);
+	Display.SetColour(WHITE,BLACK);
+	LogLastLevelDisplayed = LogLevelOff;
 }
 
 

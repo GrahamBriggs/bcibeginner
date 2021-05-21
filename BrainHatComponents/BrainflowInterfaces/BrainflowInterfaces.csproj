@@ -70,12 +70,17 @@
     <Compile Include="ExtensionMethods\DateTimeExtensionMethods.cs" />
     <Compile Include="ExtensionMethods\MatrixExtensionMethods.cs" />
     <Compile Include="ExtensionMethods\ObservableCollectionExtensionMethods.cs" />
-    <Compile Include="Interfaces\BFCyton16Sample.cs" />
-    <Compile Include="Interfaces\BFCyton8Sample.cs" />
     <Compile Include="Interfaces\BFSample.cs" />
     <Compile Include="Interfaces\BFSampleImplementation.cs" />
+    <Compile Include="Interfaces\BoardIds.cs" />
     <Compile Include="Interfaces\CytonBoardSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\brainflow\csharp-package\brainflow\brainflow\brainflow.csproj">
+      <Project>{19d4357f-b416-40d3-99cd-2fcaf56529f6}</Project>
+      <Name>brainflow</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

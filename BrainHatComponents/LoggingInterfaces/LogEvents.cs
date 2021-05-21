@@ -127,15 +127,15 @@ namespace LoggingInterfaces
         }
 
         public string HostName { get; set; }
-        public DateTimeOffset? Time { get; protected set; }
-        public int Thread { get; protected set; }
-        public LogLevel Level { get; protected set; }
+        public DateTimeOffset? Time { get; private set; }
+        public int Thread { get; private set; }
+        public LogLevel Level { get; private set; }
 
-        public object Sender { get; protected set; }
-        public string Function { get; protected set; }
-        public object Data { get; protected set; }
+        public object Sender { get; private set; }
+        public string Function { get; private set; }
+        public object Data { get; private set; }
 
-        public bool Remote { get; protected set; }
+        public bool Remote { get; private set; }
     }
     //
     public delegate void LogEventDelegate(object sender, LogEventArgs e);

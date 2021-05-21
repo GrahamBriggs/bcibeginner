@@ -12,7 +12,7 @@ namespace BrainflowDataProcessing
         //  Events
         public event LogEventDelegate Log;
 
-        public int BoardId => FileWriter != null ? FileWriter.BoardId : -99;
+        public int BoardId => FileWriter != null ? FileWriter.BoardId : (int)BrainhatBoardIds.UNDEFINED;
 
         public int SampleRate => FileWriter != null ? FileWriter.SampleRate : 0;
 

@@ -32,12 +32,12 @@ namespace BrainflowDataProcessing
             if (Path.GetExtension(fileName).ToUpper() == ".BDF")
             {
                 FileReader = new BDFFormatFileReader();
-                return await FileReader.ReadFile(fileName);
+                return await FileReader.ReadFileAsync(fileName);
             }
             else if (Path.GetExtension(fileName).ToUpper() == ".TXT")
             {
                 FileReader = new OBCIGuiFormatFileReader();
-                return await FileReader.ReadFile(fileName);
+                return await FileReader.ReadFileAsync(fileName);
             }
 
             return false;

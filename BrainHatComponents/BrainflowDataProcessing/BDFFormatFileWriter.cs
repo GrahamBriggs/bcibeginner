@@ -18,14 +18,14 @@ namespace BrainflowDataProcessing
         //  Events
         public event LogEventDelegate Log;
 
-        public int BoardId { get; protected set; }
+        public int BoardId { get; private set; }
 
-        public int SampleRate { get; protected set; }
+        public int SampleRate { get; private set; }
 
         //  Public Properties
         public bool IsLogging => FileWriterCancelTokenSource != null;
 
-        public string FileName { get; protected set; }
+        public string FileName { get; private set; }
 
         public double FileDuration => FileTimer.Elapsed.TotalSeconds;
 

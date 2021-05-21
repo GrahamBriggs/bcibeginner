@@ -6,14 +6,16 @@
 #include <sys/time.h>
 #include <math.h>
 #include <chrono>
+#include <wiringPi.h>
 
 #include "brainHat.h"
 #include "BoardDataReader.h"
 #include "StringExtensions.h"
-#include "BFCyton8.h"
-#include "BFCyton16.h"
+#include "BoardIds.h"
+#include "BFSampleImplementation.h"
 #include "CytonBoardConfiguration.h"
 #include "board_controller.h"
+
 #define SENSOR_SLEEP (50)
 
 using namespace std;
@@ -77,19 +79,19 @@ bool BoardDataReader::BoardReady()
 
 //  Thread Start
 //
-int BoardDataReader::Start(int board_id, struct BrainFlowInputParams params, bool srb1On)
+int BoardDataReader::Start(int boardId, struct BrainFlowInputParams params, bool srb1On)
 {
 	BoardParamaters = params;
-	BoardId = board_id;
+	BoardId = boardId;
 	
 	//  TODO - clean up SRB settings
-	StartSrb1CytonSet = (board_id == 0 || board_id == 2) && srb1On;
-	StartSrb1DaisySet = board_id == 2 && srb1On;
+	StartSrb1CytonSet = (boardId == (int)BrainhatBoardIds::CYTON_BOARD || boardId == (int)BrainhatBoardIds::CYTON_DAISY_BOARD) && srb1On;
+	StartSrb1DaisySet = boardId == (int)BrainhatBoardIds::CYTON_DAISY_BOARD && srb1On;
 	
 	LastSampleIndex = -1;
 	
 	
-	BoardDataSource::Start();
+	Thread::Start();
 	
 	return 0;
 }
@@ -113,14 +115,14 @@ int BoardDataReader::GetSrb1(int board)
 	if (!BoardSettings.HasValidSettings())
 		return -1;
 	
-	switch (BoardId)
+	switch ((BrainhatBoardIds)BoardId)
 	{
-	case 0:
+	case BrainhatBoardIds::CYTON_BOARD:
 		if (board == 0)
 			return BoardSettings.Boards[0]->Srb1Set;
 		break;
 		
-	case 2:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 		if (board < 2 && BoardSettings.Boards.size() > 1)
 			return BoardSettings.Boards[board]->Srb1Set;
 		break;
@@ -530,19 +532,11 @@ void BoardDataReader::ProcessData(double **chunk, int sampleCount)
 
 //  Parse the raw data and create a sample type for this board
 //
-BFSample* BoardDataReader::ParseRawData(double** chunk, int sampleCount)
+BFSample* BoardDataReader::ParseRawData(double** chunk, int sampleIndex)
 {
-	switch (BoardId)
-	{	
-	case 0:
-		return new Cyton8Sample(chunk, sampleCount);
-	case 2:
-		return new Cyton16Sample(chunk, sampleCount);
-	case 1:
-		return NULL;	//  TODO Ganglion
-	default :
-		return NULL;
-	}
+	auto newSample = new Sample(BoardId);
+	newSample->InitializeFromChunk(chunk, sampleIndex);
+	return newSample;
 }
 
 

@@ -32,7 +32,7 @@ namespace brainHatSharpGUI
     /// Board Data Reader Class
     /// pretty specific to Cyton 8 channel right now, could be more generalized to work with other boards (?)
     /// </summary>
-    public class BoardDataReader
+    public class BoardDataReader: IBoardDataReader
     {
         public event LogEventDelegate Log;
         public event ConnectBoBoardEventDelegate ConnectToBoard;

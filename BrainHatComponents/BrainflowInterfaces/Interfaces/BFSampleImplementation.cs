@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using brainflow;
 
 namespace BrainflowInterfaces
 {
@@ -13,7 +14,6 @@ namespace BrainflowInterfaces
         public int SampleSize => (2 + NumberExgChannels + NumberAccelChannels + NumberOtherChannels + NumberAnalogChannels);
 
         public DateTime ObservationTime => DateTimeOffset.FromUnixTimeMilliseconds((long)(TimeStamp * 1000.0)).ToLocalTime().DateTime;
-
 
         public int NumberExgChannels => ExgChannels.Length;
 
@@ -102,42 +102,106 @@ namespace BrainflowInterfaces
             AnalogChannels = new double[0];
         }
 
-        public BFSampleImplementation(IBFSample template)
+        public BFSampleImplementation(IBFSample copy)
         {
-            ExgChannels = new double[template.NumberExgChannels];
-            AcelChannels = new double[template.NumberAccelChannels];
-            OtherChannels = new double[template.NumberOtherChannels];
-            AnalogChannels = new double[template.NumberAnalogChannels];
+            SampleIndex = copy.SampleIndex;
+
+            ExgChannels = new double[copy.NumberExgChannels];
+            for (int i = 0; i < NumberExgChannels; i++)
+                SetExgDataForChannel(i, copy.GetExgDataForChannel(i));
+
+            AcelChannels = new double[copy.NumberAccelChannels];
+            for (int i = 0; i < NumberAccelChannels; i++)
+                SetAccelDataForChannel(i, copy.GetAccelDataForChannel(i));
+
+            OtherChannels = new double[copy.NumberOtherChannels];
+            for (int i = 0; i < NumberOtherChannels; i++)
+                SetOtherDataForChannel(i, copy.GetOtherDataForChannel(i));
+
+            AnalogChannels = new double[copy.NumberAnalogChannels];
+            for (int i = 0; i < NumberAnalogChannels; i++)
+                SetAnalogDataForChannel(i, copy.GetAccelDataForChannel(i));
+
+            TimeStamp = copy.TimeStamp;
         }
+
 
         public BFSampleImplementation(int boardId)
         {
-            switch (boardId)
+            ExgChannels = new double[BrainhatBoardShim.GetNumberOfExgChannels(boardId)];
+            AcelChannels = new double[BrainhatBoardShim.GetNumberOfAccelChannels(boardId)];
+            OtherChannels = new double[BrainhatBoardShim.GetNumberOfOtherChannels(boardId)];
+            AnalogChannels = new double[BrainhatBoardShim.GetNumberOfAnalogChannels(boardId)];
+        }
+
+
+        /// <summary>
+        /// Initialize the sample from CSV text
+        /// OpenBCI GUI convention fields in order
+        /// SampleIndex,ExgChannels,AccelChannels,OtherChannels,AnalogChannels,TimeStamp
+        /// </summary>
+        /// <param name="text"></param>
+        public void InitializeFromText(string text)
+        {
+            var fields = text.Split(',');
+            if (fields.Length >= SampleSize)
             {
-                case 0: //  cyton
-                    ExgChannels = new double[8];
-                    AcelChannels = new double[3];
-                    OtherChannels = new double[6];
-                    AnalogChannels = new double[3];
-                    break;
+                int index = 0;
+                SampleIndex = double.Parse(fields[index++]);
 
-                case 2: //  cyton + Daisy
-                    ExgChannels = new double[16];
-                    AcelChannels = new double[3];
-                    OtherChannels = new double[6];
-                    AnalogChannels = new double[3];
-                    break;
+                for (int i = 0; i < NumberExgChannels; i++)
+                {
+                    SetExgDataForChannel(i,  double.Parse(fields[index++]));
+                }
 
-                //  todo - add more cases for boards here
-                default:
-                    ExgChannels = new double[0];
-                    AcelChannels = new double[0];
-                    OtherChannels = new double[0];
-                    AnalogChannels = new double[0];
-                    break;
+                for ( int i = 0; i < NumberAccelChannels; i++)
+                {
+                    SetAccelDataForChannel(i, double.Parse(fields[index++]));
+                }
+
+                for (int i = 0; i < NumberOtherChannels; i++)
+                {
+                    SetOtherDataForChannel(i, double.Parse(fields[index++]));
+                }
+
+                for (int i = 0; i < NumberAnalogChannels; i++)
+                {
+                    SetAnalogDataForChannel(i, double.Parse(fields[index++]));
+                }
+
+                TimeStamp = double.Parse(fields[index++]);
             }
         }
 
+
+        /// <summary>
+        /// Initialize from a raw sample double vector
+        /// </summary>
+        public void InitializeFromSample(double[] sample)
+        {
+            int indexCount = 0;
+            SampleIndex = sample[indexCount++];
+
+            for (int i = 0; i < NumberExgChannels; i++)
+                SetExgDataForChannel(i, sample[indexCount++]);
+
+            for (int i = 0; i < NumberAccelChannels; i++)
+                SetAccelDataForChannel(i, sample[indexCount++]);
+
+            for (int i = 0; i < NumberOtherChannels; i++)
+                SetOtherDataForChannel(i, sample[indexCount++]);
+
+            for (int i = 0; i < NumberAnalogChannels; i++)
+                SetAnalogDataForChannel(i, sample[indexCount++]);
+
+            TimeStamp = sample[indexCount];
+        }
+
+
+        
+        /// <summary>
+        /// Create a double array of raw values from the sample
+        /// </summary>
         public double[] AsRawSample()
         {
             var sample = new double[SampleSize];

@@ -11,6 +11,10 @@
     <EmbeddedResource Remove="Properties\**" />
     <None Remove="Properties\**" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\brainflow\csharp-package\brainflow\brainflow\brainflowNetStandard.csproj" />
+  </ItemGroup>
 
 
 </Project>

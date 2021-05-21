@@ -5,50 +5,56 @@
 #include <net/if.h>
 #include <ifaddrs.h>
 
+
 #include "brainHat.h"
 #include "Logger.h"
 #include "StringExtensions.h"
 #include "BroadcastData.h"
 #include "BroadcastStatus.h"
 #include "BoardDataReader.h"
+#include "ContecDataReader.h"
 #include "CommandServer.h"
 #include "OpenBciDataFile.h"
 #include "BDFFileWriter.h"
 #include "BoardFileSimulator.h"
 #include "TimeExtensions.h"
+#include "NetworkExtensions.h"
 #include "Parser.h"
 #include "UriParser.h"
+#include "BoardIds.h"
 #include "BrainHatFileWriter.h"
+
 
 
 
 using namespace std;
 
 //  Callback Functions
-void BoardConnectionStateChanged(BoardConnectionStates state, int boardId, int sampleRate);
-void NewSample(BFSample* sample);
-bool HandleServerRequest(string request);
+void OnBoardConnectionStateChanged(BoardConnectionStates state, int boardId, int sampleRate);
+void OnNewSample(BFSample* sample);
+bool OnServerRequest(string request);
 
 //  Program Components
 Logger Logging;
 BroadcastData DataBroadcaster;
 list<BroadcastStatus*> StatusBroadcasters;
-CommandServer ComServer(HandleServerRequest);
+CommandServer ComServer(OnServerRequest);
 
-//  Data Source is either board or demo file reader
-BoardDataSource* DataSource = NULL;
+
 
 //  Command line arguments
-int Board_Id = 0;
+int BoardId = 0;
 bool RecordToUsb = true;
 bool StartSrbOn = false;
 string DemoFileName = "";
 struct BrainFlowInputParams InputParams;
 
 
-//  Data Reader
-BoardDataReader BoardReader(BoardConnectionStateChanged, NewSample);
-BoardFileSimulator DemoFileReader(BoardConnectionStateChanged, NewSample);
+//  Data Source
+BoardDataSource* DataSource = NULL;
+//  Demo file reader
+BoardFileSimulator DemoFileReader(OnBoardConnectionStateChanged, OnNewSample);
+
 
 //  File Recorder
 BrainHatFileWriter* FileWriter;
@@ -60,7 +66,7 @@ bool parse_args(int argc, char *argv[]);
 void RunBoardData();
 void RunFileData();
 bool ProcessKeyboardInput(string input); 
-bool LiveData() { return Board_Id >= 0; }
+bool LiveData() { return BoardId != (int)BrainhatBoardIds::UNDEFINED; }
 void StartStatusBroadcast();
 void StopStatusBroadcast();
 
@@ -71,12 +77,13 @@ int main(int argc, char *argv[])
 {
 	if (!ParseArguments(argc, argv))
 		return -1;
-		
+
 	//BoardShim::set_log_file((char*)"./brainflowLogs.txt");
 	BoardShim::set_log_level(6);
 	
-	//  start program threads
-	Logging.Start();
+	//  start logging thread
+	Logging.Start() ;
+	
 	ComServer.Start();
 	StartStatusBroadcast();
 	
@@ -100,13 +107,23 @@ int main(int argc, char *argv[])
 }
 
 
+
 //  Run the program with data from the live board
 //
 void RunBoardData()
 {	
-	BoardReader.Start(Board_Id, InputParams, StartSrbOn);
+	switch ((BrainhatBoardIds)BoardId)
+	{
+	default:
+		DataSource = new BoardDataReader(OnBoardConnectionStateChanged, OnNewSample);
+		break;
+		
+	case BrainhatBoardIds::CONTEC_KT88:
+		DataSource = new ContecDataReader(OnBoardConnectionStateChanged, OnNewSample);
+		break;
+	}
 	
-	Logging.AddLog("main", "RunBoardData", "Starting board data. Enter Q to quit.", LogLevelInfo);
+	DataSource->Start(BoardId, InputParams, StartSrbOn);
 	
 	string input;
 	while (true)
@@ -116,7 +133,7 @@ void RunBoardData()
 		
 		if (!ProcessKeyboardInput(input))
 		{
-			BoardReader.Cancel();
+			DataSource->Cancel();
 			break;
 		}
 	}
@@ -127,6 +144,8 @@ void RunBoardData()
 //
 void RunFileData()
 {
+	DataSource = &DemoFileReader;
+	
 	if (DemoFileReader.Start(DemoFileName) != 0)
 	{
 		Logging.AddLog("main", "RunFileData", "Unable to load file.", LogLevelError);
@@ -151,12 +170,13 @@ void RunFileData()
 }
 
 
+
 //  Handle samples from the data source
-void NewSample(BFSample* sample)
+void OnNewSample(BFSample* sample)
 {
 	//  broadcast it
 	DataBroadcaster.AddData(sample->Copy());
-	
+
 	if (IsRecording())
 		FileWriter->AddData(sample->Copy());
 	
@@ -169,7 +189,7 @@ void NewSample(BFSample* sample)
 //  this includes discovery of new board, 
 //  which will call SetBoard( ) on the data source to kick off the reading thread
 //
-void BoardConnectionStateChanged(BoardConnectionStates state, int boardId, int sampleRate)
+void OnBoardConnectionStateChanged(BoardConnectionStates state, int boardId, int sampleRate)
 {
 	switch (state) 
 	{
@@ -204,6 +224,50 @@ void BoardConnectionStateChanged(BoardConnectionStates state, int boardId, int s
 }
 
 
+//  Start the status broadcast on all available interfaces
+//
+void StartStatusBroadcast()
+{
+	struct ifaddrs * ifap;
+	if (getifaddrs(&ifap) == 0)
+	{
+		struct ifaddrs * p = ifap;
+		while (p)
+		{
+			uint32 ifaAddr  = SockAddrToUint32(p->ifa_addr);
+			uint32 maskAddr = SockAddrToUint32(p->ifa_netmask);
+			uint32 dstAddr  = SockAddrToUint32(p->ifa_dstaddr);
+			if (ifaAddr > 0)
+			{
+				char ifaAddrStr[32]; Inet_NtoA(ifaAddr, ifaAddrStr);
+				char maskAddrStr[32]; Inet_NtoA(maskAddr, maskAddrStr);
+				char dstAddrStr[32]; Inet_NtoA(dstAddr, dstAddrStr);
+				//printf("  Found interface:  name=[%s] desc=[%s] address=[%s] netmask=[%s] broadcastAddr=[%s]\n", p->ifa_name, "unavailable", ifaAddrStr, maskAddrStr, dstAddrStr);
+				BroadcastStatus* newBroadcaster = new BroadcastStatus(p->ifa_name);
+				newBroadcaster->Start();
+				StatusBroadcasters.push_back(newBroadcaster);
+			}
+			p = p->ifa_next;
+		}
+		freeifaddrs(ifap);
+	}
+}
+
+
+//  Stop status broadcasters
+//
+void StopStatusBroadcast()
+{
+	for (auto nextBroadcaster = StatusBroadcasters.begin(); nextBroadcaster != StatusBroadcasters.end(); ++nextBroadcaster)
+	{
+		(*nextBroadcaster)->Cancel();
+		delete *nextBroadcaster;
+	}
+}
+
+
+//  Handle request to start/stop recording
+//
 bool HandleRecordingRequest(UriArgParser& requestParser)
 {
 	if (DataSource != NULL)
@@ -240,7 +304,7 @@ bool HandleRecordingRequest(UriArgParser& requestParser)
 			}
 			
 			
-			FileWriter->StartRecording(fileName, RecordToUsb, Board_Id, DataSource->GetSampleRate());
+			FileWriter->StartRecording(fileName, RecordToUsb, BoardId, DataSource->GetSampleRate());
 		}
 		else if (enable == "false")
 		{
@@ -259,7 +323,8 @@ bool HandleRecordingRequest(UriArgParser& requestParser)
 }
 
 
-
+//  Handle request to set SRB1
+//
 bool HandleSrbSetRequest(UriArgParser& requestParser)
 {
 	auto enable = requestParser.GetArg("enable");
@@ -282,6 +347,7 @@ bool HandleSrbSetRequest(UriArgParser& requestParser)
 }
 
 
+//  Handle request to start / stop stream
 bool HandleSetStreamRequest(UriArgParser& requestParser)
 {
 	auto enable = requestParser.GetArg("enable");
@@ -305,7 +371,7 @@ bool HandleSetStreamRequest(UriArgParser& requestParser)
 
 //  Handle callback from ComServer to process a request
 //
-bool HandleServerRequest(string request)
+bool OnServerRequest(string request)
 {
 	UriArgParser requestParser(request);
 	
@@ -324,10 +390,9 @@ bool HandleServerRequest(string request)
 	}
 	else
 	{
-		Logging.AddLog("main", "HandleServerRequest", format("Invalid request %s",request.c_str()), LogLevelInfo);
+		Logging.AddLog("main", "OnServerRequest", format("Invalid request %s",request.c_str()), LogLevelInfo);
 		return false;
 	}
-	
 }
 
 
@@ -343,12 +408,43 @@ bool ProcessKeyboardInput(string input)
 	{
 		Logging.ResetDisplay();
 	}
-	else if (input.compare("b") == 0)
+	else if (input.compare("B") == 0)
 	{
 		DataSource->EnableBoard(!DataSource->Enabled());
 	}
+	else if (input.compare("C") == 0 && DataSource != NULL)
+	{
+		if (Logging.IsDisplayOutputEnabled())
+		{
+			
+			Logging.PauseDisplayOutput();
+			DataSource->EnableRawConsole(true);
+		}
+		else
+		{
+			Logging.ResumeDisplayOutput();
+			DataSource->EnableRawConsole(false);
+		}
+	}
 	
 	return true;
+}
+
+
+//  Check if board ID is supported by the program
+//
+bool SupportedBoard()
+{
+	switch ((BrainhatBoardIds)BoardId)
+	{
+	default:
+		return false;
+		
+	case BrainhatBoardIds::CYTON_BOARD:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
+	case BrainhatBoardIds::CONTEC_KT88:
+		return true;
+	}
 }
 
 
@@ -369,13 +465,14 @@ bool ParseArguments(int argc, char *argv[])
 		//  for file data, check demo file name
 		if(LiveData() && DemoFileName.size() > 0 )
 		{
-			Board_Id == -99;
+			BoardId = (int)BrainhatBoardIds::UNDEFINED;
 		}
 		
 		//  for live data, check supported boards
-		if(LiveData() && !(Board_Id == 0 || Board_Id == 1 || Board_Id == 2))
+		//  todo function for supported boards
+		if(LiveData() && !SupportedBoard())
 		{
-			cout << "Invalid startup parameters. This program only supports --board-id 0|1|2 (Cyton, Ganglion, Cyton+Daisy) Exiting program." << endl;
+			cout << "Invalid startup parameters. This board is not supported. Exiting program." << endl;
 			getchar();
 			return false;
 		}
@@ -387,75 +484,17 @@ bool ParseArguments(int argc, char *argv[])
 	else
 	{
 		// no command line args,  default to Cyton board on the default port
-		Board_Id = 0;
+		BoardId = (int)BrainhatBoardIds::CYTON_BOARD;
 		InputParams.serial_port = "/dev/ttyUSB0";
 	}
 	
-	if (LiveData())
-	{
-		DataSource = &BoardReader;
-	}
-	else
-	{
-		DataSource = &DemoFileReader;
-	}
+	
 	
 	return true;
 }
 
 
 
-typedef unsigned long uint32;
-
-uint32 SockAddrToUint32(struct sockaddr * a)
-{
-	return ((a)&&(a->sa_family == AF_INET)) ? ntohl(((struct sockaddr_in *)a)->sin_addr.s_addr) : 0;
-}
-
-// convert a numeric IP address into its string representation
-static void Inet_NtoA(uint32 addr, char * ipbuf)
-{
-	sprintf(ipbuf, "%li.%li.%li.%li", (addr >> 24) & 0xFF, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, (addr >> 0) & 0xFF);
-}
-
-
-void StartStatusBroadcast()
-{
-
-	struct ifaddrs * ifap;
-	if (getifaddrs(&ifap) == 0)
-	{
-		struct ifaddrs * p = ifap;
-		while (p)
-		{
-			uint32 ifaAddr  = SockAddrToUint32(p->ifa_addr);
-			uint32 maskAddr = SockAddrToUint32(p->ifa_netmask);
-			uint32 dstAddr  = SockAddrToUint32(p->ifa_dstaddr);
-			if (ifaAddr > 0)
-			{
-				char ifaAddrStr[32]; Inet_NtoA(ifaAddr, ifaAddrStr);
-				char maskAddrStr[32]; Inet_NtoA(maskAddr, maskAddrStr);
-				char dstAddrStr[32]; Inet_NtoA(dstAddr, dstAddrStr);
-				//printf("  Found interface:  name=[%s] desc=[%s] address=[%s] netmask=[%s] broadcastAddr=[%s]\n", p->ifa_name, "unavailable", ifaAddrStr, maskAddrStr, dstAddrStr);
-				BroadcastStatus* newBroadcaster = new BroadcastStatus(p->ifa_name);
-				newBroadcaster->Start();
-				StatusBroadcasters.push_back(newBroadcaster);
-			}
-			p = p->ifa_next;
-		}
-		freeifaddrs(ifap);
-	}
-}
-
-
-void StopStatusBroadcast()
-{
-	for (auto nextBroadcaster = StatusBroadcasters.begin(); nextBroadcaster != StatusBroadcasters.end(); ++nextBroadcaster)
-	{
-		(*nextBroadcaster)->Cancel();
-		delete *nextBroadcaster;
-	}
-}
 
 
 //  Parse the command line args from the brainflow sample
@@ -469,7 +508,7 @@ bool parse_args(int argc, char *argv[])
 			if (i + 1 < argc)
 			{
 				i++;
-				Board_Id = std::stoi(std::string(argv[i]));
+				BoardId = std::stoi(std::string(argv[i]));
 			}
 			else
 			{

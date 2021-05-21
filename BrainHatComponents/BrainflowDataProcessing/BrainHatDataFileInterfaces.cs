@@ -53,9 +53,9 @@ namespace BrainflowDataProcessing
 
         bool IsValidFile { get; }
 
-        Task<bool> ReadFileForHeader(string fileName);
+        Task<bool> ReadFileForHeaderAsync(string fileName);
 
-        Task<bool> ReadFile(string fileName);
+        Task<bool> ReadFileAsync(string fileName);
 
         IEnumerable<IBFSample> Samples { get; }
     }

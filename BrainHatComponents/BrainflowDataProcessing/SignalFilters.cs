@@ -98,7 +98,7 @@ namespace BrainflowDataProcessing
             FilterFunctions = new List<SignalFilterFunction>();
         }
 
-        public string Name { get; protected set; }
+        public string Name { get; private set; }
 
         List<SignalFilterFunction> FilterFunctions;
 
@@ -358,7 +358,7 @@ namespace BrainflowDataProcessing
                 }
 
                 //  copy the data for filtering
-                var filteredSamples = new List<IBFSample>(chunk.Select(x => BFSample.MakeNewSample(x)));
+                var filteredSamples = new List<IBFSample>(chunk.Select(x => new BFSampleImplementation(x)));
 
                 for (int i = 0; i < numberOfChannels; i++)
                 {

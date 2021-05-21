@@ -13,15 +13,15 @@ namespace BrainflowDataProcessing
     public class BDFFormatFileReader : IBrainHatFileReader
     {
         //  Public Properties
-        public int BoardId { get; protected set; }
+        public int BoardId { get; private set; }
 
-        public int SampleRate { get; protected set; }
+        public int SampleRate { get; private set; }
 
-        public int NumberOfChannels { get; protected set; }
+        public int NumberOfChannels { get; private set; }
 
-        public double? StartTime { get; protected set; }
+        public double? StartTime { get; private set; }
 
-        public double? EndTime { get; protected set; }
+        public double? EndTime { get; private set; }
 
         public double Duration
         {
@@ -34,9 +34,12 @@ namespace BrainflowDataProcessing
             }
         }
 
+
+        public bool IsValidFile => (BrainhatBoardShim.IsSupportedBoard(BoardId)  && NumberOfChannels > 0 && SampleRate > 0 && StartTime.HasValue && EndTime.HasValue);
+
+        List<IBFSample> _Samples;
         public IEnumerable<IBFSample> Samples => _Samples;
 
-        public bool IsValidFile => (BoardId >= 0 && NumberOfChannels > 0 && SampleRate > 0 && StartTime.HasValue && EndTime.HasValue);
 
 
         /// <summary>
@@ -44,7 +47,7 @@ namespace BrainflowDataProcessing
         /// does not save any samples from the file
         /// Returns true if the file has a valid header
         /// </summary>
-        public async Task<bool> ReadFileForHeader(string fileName)
+        public async Task<bool> ReadFileForHeaderAsync(string fileName)
         {
             using (var fileReader = await FileSystemExtensionMethods.WaitForFileAsync(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
@@ -87,7 +90,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Open the file and read the data into memory
         /// </summary>
-        public async Task<bool> ReadFile(string fileName)
+        public async Task<bool> ReadFileAsync(string fileName)
         {
             int fileHandle = -1;
             try
@@ -150,22 +153,13 @@ namespace BrainflowDataProcessing
             for (int i = 0; i < chunk.GetRow(0).Length; i++)
             {
                 IBFSample newSample = null;
-                switch (BoardId)
+                newSample = new BFSampleImplementation(BoardId);
+                if (newSample != null)
                 {
-                    case 0:
-                        newSample = new BFCyton8Sample(chunk, i);
-                        break;
-
-                    case 2:
-                        newSample = new BFCyton16Sample(chunk, i);
-                        break;
-
-                    default:
-                        throw new Exception("Board type not supported");
+                    newSample.InitializeFromSample(chunk.GetColumn(i));
+                    newSample.TimeStamp = StartTime.Value + newSample.TimeStamp;
+                    _Samples.Add(newSample);
                 }
-
-                newSample.TimeStamp = StartTime.Value + newSample.TimeStamp;
-                _Samples.Add(newSample);
             }
         }
 
@@ -176,11 +170,12 @@ namespace BrainflowDataProcessing
         bool SetFilePropertiesFromHeader(EdfHeaderStruct header)
         {
             BoardId = header.recording_additional.Trim().GetBoardId();
-            switch (BoardId)
+
+            switch ((BrainhatBoardIds)BoardId)
             {
-                case 0:
-                case 1:
-                case 2:
+                case BrainhatBoardIds.CYTON_BOARD:
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
+                case BrainhatBoardIds.CONTEC_KT88:
                     break;
 
                 default:
@@ -190,7 +185,7 @@ namespace BrainflowDataProcessing
             SampleRate = (int)(header.signalparam[0].smp_in_datarecord / (header.datarecord_duration * 1.0E-7));
             DataRecordDuration = header.datarecord_duration * 1.0E-7;
 
-            NumberOfChannels = brainflow.BoardShim.get_eeg_channels(BoardId).Length;
+            NumberOfChannels = BrainhatBoardShim.GetNumberOfExgChannels(BoardId);
 
             var date = new DateTime(header.startdate_year, header.startdate_month, header.startdate_day, header.starttime_hour, header.starttime_minute, header.starttime_second);
             date = date.AddMilliseconds(header.starttime_subsecond / 10_000);
@@ -202,6 +197,6 @@ namespace BrainflowDataProcessing
         }
 
 
-        protected List<IBFSample> _Samples;
+       
     }
 }

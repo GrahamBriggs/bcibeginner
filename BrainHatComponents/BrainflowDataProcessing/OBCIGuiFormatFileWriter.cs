@@ -16,9 +16,9 @@ namespace BrainflowDataProcessing
         //  Events
         public event LogEventDelegate Log;
 
-        public int BoardId { get; protected set; }
+        public int BoardId { get; private set; }
 
-        public int SampleRate { get; protected set; }
+        public int SampleRate { get; private set; }
 
         public bool IsLogging => FileWriterCancelTokenSource != null;
 
@@ -40,7 +40,7 @@ namespace BrainflowDataProcessing
             FileWritingTask = RunFileWriter(FileWriterCancelTokenSource.Token);
         }
 
-        public string FileName { get; protected set; }
+        public string FileName { get; private set; }
 
         public double FileDuration => FileTimer.Elapsed.TotalSeconds;
 
@@ -126,12 +126,14 @@ namespace BrainflowDataProcessing
 
         string FileBoardDescription()
         {
-            switch (BoardId)
+            switch ((BrainhatBoardIds)BoardId)
             {
-                case 0:
+                case BrainhatBoardIds.CYTON_BOARD:
                     return "OpenBCI_GUI$BoardCytonSerial";
-                case 2:
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
                     return "OpenBCI_GUI$BoardCytonSerialDaisy";
+                case BrainhatBoardIds.CONTEC_KT88:
+                    return "Contec_KT88";
                 default:
                     return "Unknown?";
             }
@@ -157,7 +159,7 @@ namespace BrainflowDataProcessing
 
                     //  write header
                     file.WriteLine("%OpenBCI Raw EEG Data");
-                    file.WriteLine($"%Number of channels = {brainflow.BoardShim.get_exg_channels(BoardId).Length}");
+                    file.WriteLine($"%Number of channels = {BrainhatBoardShim.GetNumberOfExgChannels(BoardId)}");
                     file.WriteLine($"%Sample Rate = {SampleRate} Hz");
                     file.WriteLine($"%Board = {FileBoardDescription()}");
                     file.WriteLine("%Logger = brainHat");

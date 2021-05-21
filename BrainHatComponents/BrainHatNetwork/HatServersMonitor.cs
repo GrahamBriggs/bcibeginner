@@ -207,12 +207,14 @@ namespace BrainHatNetwork
                         }
                     }
 
+
                     var missingStreams = DiscoveredLslStreams.Where(x => !discoveredStreams.Contains(x.Key));
                     foreach (var nextStreamInfo in missingStreams)
                     {
                         DiscoveredLslStreams.TryRemove(nextStreamInfo.Key, out var discard);
                         Log?.Invoke(this, new LogEventArgs(this, "RunLslScannerAsync", $"Lost LSL host {nextStreamInfo.Key}.", LogLevel.INFO));
                     }
+
                 }
             }
             catch (OperationCanceledException)
@@ -375,7 +377,7 @@ namespace BrainHatNetwork
                         //  update server connection state
                         var updateTime = server.TimeStamp;
 
-                        await server.UpdateConnection(serverStatus);
+                        await server.UpdateConnectionAsync(serverStatus);
                         serverStatus.OffsetTime = DateTimeOffset.UtcNow - serverStatus.TimeStamp;
                         server.TimeStamp = DateTimeOffset.UtcNow;
                         server.OffsetTime = serverStatus.OffsetTime;

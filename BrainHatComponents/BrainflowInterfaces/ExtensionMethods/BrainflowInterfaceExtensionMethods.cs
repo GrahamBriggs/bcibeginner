@@ -48,22 +48,23 @@ namespace BrainflowInterfaces
         {
             var index = (int)(value+0.5);
 
-            switch ( boardId )
+            switch ( (BrainhatBoardIds)boardId )
             {
-                case 0: //  Cyton
+                case BrainhatBoardIds.CONTEC_KT88:
+                case BrainhatBoardIds.CYTON_BOARD: //  Cyton
                     if (index == 0)
                         return 255;
                     else
                         return index - 1;
 
-                case 2: //  Cyton+Daisy
+                case BrainhatBoardIds.CYTON_DAISY_BOARD: //  Cyton+Daisy
                     if (index == 0)
                         return 254;
                     else
                         return index - 2;
 
                 default:
-                    return 0;       //  TODO ganglion
+                    return 0;      
             }
         }
 
@@ -75,22 +76,23 @@ namespace BrainflowInterfaces
         {
             var index = (int)(value + 0.5);
 
-            switch (boardId)
+            switch ((BrainhatBoardIds)boardId)
             {
-                case 0: //  Cyton
+                case BrainhatBoardIds.CONTEC_KT88:
+                case BrainhatBoardIds.CYTON_BOARD: //  Cyton
                     if (index == 255)
                         return 0;
                     else
                         return index + 1;
 
-                case 2: //  Cyton+Daisy
+                case BrainhatBoardIds.CYTON_DAISY_BOARD: //  Cyton+Daisy
                     if (index == 254)
                         return 0;
                     else
                         return index + 2;
 
                 default:
-                    return 0;       //  TODO ganglion
+                    return 0;     
             }
         }
 
@@ -100,14 +102,19 @@ namespace BrainflowInterfaces
         /// </summary>
         public static double TimeBetweenSamples(this double value, int lastSampleIndex, int boardId, int sampleRate)
         {
-            switch ( boardId )
+            switch ( (BrainhatBoardIds)boardId )
             {
-                case 0: //  Cyton 0-255 samples per second in increments of 1
+                case BrainhatBoardIds.CONTEC_KT88:
+                case BrainhatBoardIds.CYTON_BOARD: 
+                    //  The default behavior is 0-255 sample index in increments of 1
                     return ((1.0 / sampleRate) * value.SampleIndexDifference(lastSampleIndex));
-                case 2: //  Cyton+Daisy 0-254 samples per second in increments of 2
+
+                case BrainhatBoardIds.CYTON_DAISY_BOARD: 
+                    //  Cyton+Daisy 0-254 samples per second in increments of 2
                     return ((1.0 / sampleRate) * (value.SampleIndexDifference(lastSampleIndex)/2.0));
+                
                 default:
-                    return 0;        //  TODO ganglion
+                    return 0;       
             }
         }
 
@@ -162,80 +169,7 @@ namespace BrainflowInterfaces
         }
 
 
-        /// <summary>
-        /// Get equipment type description string for boardId
-        /// </summary>
-        public static string GetEquipmentName(this int value)
-        {
-            switch (value)
-            {
-                case 0:
-                    return "Cyton";
-                case 2:
-                    return "Cyton+Daisy";
-            }
-            return "Unknown";
-        }
-
-
-        /// <summary>
-        /// Get equipment type description string for boardId
-        /// </summary>
-        public static string GetSampleName(this int value)
-        {
-            switch (value)
-            {
-                case 0:
-                    return "Cyton8_BFSample";
-                case 2:
-                    return "Cyton16_BFSample";
-                case 1:
-                    return "Ganglion_BFSample";
-                default:
-                    return "";
-            }
-        }
-
-
-        /// <summary>
-        /// Get equipment type description string for boardId
-        /// </summary>
-        public static string GetSampleNameShort(this int value)
-        {
-            switch (value)
-            {
-                case 0:
-                    return "CY08";
-                case 2:
-                    return "CY16";
-                case 1:
-                    return "GAN4";
-                default:
-                    return "";
-            }
-        }
-
-
-        /// <summary>
-        /// Get board ID from the string
-        /// </summary>
-        public static int GetBoardId(this string value)
-        {
-            switch (value)
-            {
-                case "CY08":
-                case "Cyton8_BFSample":
-                    return 0;
-                case "CY16":
-                case "Cyton16_BFSample":
-                    return 2;
-                case "GAN4":
-                case "Ganglion_BFSample":
-                    return 1;
-                default:
-                    return -99;
-            }
-        }
+     
 
     }
 }

@@ -49,7 +49,7 @@ namespace BrainHatNetwork
 
 
 
-        private static string HostName = null;
+        static string HostName = null;
         public static string GetHostName()
         {
             if (HostName == null)

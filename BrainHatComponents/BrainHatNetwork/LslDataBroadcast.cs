@@ -85,8 +85,8 @@ namespace BrainHatNetwork
 
         }
 
-        public int BoardId { get; protected set; }
-        public int SampleRate { get; protected set; }
+        public int BoardId { get; private set; }
+        public int SampleRate { get; private set; }
         int SampleSize;
 
 
@@ -106,10 +106,10 @@ namespace BrainHatNetwork
         /// </summary>
         void SetupLslOutletForBoard()
         {
-            var numChannels = BoardShim.get_exg_channels(BoardId).Length;
-            var numAccelChannels = BoardShim.get_accel_channels(BoardId).Length;
-            var numOtherChannels = BoardShim.get_other_channels(BoardId).Length;
-            var numAnalogChannels = BoardShim.get_analog_channels(BoardId).Length;
+            var numChannels = BrainhatBoardShim.GetNumberOfExgChannels(BoardId);
+            var numAccelChannels = BrainhatBoardShim.GetNumberOfAccelChannels(BoardId);
+            var numOtherChannels = BrainhatBoardShim.GetNumberOfOtherChannels(BoardId);
+            var numAnalogChannels = BrainhatBoardShim.GetNumberOfAnalogChannels(BoardId);
 
             SampleSize = 2 + numChannels + numAccelChannels + numOtherChannels + numAnalogChannels;
 

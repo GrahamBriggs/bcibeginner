@@ -34,7 +34,7 @@ namespace BrainHatNetwork
                 return "";
         }
 
-        public string Request { get; protected set; }
+        public string Request { get; private set; }
         Dictionary<string, string> Args;
     }
 }

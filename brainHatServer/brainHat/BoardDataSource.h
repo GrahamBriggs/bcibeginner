@@ -38,6 +38,8 @@ public:
 	BoardDataSource(ConnectionChangedCallbackFn connectionChangedFn, NewSampleCallbackFn newSampleFn);
 	virtual ~BoardDataSource();
 	
+	virtual int Start(int boardId, struct BrainFlowInputParams params, bool srb1On) = 0;
+	
 	void RegisterConnectionChangedDelegate(ConnectionChangedDelegateFn connectionChangedDel);
 	
 	bool Enabled() { return BoardOn;}
@@ -52,6 +54,8 @@ public:
 	virtual bool RequestSetSrb1(int board, bool enable) { return false;}
 	virtual bool RequestEnableStreaming(bool enable) { return false;}
 	
+	virtual void EnableRawConsole(bool enable) { return ;}
+		
 protected:
 	
 	virtual void Init();

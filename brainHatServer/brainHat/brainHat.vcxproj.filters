@@ -90,6 +90,15 @@
     <ClCompile Include="CytonBoardSettings.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
+    <ClCompile Include="ContecDataReader.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="BoardIds.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="SerialPort.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
@@ -131,13 +140,7 @@
     <ClInclude Include="NetworkExtensions.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="BFCyton8.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
     <ClInclude Include="BFSample.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
-    <ClInclude Include="BFCyton16.h">
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="BoardDataSource.h">
@@ -180,6 +183,21 @@
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="CytonBoardConfiguration.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="BoardIds.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="ContecDataReader.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="SerialPort.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="BFSampleImplementation.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="SampleIndexCounter.h">
       <Filter>Header files</Filter>
     </ClInclude>
   </ItemGroup>

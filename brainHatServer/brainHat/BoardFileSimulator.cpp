@@ -10,7 +10,8 @@
 #include "brainHat.h"
 #include "BoardFileSimulator.h"
 #include "StringExtensions.h"
-#include "BFCyton8.h"
+#include "BFSampleImplementation.h"
+#include "BoardIds.h"
 
 
 using namespace std;
@@ -40,7 +41,7 @@ BoardFileSimulator::~BoardFileSimulator()
 //
 string BoardFileSimulator::ReportSource()
 {
-	return format("Demo File board %d at %d Hz.", FileName.c_str(), BoardId, SampleRate);
+	return format("Demo File board %d at %d Hz", BoardId, SampleRate);
 }
 
 
@@ -160,19 +161,10 @@ bool BoardFileSimulator::LoadFile(std::string fileName)
 //  TODO - finish this function for all supported boards
 void BoardFileSimulator::AddSample(string readLine)
 {
-	switch ((BoardIds)BoardId)
-	{
-	case BoardIds::GANGLION_BOARD:
-		break;
-		
-	case BoardIds::CYTON_BOARD:
-		DataRecords.push_back(new Cyton8Sample(readLine));
-		break;
-		
-	case BoardIds::CYTON_DAISY_BOARD:
-		break;
-		
-	}
+	auto newSample = new Sample(BoardId);
+	newSample->InitializeFromText(readLine);
+	DataRecords.push_back(newSample);
+	
 }
 
 
@@ -210,7 +202,7 @@ void BoardFileSimulator::ReadHeaderLine(string readLine)
 			BoardId = (int)BoardIds::CYTON_DAISY_BOARD;
 			break;
 		default:
-			BoardId = -99;
+			BoardId = (int)BrainhatBoardIds::UNDEFINED;
 			break;
 		}
 	}	

@@ -23,6 +23,7 @@ public:
 	virtual ~BoardFileSimulator();
 	
 	int Start(std::string fileName);
+	virtual int Start(int board_id, struct BrainFlowInputParams params, bool srb1On) { return 0; }
 	
 	virtual void Cancel();
 	

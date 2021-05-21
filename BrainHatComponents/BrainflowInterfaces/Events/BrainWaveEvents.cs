@@ -26,8 +26,8 @@ namespace BrainflowInterfaces
             Time = time;
         }
 
-        public BrainWave Type { get; protected set; }
-        public DateTimeOffset Time { get; protected set; }
+        public BrainWave Type { get; private set; }
+        public DateTimeOffset Time { get; private set; }
     }
     public delegate void DetectedBrainWaveDelegate(object sender, DetectedBrainWaveEventArgs e);
 }
