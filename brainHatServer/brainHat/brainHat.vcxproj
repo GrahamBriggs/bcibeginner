@@ -76,7 +76,6 @@
     <ClInclude Include="BFSampleImplementation.h" />
     <ClInclude Include="BoardDataSource.h" />
     <ClInclude Include="BoardIds.h" />
-    <ClInclude Include="ContecDataReader.h" />
     <ClInclude Include="CytonBoardConfiguration.h" />
     <ClInclude Include="BrainHatFileWriter.h" />
     <ClInclude Include="BrainHatServerStatus.h" />
@@ -117,7 +116,6 @@
     <ClCompile Include="CommandServer.cpp" />
     <ClCompile Include="BoardFileSimulator.cpp" />
     <ClCompile Include="brainHat.cpp" />
-    <ClCompile Include="ContecDataReader.cpp" />
     <ClCompile Include="CytonBoardSettings.cpp" />
     <ClCompile Include="OpenBCIFileWriter.cpp" />
     <ClCompile Include="Logger.cpp" />

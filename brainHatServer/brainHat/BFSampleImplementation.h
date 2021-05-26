@@ -166,13 +166,25 @@ public:
 	virtual ~Sample()
 	{
 		if (ExgData != NULL)
-			delete ExgData;
+		{
+			delete[] ExgData;
+		}
+		
 		if (AccelData != NULL)
-			delete AccelData;
+		{
+			delete[] AccelData;
+		}
+		
 		if (OtherData != NULL)
-			delete OtherData;
+		{
+			delete[] OtherData;
+		}
+		
 		if (AnalogData != NULL)
-			delete AnalogData;
+		{
+			delete[] AnalogData;
+		}
+		
 	}
 	
 	void Init()

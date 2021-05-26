@@ -64,7 +64,7 @@ error:
 	$(error Invalid configuration, please check your inputs)
 endif
 
-SOURCEFILES := BDFFileWriter.cpp BoardDataSource.cpp BoardIds.cpp BrainHatFileWriter.cpp BroadcastStatus.cpp CommandServer.cpp BoardFileSimulator.cpp brainHat.cpp ContecDataReader.cpp CytonBoardSettings.cpp OpenBCIFileWriter.cpp Logger.cpp NetworkExtensions.cpp Parser.cpp BroadcastData.cpp BoardDataReader.cpp SerialPort.cpp TCPServerThread.cpp TerminalDisplay.cpp Thread.cpp TimeExtensions.cpp UdpMulticastServerThread.cpp
+SOURCEFILES := BDFFileWriter.cpp BoardDataSource.cpp BoardIds.cpp BrainHatFileWriter.cpp BroadcastStatus.cpp CommandServer.cpp BoardFileSimulator.cpp brainHat.cpp CytonBoardSettings.cpp OpenBCIFileWriter.cpp Logger.cpp NetworkExtensions.cpp Parser.cpp BroadcastData.cpp BoardDataReader.cpp SerialPort.cpp TCPServerThread.cpp TerminalDisplay.cpp Thread.cpp TimeExtensions.cpp UdpMulticastServerThread.cpp
 EXTERNAL_LIBS := 
 EXTERNAL_LIBS_COPIED := $(foreach lib, $(EXTERNAL_LIBS),$(BINARYDIR)/$(notdir $(lib)))
 

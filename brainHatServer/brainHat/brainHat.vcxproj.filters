@@ -90,9 +90,6 @@
     <ClCompile Include="CytonBoardSettings.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="ContecDataReader.cpp">
-      <Filter>Source files</Filter>
-    </ClCompile>
     <ClCompile Include="BoardIds.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
@@ -186,9 +183,6 @@
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="BoardIds.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
-    <ClInclude Include="ContecDataReader.h">
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="SerialPort.h">

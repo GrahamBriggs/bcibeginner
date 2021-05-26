@@ -117,10 +117,6 @@ void RunBoardData()
 	default:
 		DataSource = new BoardDataReader(OnBoardConnectionStateChanged, OnNewSample);
 		break;
-		
-	case BrainhatBoardIds::CONTEC_KT88:
-		DataSource = new ContecDataReader(OnBoardConnectionStateChanged, OnNewSample);
-		break;
 	}
 	
 	DataSource->Start(BoardId, InputParams, StartSrbOn);
@@ -174,14 +170,11 @@ void RunFileData()
 //  Handle samples from the data source
 void OnNewSample(BFSample* sample)
 {
-	//  broadcast it
-	DataBroadcaster.AddData(sample->Copy());
-
 	if (IsRecording())
 		FileWriter->AddData(sample->Copy());
 	
-	//  done with this sample
-	delete sample;
+	//  broadcast it
+	DataBroadcaster.AddData(sample);
 }
 
 
@@ -442,7 +435,6 @@ bool SupportedBoard()
 		
 	case BrainhatBoardIds::CYTON_BOARD:
 	case BrainhatBoardIds::CYTON_DAISY_BOARD:
-	case BrainhatBoardIds::CONTEC_KT88:
 		return true;
 	}
 }

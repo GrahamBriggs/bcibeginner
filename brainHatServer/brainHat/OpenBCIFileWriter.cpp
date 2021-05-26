@@ -51,8 +51,6 @@ string FileBoardDescription(int boardId)
 		return "OpenBCI_GUI$BoardCytonSerial";
 	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 		return "OpenBCI_GUI$BoardCytonSerialDaisy";
-	case BrainhatBoardIds::CONTEC_KT88:
-		return "Contec_KT88";
 	default:
 		return "Unknown?";
 	}

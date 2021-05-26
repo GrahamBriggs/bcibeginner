@@ -10,7 +10,6 @@
 enum class BrainhatBoardIds : int
 {
 	UNDEFINED = -99,
-	CONTEC_KT88 = -50,
 	//
 	//  brainflow_constants.h
 	PLAYBACK_FILE_BOARD = -3,
