@@ -34,14 +34,20 @@ BoardDataSource::BoardDataSource()
 //
 void BoardDataSource::Init()
 {
-	BoardId = -199;//TODO (int)BrainhatBoardIds::UNDEFINED;
+	BoardId = (int)BrainhatBoardIds::UNDEFINED;
 	SampleRate = -1;
 	DataRows = 0;
+
+	ExgChannelCount = 0;
+	AccelChannelCount = 0;
+	OtherChannelCount = 0;
+	AnalogChannelCount = 0;
 	
 	LastSampleIndex = -1;
 	LastTimeStampSync = 0;
 	CountMissingIndex = 0;
 	
+	NumberOfSamplesCounted = 0;
 	InspectDataStreamLogTimer.Start();
 }
 
@@ -90,54 +96,22 @@ void BoardDataSource::EnableBoard(bool enable)
 	}
 }
 
-int hackFd = -1;
 
 //  Inspect the data stream and report statistics on a regular basis
 //
 void BoardDataSource::InspectDataStream(BFSample* data)
 {
-	DataInspecting.push_back(data->Copy());
-
+	//DataInspecting.push_back(data->Copy());
+	NumberOfSamplesCounted++;
 	InspectSampleIndexDifference(data->SampleIndex);
 	
 	//  log data stream inspection every five seconds
 	if(InspectDataStreamLogTimer.ElapsedMilliseconds() > 5000)
 	{
-		//  calculate sample times
-		double averageTimeBetweenSamples = 0.0;	
-		double sampleTimeHigh = 0.0;
-		double sampleTimeLow = 1000000.0;
-		
-		BFSample* previousRecord = DataInspecting.front();
-		for (auto it = DataInspecting.begin(); it != DataInspecting.end(); ++it)
-		{
-			if (it != DataInspecting.begin())
-			{
-				auto timeBetween = (*it)->TimeStamp - previousRecord->TimeStamp;
-				averageTimeBetweenSamples += timeBetween;
-				
-				if (timeBetween > sampleTimeHigh)
-					sampleTimeHigh = timeBetween;
-				else if (timeBetween < sampleTimeLow)
-					sampleTimeLow = timeBetween;
-				
-				previousRecord = *it;
-			}
-		}
-		
-		averageTimeBetweenSamples /= DataInspecting.size();
-		
-		Logging.AddLog("BoardDataSource", "InspectDataStream", format("%s Read %d samples. %d sps. Avg %.4lf s. Max %.4lf s. Min %.4lf s.", ReportSource().c_str(), DataInspecting.size(), DataInspecting.size() / 5, averageTimeBetweenSamples, sampleTimeHigh, sampleTimeLow), LogLevelTrace);
-
-		for (auto it = DataInspecting.begin(); it != DataInspecting.end(); ++it)
-		{
-			delete *it;
-		}
-		DataInspecting.clear();
+		Logging.AddLog("BoardDataSource", "InspectDataStream", format("%s Read %d samples. %.0lf sps.", ReportSource().c_str(), NumberOfSamplesCounted, NumberOfSamplesCounted / InspectDataStreamLogTimer.ElapsedSeconds()), LogLevelTrace);
+	
 		InspectDataStreamLogTimer.Reset();
-		
-		auto timeNow = chrono::duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count() / 1000.0;	
-		
+		NumberOfSamplesCounted = 0;
 	
 		if (CountMissingIndex > 0)
 		{

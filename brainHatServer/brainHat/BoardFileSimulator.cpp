@@ -158,10 +158,10 @@ bool BoardFileSimulator::LoadFile(std::string fileName)
 
 
 //  Add a sample from data file text line
-//  TODO - finish this function for all supported boards
+//
 void BoardFileSimulator::AddSample(string readLine)
 {
-	auto newSample = new Sample(BoardId);
+	auto newSample = new Sample(ExgChannelCount, AccelChannelCount, OtherChannelCount, AnalogChannelCount);
 	newSample->InitializeFromText(readLine);
 	DataRecords.push_back(newSample);
 	
@@ -205,6 +205,11 @@ void BoardFileSimulator::ReadHeaderLine(string readLine)
 			BoardId = (int)BrainhatBoardIds::UNDEFINED;
 			break;
 		}
+		
+		ExgChannelCount = getNumberOfExgChannels(BoardId);
+		AccelChannelCount = getNumberOfAccelChannels(BoardId);
+		OtherChannelCount = getNumberOfOtherChannels(BoardId);
+		AnalogChannelCount = getNumberOfAnalogChannels(BoardId);
 	}	
 }
 

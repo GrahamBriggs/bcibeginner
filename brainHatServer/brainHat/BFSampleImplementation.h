@@ -48,32 +48,7 @@ public:
 		Init();
 	}
 	
-	//  Generic EEG sample with X channels
-	Sample(int boardId)
-	{
-		ExgChannelCount = getNumberOfExgChannels(boardId);
-		AccelChannelCount = getNumberOfAccelChannels(boardId);
-		OtherChannelCount = getNumberOfOtherChannels(boardId);
-		AnalogChannelCount = getNumberOfAnalogChannels(boardId);
-			
-		ExgData = NULL;
-		if (ExgChannelCount > 0)
-			ExgData = new double[ExgChannelCount];
-		
-		AccelData = NULL;
-		if (AccelChannelCount > 0)
-			AccelData = new double[AccelChannelCount];
-		
-		OtherData = NULL;
-		if (OtherChannelCount > 0)
-			OtherData = new double[OtherChannelCount];
-		
-		AnalogData = NULL;
-		if (AnalogChannelCount > 0)
-			AnalogData = new double[AnalogChannelCount];
-		
-		Init();
-	}
+	
 
 	//  Copy Constructor
 	Sample(BFSample* copy)

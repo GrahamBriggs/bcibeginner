@@ -13,7 +13,8 @@ int getNumberOfExgChannels(int boardId)
 		return 0;
 	default:
 		int numChannels;
-		BoardShim::get_exg_channels(boardId, &numChannels);
+		auto res = BoardShim::get_exg_channels(boardId, &numChannels);
+		delete res;
 		return numChannels;
 	}
 }
@@ -29,7 +30,8 @@ int getNumberOfAccelChannels(int boardId)
 		return 0;
 	default:
 		int accelChannels;
-		BoardShim::get_accel_channels(boardId, &accelChannels);
+		auto res = BoardShim::get_accel_channels(boardId, &accelChannels);
+		delete res;
 		return accelChannels;
 	}
 }
@@ -45,7 +47,8 @@ int getNumberOfOtherChannels(int boardId)
 		return 0;
 	default:
 		int otherChannels;
-		BoardShim::get_other_channels(boardId, &otherChannels);
+		auto res = BoardShim::get_other_channels(boardId, &otherChannels);
+		delete res;
 		return otherChannels;
 	}
 }
@@ -61,7 +64,8 @@ int getNumberOfAnalogChannels(int boardId)
 		return 0;
 	default:
 		int analogChannels;
-		BoardShim::get_analog_channels(boardId, &analogChannels);
+		auto res = BoardShim::get_analog_channels(boardId, &analogChannels);
+		delete res;
 		return analogChannels;
 	}
 }

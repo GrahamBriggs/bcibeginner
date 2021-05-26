@@ -222,8 +222,16 @@ int BoardDataReader::InitializeBoard()
 			return -1;
 		
 		bool newConnection = SampleRate < 0;
-		DataRows = BoardShim::get_num_rows(BoardId);
-		SampleRate = BoardShim::get_sampling_rate(BoardId);
+		if (newConnection)
+		{
+			DataRows = BoardShim::get_num_rows(BoardId);
+			SampleRate = BoardShim::get_sampling_rate(BoardId);
+			
+			ExgChannelCount = getNumberOfExgChannels(BoardId);
+			AccelChannelCount = getNumberOfAccelChannels(BoardId);
+			OtherChannelCount = getNumberOfOtherChannels(BoardId);
+			AnalogChannelCount = getNumberOfAnalogChannels(BoardId);
+		}
 		
 		StartStreaming();
 		
@@ -534,7 +542,7 @@ void BoardDataReader::ProcessData(double **chunk, int sampleCount)
 //
 BFSample* BoardDataReader::ParseRawData(double** chunk, int sampleIndex)
 {
-	auto newSample = new Sample(BoardId);
+	auto newSample = new Sample(ExgChannelCount, AccelChannelCount, OtherChannelCount, AnalogChannelCount);
 	newSample->InitializeFromChunk(chunk, sampleIndex);
 	return newSample;
 }

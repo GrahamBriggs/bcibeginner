@@ -67,6 +67,11 @@ protected:
 	int SampleRate;
 	int DataRows;
 	//
+	int ExgChannelCount;
+	int AccelChannelCount;
+	int OtherChannelCount;
+	int AnalogChannelCount;
+	//
 	bool BoardOn;
 	
 	
@@ -77,7 +82,7 @@ protected:
 	void InspectSampleIndexDifference(double nextIndex);
 	int SampleIndexDifference(double nextIndex);
 	
-	int RecordsLogged;
+	int NumberOfSamplesCounted;
 	ChronoTimer InspectDataStreamLogTimer;
 	void InspectDataStream(BFSample* data);
 	std::list<BFSample*> DataInspecting;

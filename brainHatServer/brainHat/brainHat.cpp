@@ -12,7 +12,6 @@
 #include "BroadcastData.h"
 #include "BroadcastStatus.h"
 #include "BoardDataReader.h"
-#include "ContecDataReader.h"
 #include "CommandServer.h"
 #include "OpenBciDataFile.h"
 #include "BDFFileWriter.h"
@@ -172,7 +171,7 @@ void OnNewSample(BFSample* sample)
 {
 	if (IsRecording())
 		FileWriter->AddData(sample->Copy());
-	
+
 	//  broadcast it
 	DataBroadcaster.AddData(sample);
 }
@@ -188,6 +187,7 @@ void OnBoardConnectionStateChanged(BoardConnectionStates state, int boardId, int
 	{
 	case New:
 		{
+			BoardId = boardId;
 			DataBroadcaster.SetBoard(boardId, sampleRate);
 		}
 		break;
@@ -461,7 +461,6 @@ bool ParseArguments(int argc, char *argv[])
 		}
 		
 		//  for live data, check supported boards
-		//  todo function for supported boards
 		if(LiveData() && !SupportedBoard())
 		{
 			cout << "Invalid startup parameters. This board is not supported. Exiting program." << endl;
