@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 	//  star the GPIO controller for status LEDs
 	StartGpioController(PinNumberConnectionStatus, PinNumberRecordingStatus);
 	ConnectionLightShowConnecting();
-
+		
 	//  init brainflow logging level to off
 	BoardShim::set_log_level(6);
 	
@@ -366,6 +366,7 @@ bool HandleSrbSetRequest(UriArgParser& requestParser)
 
 
 //  Handle request to start / stop stream
+//
 bool HandleSetStreamRequest(UriArgParser& requestParser)
 {
 	auto enable = requestParser.GetArg("enable");
@@ -387,6 +388,33 @@ bool HandleSetStreamRequest(UriArgParser& requestParser)
 }
 
 
+//  Handle request to set system time
+//
+bool HandleSetTimeRequest(UriArgParser& requestParser)
+{
+	auto timeString = requestParser.GetArg("time");
+	if (timeString.length() > 0)
+	{
+		size_t sz;
+		long long unixTimeMillis = std::stoll(timeString, &sz, 0);
+		
+		Logging.AddLog("main", "HandleSetTimeRequest", format("Setting system time. %lld", unixTimeMillis), LogLevelDebug);
+		
+		auto result = SetSystemTime(unixTimeMillis);
+		if (result)
+		{
+			Logging.AddLog("main", "HandleSetTimeRequest", format("Set system time. %lld", unixTimeMillis), LogLevelInfo);
+		}
+		else
+		{
+			Logging.AddLog("main", "HandleSetTimeRequest", "Failed to set system time.", LogLevelError);
+		}
+	}
+	
+	return false;
+}
+	
+
 //  Handle callback from ComServer to process a request
 //
 bool OnServerRequest(string request)
@@ -406,9 +434,13 @@ bool OnServerRequest(string request)
 	{
 		return HandleSetStreamRequest(requestParser);
 	}
+	else if (requestParser.GetRequest() == "settime")
+	{
+		return HandleSetTimeRequest(requestParser);	
+	}
 	else
 	{
-		Logging.AddLog("main", "OnServerRequest", format("Invalid request %s",request.c_str()), LogLevelInfo);
+		Logging.AddLog("main", "OnServerRequest", format("Invalid request %s",request.c_str()), LogLevelWarn);
 		return false;
 	}
 }

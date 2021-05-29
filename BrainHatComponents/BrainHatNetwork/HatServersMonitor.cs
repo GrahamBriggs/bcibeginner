@@ -367,7 +367,7 @@ namespace BrainHatNetwork
                     //  check the list of discovered servers
                     if (!DiscoveredServers.ContainsKey(hostName))
                     {
-                        if (!CreateNewHatClient(serverStatus))
+                        if (!await CreateNewHatClientAsync(serverStatus))
                             return;
                     }
                     else
@@ -405,17 +405,17 @@ namespace BrainHatNetwork
         /// <summary>
         /// Create a new HatClient for the discovered server
         /// </summary>
-        bool CreateNewHatClient(BrainHatServerStatus serverStatus)
+        async Task<bool> CreateNewHatClientAsync(BrainHatServerStatus serverStatus)
         {
             if (!DiscoveredLslStreams.ContainsKey(serverStatus.HostName))
             {
-                Log?.Invoke(this, new LogEventArgs(this, "ProcessNetworkStatus", $"Discovered new brainHat server {serverStatus.HostName}, but no matching LSL stream - ignoring.", LogLevel.DEBUG));
+                Log?.Invoke(this, new LogEventArgs(this, "CreateNewHatClient", $"Discovered new brainHat server {serverStatus.HostName}, but no matching LSL stream - ignoring.", LogLevel.DEBUG));
                 return false;
             }
 
             serverStatus.OffsetTime = DateTimeOffset.UtcNow - serverStatus.TimeStamp;
 
-            Log?.Invoke(this, new LogEventArgs(this, "ProcessNetworkStatus", $"Discovered new brainHat server {serverStatus.HostName}.", LogLevel.INFO));
+            Log?.Invoke(this, new LogEventArgs(this, "CreateNewHatClient", $"Discovered new brainHat server {serverStatus.HostName}.", LogLevel.INFO));
 
             string localIpAddress = "";
             try
@@ -424,11 +424,41 @@ namespace BrainHatNetwork
             }
             catch (Exception e)
             {
-                Log?.Invoke(this, new LogEventArgs(this, "StartMonitorAsync", $"Unable to get local IP address.{e}", LogLevel.ERROR));
+                Log?.Invoke(this, new LogEventArgs(this, "CreateNewHatClient", $"Unable to get local IP address.{e}", LogLevel.ERROR));
             }
 
             var hatServer = new HatClient(serverStatus, DiscoveredLslStreams[serverStatus.HostName], localIpAddress);
             serverStatus.OffsetTime = DateTimeOffset.UtcNow - serverStatus.TimeStamp;
+
+            //  sync time on the server if it is more than 5 seconds off
+            if (serverStatus.OffsetTime.TotalSeconds > 5)
+            {
+                Log?.Invoke(this, new LogEventArgs(this, "CreateNewHatClient", "Server time is more than 5 seconds behind system time, setting server time.", LogLevel.INFO));
+
+                var sw = new Stopwatch();
+                sw.Start();
+
+                var response = await Tcpip.GetTcpResponseAsync(serverStatus.IpAddress, BrainHatNetworkAddresses.ServerPort, "ping");
+                if (response.Contains("ACK"))
+                {
+                    sw.Stop();
+
+                    response = await Tcpip.GetTcpResponseAsync(serverStatus.IpAddress, BrainHatNetworkAddresses.ServerPort, $"settime?time={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + (sw.Elapsed.Milliseconds/2)}");
+
+                    if ( response == null || !response.Contains("ACK"))
+                    {
+                        Log?.Invoke(this, new LogEventArgs(this, "CreateNewHatClient", "Failed to set server time.", LogLevel.ERROR));
+                    }
+                }
+                else
+                {
+                    Log?.Invoke(this, new LogEventArgs(this, "CreateNewHatClient", "Failed to get server ping.", LogLevel.ERROR));
+                }
+
+
+            }
+
+
             hatServer.OffsetTime = serverStatus.OffsetTime;
             hatServer.TimeStamp = DateTimeOffset.UtcNow;
             hatServer.Log += OnComponentLog;
