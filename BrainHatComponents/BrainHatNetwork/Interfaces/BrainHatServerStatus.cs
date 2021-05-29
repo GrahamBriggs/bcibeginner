@@ -68,7 +68,7 @@ namespace BrainHatNetwork
 
         public int BoardId { get; set; }
         public int SampleRate { get; set; }
-        public int NumberOfChannels => brainflow.BoardShim.get_exg_channels(BoardId).Length;
+        public int NumberOfChannels => BrainhatBoardShim.GetNumberOfExgChannels(BoardId);
         public SrbSet CytonSRB1 { get; set; }
         public SrbSet DaisySRB1 { get; set; }
         public bool IsStreaming { get; set; }

@@ -62,7 +62,6 @@ protected:
 	//  returns the number of bytes written, or -1 for error
 	int WriteStringToSocket(int socketFileDescriptor, std::string writeString);
 	
-	//  TODO:  Room for Improvement
 	//  This class only handles single character strings
 	//  it should be able to handle all formats of data over the IP connection, such as
 	//  multi byte strings

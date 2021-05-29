@@ -25,7 +25,7 @@ using namespace std;
 
 //  Constructor
 //
-BDFFileWriter::BDFFileWriter()
+BDFFileWriter::BDFFileWriter(RecordingStateChangedCallbackFn fn) : BrainHatFileWriter(fn)
 {
 	FileHandle = -1;
 }
@@ -50,8 +50,9 @@ void BDFFileWriter::CloseFile()
 		edfCloseFile(FileHandle);
 		Logging.AddLog("BDFFileWriter", "CloseFile", format("Closed recording file %s.", RecordingFileName.c_str()), LogLevelInfo);
 		FileHandle = -1;
+		
+		RecordingStateChangedCallback(false);
 	}
-	
 }
 
 
@@ -115,6 +116,8 @@ void BDFFileWriter::WriteHeader(BFSample* firstSample)
 			Logging.AddLog("BDFFileWriter", "WriteHeader", format("Failed to open recording file %s.", RecordingFileFullPath.c_str()), LogLevelError);
 			return;
 		}
+		
+		RecordingStateChangedCallback(true);
 		
 		Logging.AddLog("BDFFileWriter", "WriteHeader", format("Opened recording file %s.", RecordingFileFullPath.c_str()), LogLevelInfo);
 		

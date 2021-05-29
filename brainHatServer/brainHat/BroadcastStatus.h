@@ -3,7 +3,8 @@
 #include "UdpMulticastServerThread.h"
 #include "TimeExtensions.h"
 
-
+void StartStatusBroadcast();
+void StopStatusBroadcast();
 
 //  UDP multicast thread for status broadcast
 //

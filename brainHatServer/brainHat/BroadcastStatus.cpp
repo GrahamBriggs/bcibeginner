@@ -1,5 +1,7 @@
 #include <list>
 #include <unistd.h>
+#include <net/if.h>
+#include <ifaddrs.h>
 
 #include "brainHat.h"
 #include "BroadcastStatus.h"
@@ -13,6 +15,53 @@
 
 using namespace std;
 using json = nlohmann::json;
+
+list<BroadcastStatus*> StatusBroadcasters;
+
+
+
+//  Start the status broadcast on all available interfaces
+//
+void StartStatusBroadcast()
+{
+	struct ifaddrs * ifap;
+	if (getifaddrs(&ifap) == 0)
+	{
+		struct ifaddrs * p = ifap;
+		while (p)
+		{
+			uint32 ifaAddr  = SockAddrToUint32(p->ifa_addr);
+			uint32 maskAddr = SockAddrToUint32(p->ifa_netmask);
+			uint32 dstAddr  = SockAddrToUint32(p->ifa_dstaddr);
+			if (ifaAddr > 0)
+			{
+				char ifaAddrStr[32]; Inet_NtoA(ifaAddr, ifaAddrStr);
+				char maskAddrStr[32]; Inet_NtoA(maskAddr, maskAddrStr);
+				char dstAddrStr[32]; Inet_NtoA(dstAddr, dstAddrStr);
+				//printf("  Found interface:  name=[%s] desc=[%s] address=[%s] netmask=[%s] broadcastAddr=[%s]\n", p->ifa_name, "unavailable", ifaAddrStr, maskAddrStr, dstAddrStr);
+				BroadcastStatus* newBroadcaster = new BroadcastStatus(p->ifa_name);
+				newBroadcaster->Start();
+				StatusBroadcasters.push_back(newBroadcaster);
+			}
+			p = p->ifa_next;
+		}
+		freeifaddrs(ifap);
+	}
+}
+
+
+//  Stop status broadcasters
+//
+void StopStatusBroadcast()
+{
+	for (auto nextBroadcaster = StatusBroadcasters.begin(); nextBroadcaster != StatusBroadcasters.end(); ++nextBroadcaster)
+	{
+		(*nextBroadcaster)->Cancel();
+		delete *nextBroadcaster;
+	}
+}
+
+
 
 
 //  Constructor
@@ -80,8 +129,6 @@ void BroadcastStatus::SetIpConfig()
 			Wlan0Address = get<1>(*it);
 		}
 	}
-	
-	//  TODO - set wlan mode
 }
 
 

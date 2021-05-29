@@ -77,6 +77,7 @@ bool BoardDataReader::BoardReady()
 }
 
 
+
 //  Thread Start
 //
 int BoardDataReader::Start(int boardId, struct BrainFlowInputParams params, bool srb1On)
@@ -84,9 +85,8 @@ int BoardDataReader::Start(int boardId, struct BrainFlowInputParams params, bool
 	BoardParamaters = params;
 	BoardId = boardId;
 	
-	//  TODO - clean up SRB settings
-	StartSrb1CytonSet = (boardId == (int)BrainhatBoardIds::CYTON_BOARD || boardId == (int)BrainhatBoardIds::CYTON_DAISY_BOARD) && srb1On;
-	StartSrb1DaisySet = boardId == (int)BrainhatBoardIds::CYTON_DAISY_BOARD && srb1On;
+	StartSrb1CytonSet = IsCytonFamily(boardId) && srb1On;
+	StartSrb1DaisySet = (boardId == (int)BrainhatBoardIds::CYTON_DAISY_BOARD) && srb1On;
 	
 	LastSampleIndex = -1;
 	
@@ -107,7 +107,6 @@ void BoardDataReader::Cancel()
 }
 
 
-
 //  Public function to get current SRB1 state for specified board
 //
 int BoardDataReader::GetSrb1(int board)
@@ -118,6 +117,7 @@ int BoardDataReader::GetSrb1(int board)
 	switch ((BrainhatBoardIds)BoardId)
 	{
 	case BrainhatBoardIds::CYTON_BOARD:
+	case BrainhatBoardIds::MENTALIUM:
 		if (board == 0)
 			return BoardSettings.Boards[0]->Srb1Set;
 		break;
@@ -129,6 +129,7 @@ int BoardDataReader::GetSrb1(int board)
 	}
 	return -1;
 }
+
 
 
 string FormatSrb1Command(CytonChannelSettings* channelSettings, bool enable)
@@ -164,7 +165,7 @@ bool BoardDataReader::RequestSetSrb1(int board, bool enable)
 		StartSrb1DaisySet = enable;
 		break;
 	default:
-		return false;	//  TODO ganglion 
+		return false;
 	}
 	
 	auto channelSettings = BoardSettings.Boards[board]->Channels.front();
@@ -203,7 +204,16 @@ int BoardDataReader::InitializeBoard()
 		
 	try
 	{
-		Board = new BoardShim(BoardId, BoardParamaters);
+		int boardId = BoardId;
+		switch ((BrainhatBoardIds)boardId)
+		{
+		default:
+			break;
+		case BrainhatBoardIds::MENTALIUM:
+			boardId = 0;
+		}
+			
+		Board = new BoardShim(boardId, BoardParamaters);
 	
 		Board->prepare_session();
 		Board->config_board((char*)"s");
@@ -224,8 +234,8 @@ int BoardDataReader::InitializeBoard()
 		bool newConnection = SampleRate < 0;
 		if (newConnection)
 		{
-			DataRows = BoardShim::get_num_rows(BoardId);
-			SampleRate = BoardShim::get_sampling_rate(BoardId);
+			DataRows = getNumberOfRows(BoardId);
+			SampleRate = getSamplingRate(BoardId);
 			
 			ExgChannelCount = getNumberOfExgChannels(BoardId);
 			AccelChannelCount = getNumberOfAccelChannels(BoardId);
@@ -233,13 +243,15 @@ int BoardDataReader::InitializeBoard()
 			AnalogChannelCount = getNumberOfAnalogChannels(BoardId);
 		}
 		
+		ConnectionChanged(newConnection ? New : Connected, BoardId, SampleRate);
+		
 		StartStreaming();
 		
 		InitializeDataReadCounters();
 		
 		usleep(5 * USLEEP_SEC);
 
-		ConnectionChanged(newConnection ? New : Connected, BoardId, SampleRate);
+		
 		DiscardFirstChunk();
 		IsConnected = true;
 		Logging.AddLog("BoardDataReader", "InitializeBoard", format("Connected to board %d. Sample rate %d", BoardId, SampleRate), LogLevelInfo);
@@ -374,6 +386,7 @@ void BoardDataReader::StartStreaming()
 			}
 			
 			StreamRunning = true;
+			ConnectionChanged(StreamOn, BoardId, SampleRate);
 		}
 		catch (const BrainFlowException &err)
 		{
@@ -394,6 +407,7 @@ void BoardDataReader::StopStreaming()
 			Logging.AddLog("BoardDataReader", "StopStreaming", "Stopping data stream.", LogLevelInfo);
 			Board->stop_stream();
 			StreamRunning = false;
+			ConnectionChanged(StreamOff, BoardId, SampleRate);
 		}
 		catch (const BrainFlowException &err)
 		{

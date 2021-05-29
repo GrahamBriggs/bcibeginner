@@ -10,6 +10,8 @@
 enum class BrainhatBoardIds : int
 {
 	UNDEFINED = -99,
+	MENTALIUM = -51,
+	CUSTOMBOARDS = -50,
 	//
 	//  brainflow_constants.h
 	PLAYBACK_FILE_BOARD = -3,
@@ -39,11 +41,16 @@ enum class BrainhatBoardIds : int
 };
 
 
+
 int getNumberOfExgChannels(int boardId);
 int getNumberOfAccelChannels(int boardId);
 int getNumberOfOtherChannels(int boardId);
 int getNumberOfAnalogChannels(int boardId);
 
+int getNumberOfRows(int boardId);
+int getSamplingRate(int boardId);
+
+bool IsCytonFamily(int boardId);
 
 std::string getSampleName(int boardId);
 std::string getSampleNameShort(int boardId);

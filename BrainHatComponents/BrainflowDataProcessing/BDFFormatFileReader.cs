@@ -175,7 +175,7 @@ namespace BrainflowDataProcessing
             {
                 case BrainhatBoardIds.CYTON_BOARD:
                 case BrainhatBoardIds.CYTON_DAISY_BOARD:
-                case BrainhatBoardIds.CONTEC_KT88:
+                case BrainhatBoardIds.MENTALIUM:
                     break;
 
                 default:

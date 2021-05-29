@@ -27,8 +27,11 @@ using namespace lsl;
 //  Broadcast data thread
 //  Sends samples to the network using LSL
 //
-BroadcastData::BroadcastData()
+BroadcastData::BroadcastData(ClientConnectionChangedCallbackFn fn)
 {
+	ClientConnectionChangedCallback = fn;
+	ClientsConnected = false;
+	
 	LslEnabled = true;
 	LSLOutlet = NULL;
 }
@@ -170,6 +173,17 @@ void BroadcastData::BroadcastDataToLslOutlet()
 		{
 			(*nextSample)->AsRawSample(rawSample);
 			LSLOutlet->push_sample(rawSample);
+			
+			if (!ClientsConnected)
+			{
+				ClientsConnected = true;
+				ClientConnectionChangedCallback(true);
+			}
+		}
+		else if(ClientsConnected)
+		{
+			ClientsConnected = false;
+			ClientConnectionChangedCallback(false);
 		}
 		
 		delete(*nextSample);

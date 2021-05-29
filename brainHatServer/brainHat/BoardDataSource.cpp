@@ -150,26 +150,24 @@ void BoardDataSource::InspectSampleIndexDifference(double nextIndex)
 {
 	auto diff = SampleIndexDifference(nextIndex);
 	
-	switch (BoardId)
+	switch ((BrainhatBoardIds)BoardId)
 	{
-	case 0:	//  Cyton
+	case BrainhatBoardIds::CYTON_BOARD:
+	case BrainhatBoardIds::MENTALIUM:
 		{
 			if (diff > 1)
 				CountMissingIndex++;
 		}
 		break;
 		
-	case 2: //  Cyton+Daisy
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 		{
 			if (diff > 2)
 				CountMissingIndex++;
 		}
 		break;
 		
-	case 1:	//  Ganglion
-		{	
-			//  TODO
-		}
+	default:
 		break;
 		
 	}

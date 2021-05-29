@@ -6,12 +6,14 @@
 #include "Thread.h"
 #include "BFSample.h"
 
+typedef void(*ClientConnectionChangedCallbackFn)(bool);
+
 //  UDP multicast thread for status broadcast
 //
 class BroadcastData : public Thread
 {
 public:
-	BroadcastData();
+	BroadcastData(ClientConnectionChangedCallbackFn fn);
 	virtual ~BroadcastData();
 	
 	void SetBoard(int boardId, int sampleRate);
@@ -20,6 +22,7 @@ public:
 	
 	void AddData(BFSample* data);
 	
+	bool HasClients() { return ClientsConnected; }
 	bool LslEnabled;
 
 protected:
@@ -27,7 +30,7 @@ protected:
 	//  LSL
 	void SetupLslForBoard();
 	lsl::stream_outlet* LSLOutlet;
-		
+	bool ClientsConnected;
 		
 	int BoardId;
 	int SampleRate;
@@ -43,6 +46,8 @@ protected:
 	int GetAvailableDataPort();
 	
 	void BroadcastDataToLslOutlet();
+	
+	ClientConnectionChangedCallbackFn ClientConnectionChangedCallback;
 	
 	
 	

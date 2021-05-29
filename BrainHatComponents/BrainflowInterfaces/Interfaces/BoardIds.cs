@@ -10,7 +10,8 @@ namespace BrainflowInterfaces
     public enum BrainhatBoardIds
     {
         UNDEFINED = -99,
-        CONTEC_KT88 = -50,
+        MENTALIUM = -51,
+        CUSTOMBOARDS = -50,
         //
         PLAYBACK_FILE_BOARD = -3,
         STREAMING_BOARD = -2,
@@ -43,7 +44,7 @@ namespace BrainflowInterfaces
         {
             switch ((BrainhatBoardIds)boardId)
             {
-                case BrainhatBoardIds.CONTEC_KT88:
+                case BrainhatBoardIds.MENTALIUM:
                 case BrainhatBoardIds.CYTON_BOARD:
                 case BrainhatBoardIds.CYTON_DAISY_BOARD:
                     return true;
@@ -54,49 +55,85 @@ namespace BrainflowInterfaces
 
         public static int GetNumberOfExgChannels(int boardId)
         {
+            int useBoardId = boardId;
             switch ( (BrainhatBoardIds)boardId)
             {
-                case BrainhatBoardIds.CONTEC_KT88:
-                    return 20;
+                case BrainhatBoardIds.MENTALIUM:
+                    useBoardId = 0;
+                    break;
+            }
 
+            switch ( (BrainhatBoardIds)useBoardId)
+            {
                 default:
-                    return BoardShim.get_exg_channels(boardId).Length;
+                    return 0;
+
+                case BrainhatBoardIds.CYTON_BOARD:
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
+                    return BoardShim.get_exg_channels(useBoardId).Length;
             }
         }
 
         public static int GetNumberOfAccelChannels(int boardId)
         {
+            int useBoardId = boardId;
             switch ((BrainhatBoardIds)boardId)
             {
-                case BrainhatBoardIds.CONTEC_KT88:
+                case BrainhatBoardIds.MENTALIUM:
+                    useBoardId = 0;
+                    break;
+            }
+
+            switch ((BrainhatBoardIds)useBoardId)
+            {
+                default:
                     return 0;
 
-                default:
-                    return BoardShim.get_accel_channels(boardId).Length;
+                case BrainhatBoardIds.CYTON_BOARD:
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
+                    return BoardShim.get_accel_channels(useBoardId).Length;
             }
         }
 
         public static int GetNumberOfOtherChannels(int boardId)
         {
+            int useBoardId = boardId;
             switch ((BrainhatBoardIds)boardId)
             {
-                case BrainhatBoardIds.CONTEC_KT88:
+                case BrainhatBoardIds.MENTALIUM:
+                    useBoardId = 0;
+                    break;
+            }
+
+            switch ((BrainhatBoardIds)useBoardId)
+            {
+                default:
                     return 0;
 
-                default:
-                    return BoardShim.get_other_channels(boardId).Length;
+                case BrainhatBoardIds.CYTON_BOARD:
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
+                    return BoardShim.get_other_channels(useBoardId).Length;
             }
         }
 
         public static int GetNumberOfAnalogChannels(int boardId)
         {
+            int useBoardId = boardId;
             switch ((BrainhatBoardIds)boardId)
             {
-                case BrainhatBoardIds.CONTEC_KT88:
+                case BrainhatBoardIds.MENTALIUM:
+                    useBoardId = 0;
+                    break;
+            }
+
+            switch ((BrainhatBoardIds)useBoardId)
+            {
+                default:
                     return 0;
 
-                default:
-                    return BoardShim.get_analog_channels(boardId).Length;
+                case BrainhatBoardIds.CYTON_BOARD:
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
+                    return BoardShim.get_analog_channels(useBoardId).Length;
             }
         }
 
@@ -116,8 +153,8 @@ namespace BrainflowInterfaces
                     return "Cyton16_BFSample";
                 case BrainhatBoardIds.GANGLION_BOARD:
                     return "Ganglion_BFSample";
-                case BrainhatBoardIds.CONTEC_KT88:
-                    return "ContecKT88_BFSample";
+                case BrainhatBoardIds.MENTALIUM:
+                    return "MENTALIUM8";
                 default:
                     return "BFSample";
             }
@@ -137,8 +174,8 @@ namespace BrainflowInterfaces
                     return "CY16";
                 case BrainhatBoardIds.GANGLION_BOARD:
                     return "GAN4";
-                case BrainhatBoardIds.CONTEC_KT88:
-                    return "KT88";
+                case BrainhatBoardIds.MENTALIUM:
+                    return "MT08";
                 default:
                     return "BF";
             }
@@ -159,8 +196,8 @@ namespace BrainflowInterfaces
                     return "Cyton+Daisy";
                 case BrainhatBoardIds.GANGLION_BOARD:
                     return "Ganglion";
-                case BrainhatBoardIds.CONTEC_KT88:
-                    return "ContecKT88";
+                case BrainhatBoardIds.MENTALIUM:
+                    return "MENTALIUM";
             }
             return "Unknown";
         }
@@ -182,9 +219,9 @@ namespace BrainflowInterfaces
                 case "GAN4":
                 case "Ganglion_BFSample":
                     return 1;
-                case "KT88":
-                case "ContecKT88_BFSample":
-                    return -50;
+                case "MT08":
+                case "MENTALIUM8":
+                    return -51;
                 default:
                     return -99;
             }

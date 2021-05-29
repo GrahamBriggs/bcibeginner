@@ -24,8 +24,10 @@ public:
 	
 	virtual void RunFunction();
 
+	
 	virtual int GetSrb1(int board);
 	virtual bool GetIsStreamRunning() { return StreamRunning;}
+	
 	
 	virtual bool RequestSetSrb1(int board, bool enable);
 	virtual bool RequestEnableStreaming(bool enable);
@@ -39,8 +41,7 @@ protected:
 	//  The Board
 	BoardShim* Board;
 	struct BrainFlowInputParams BoardParamaters;
-	bool StreamRunning;
-	bool IsConnected;
+	
 	bool RequestToggleStreaming;
 	bool StartSrb1CytonSet;
 	bool StartSrb1DaisySet;

@@ -96,6 +96,12 @@
     <ClCompile Include="SerialPort.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
+    <ClCompile Include="PinController.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
+    <ClCompile Include="GpioControl.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
@@ -192,6 +198,15 @@
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="SampleIndexCounter.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="PinController.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="GpioControl.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleTimer.h">
       <Filter>Header files</Filter>
     </ClInclude>
   </ItemGroup>

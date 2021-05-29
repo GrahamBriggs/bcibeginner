@@ -7,13 +7,23 @@ using namespace std;
 //
 int getNumberOfExgChannels(int boardId)
 {
-	switch ((BrainhatBoardIds)boardId)
+	int useBoardId = boardId;
+	switch ((BrainhatBoardIds)boardId)  
 	{
-	case BrainhatBoardIds::UNDEFINED:
-		return 0;
+	case BrainhatBoardIds::MENTALIUM:
+		useBoardId = 0;
+		break;
+	}
+		
+	switch ((BrainhatBoardIds)useBoardId)
+	{
 	default:
+		return 0;
+		
+	case BrainhatBoardIds::CYTON_BOARD:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 		int numChannels;
-		auto res = BoardShim::get_exg_channels(boardId, &numChannels);
+		auto res = BoardShim::get_exg_channels(useBoardId, &numChannels);
 		delete res;
 		return numChannels;
 	}
@@ -24,13 +34,22 @@ int getNumberOfExgChannels(int boardId)
 //
 int getNumberOfAccelChannels(int boardId)
 {
-	switch ((BrainhatBoardIds)boardId)
+	int useBoardId = boardId;
+	switch ((BrainhatBoardIds)boardId)  
 	{
-	case BrainhatBoardIds::UNDEFINED:
-		return 0;
+	case BrainhatBoardIds::MENTALIUM:
+		useBoardId = 0;
+		break;
+	}
+		
+	switch ((BrainhatBoardIds)useBoardId)
+	{
 	default:
+		return 0;
+	case BrainhatBoardIds::CYTON_BOARD:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 		int accelChannels;
-		auto res = BoardShim::get_accel_channels(boardId, &accelChannels);
+		auto res = BoardShim::get_accel_channels(useBoardId, &accelChannels);
 		delete res;
 		return accelChannels;
 	}
@@ -41,13 +60,22 @@ int getNumberOfAccelChannels(int boardId)
 //
 int getNumberOfOtherChannels(int boardId)
 {
-	switch ((BrainhatBoardIds)boardId)
+	int useBoardId = boardId;
+	switch ((BrainhatBoardIds)boardId)  
 	{
-	case BrainhatBoardIds::UNDEFINED:
-		return 0;
+	case BrainhatBoardIds::MENTALIUM:
+		useBoardId = 0;
+		break;
+	}
+		
+	switch ((BrainhatBoardIds)useBoardId)
+	{
 	default:
+		return 0;
+	case BrainhatBoardIds::CYTON_BOARD:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 		int otherChannels;
-		auto res = BoardShim::get_other_channels(boardId, &otherChannels);
+		auto res = BoardShim::get_other_channels(useBoardId, &otherChannels);
 		delete res;
 		return otherChannels;
 	}
@@ -58,20 +86,86 @@ int getNumberOfOtherChannels(int boardId)
 //
 int getNumberOfAnalogChannels(int boardId)
 {
-	switch ((BrainhatBoardIds)boardId)
+	int useBoardId = boardId;
+	switch ((BrainhatBoardIds)boardId)  
 	{
-	case BrainhatBoardIds::UNDEFINED:
-		return 0;
+	case BrainhatBoardIds::MENTALIUM:
+		useBoardId = 0;
+		break;
+	}
+		
+	switch ((BrainhatBoardIds)useBoardId)
+	{
 	default:
+		return 0;
+	case BrainhatBoardIds::CYTON_BOARD:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 		int analogChannels;
-		auto res = BoardShim::get_analog_channels(boardId, &analogChannels);
+		auto res = BoardShim::get_analog_channels(useBoardId, &analogChannels);
 		delete res;
 		return analogChannels;
 	}
 }
 
 
-	
+int getNumberOfRows(int boardId)
+{
+	int useBoardId = boardId;
+	switch ((BrainhatBoardIds)boardId)  
+	{
+	case BrainhatBoardIds::MENTALIUM:
+		useBoardId = 0;
+		break;
+	}
+		
+	switch ((BrainhatBoardIds)useBoardId)
+	{
+	default:
+		return 0;
+	case BrainhatBoardIds::CYTON_BOARD:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
+		return BoardShim::get_num_rows(useBoardId);
+	}
+}
+
+
+int getSamplingRate(int boardId)
+{
+	int useBoardId = boardId;
+	switch ((BrainhatBoardIds)boardId)  
+	{
+	case BrainhatBoardIds::MENTALIUM:
+		useBoardId = 0;
+		break;
+	}
+		
+	switch ((BrainhatBoardIds)useBoardId)
+	{
+	default:
+		return 0;
+	case BrainhatBoardIds::CYTON_BOARD:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
+		return BoardShim::get_sampling_rate(useBoardId);
+	}
+}
+
+
+//  Is this board in the cyton family of boards
+//
+bool IsCytonFamily(int boardId)
+{
+	switch ((BrainhatBoardIds)boardId)
+	{
+	case BrainhatBoardIds::CYTON_BOARD:
+	case BrainhatBoardIds::CYTON_DAISY_BOARD:
+	case BrainhatBoardIds::MENTALIUM:
+		return true;
+	default:
+		return false;
+	}
+}
+
+
 //  Sample name
 //  Used by LSL stream
 string getSampleName(int boardId)
@@ -84,6 +178,8 @@ string getSampleName(int boardId)
 		return "Cyton16_BFSample";
 	case BrainhatBoardIds::GANGLION_BOARD:
 		return "Ganglion_BFSample";
+	case BrainhatBoardIds::MENTALIUM:
+		return "MENTALIUM8";
 	default:
 		return "BFSample";
 	}
@@ -102,6 +198,8 @@ string getSampleNameShort(int boardId)
 		return "CY16";
 	case BrainhatBoardIds::GANGLION_BOARD:
 		return "GAN4";
+	case BrainhatBoardIds::MENTALIUM:
+		return "MT08";
 	default:
 		return "BF";
 	}
@@ -121,6 +219,8 @@ string getEquipmentName(int boardId)
 		return "Cyton+Daisy";
 	case BrainhatBoardIds::GANGLION_BOARD:
 		return "Ganglion";
+	case BrainhatBoardIds::MENTALIUM:
+		return "MENTALIUM";
 	default:
 		return "";
 	}
@@ -133,6 +233,8 @@ string getManufacturerName(int boardId)
 {
 	switch ((BrainhatBoardIds)boardId)
 	{
+	case BrainhatBoardIds::MENTALIUM:
+		return "Nelson";
 	case BrainhatBoardIds::CYTON_BOARD:
 	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 	case BrainhatBoardIds::GANGLION_BOARD:

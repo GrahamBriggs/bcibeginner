@@ -2,9 +2,10 @@
 #include <algorithm>
 #include <unistd.h>
 #include <lsl_cpp.h>
-#include <net/if.h>
-#include <ifaddrs.h>
 
+
+#include <wiringPi.h>
+#include <list>
 
 #include "brainHat.h"
 #include "Logger.h"
@@ -22,24 +23,29 @@
 #include "UriParser.h"
 #include "BoardIds.h"
 #include "BrainHatFileWriter.h"
+#include "PinController.h"
+#include "GpioControl.h"
 
 
 
 
 using namespace std;
 
-//  Callback Functions
+//  Callback Functions for component state changes
 void OnBoardConnectionStateChanged(BoardConnectionStates state, int boardId, int sampleRate);
+void OnLslConnectionStateChanged(bool connected);
+void OnRecordingStateChanged(bool recording);
+
+//  Callback function for sample received
 void OnNewSample(BFSample* sample);
+
+//  Callback function for TCPIP server request to process
 bool OnServerRequest(string request);
 
 //  Program Components
 Logger Logging;
-BroadcastData DataBroadcaster;
-list<BroadcastStatus*> StatusBroadcasters;
+BroadcastData DataBroadcaster(OnLslConnectionStateChanged);
 CommandServer ComServer(OnServerRequest);
-
-
 
 //  Command line arguments
 int BoardId = 0;
@@ -51,9 +57,9 @@ struct BrainFlowInputParams InputParams;
 
 //  Data Source
 BoardDataSource* DataSource = NULL;
+
 //  Demo file reader
 BoardFileSimulator DemoFileReader(OnBoardConnectionStateChanged, OnNewSample);
-
 
 //  File Recorder
 BrainHatFileWriter* FileWriter;
@@ -66,24 +72,36 @@ void RunBoardData();
 void RunFileData();
 bool ProcessKeyboardInput(string input); 
 bool LiveData() { return BoardId != (int)BrainhatBoardIds::UNDEFINED; }
-void StartStatusBroadcast();
-void StopStatusBroadcast();
+
+
+//  Pin numbers for status LED
+//  Default is zero (pins will not be activated), use command line arguments to specify one or both status lights
+int PinNumberConnectionStatus = 0;
+int PinNumberRecordingStatus = 0;
+	
 
 
 //  Main function
 //
 int main(int argc, char *argv[])
-{
+{	
 	if (!ParseArguments(argc, argv))
 		return -1;
+	
+	//  star the GPIO controller for status LEDs
+	StartGpioController(PinNumberConnectionStatus, PinNumberRecordingStatus);
+	ConnectionLightShowConnecting();
 
-	//BoardShim::set_log_file((char*)"./brainflowLogs.txt");
+	//  init brainflow logging level to off
 	BoardShim::set_log_level(6);
 	
 	//  start logging thread
 	Logging.Start() ;
 	
+	//  start the tcpip command server
 	ComServer.Start();
+	
+	//  start the UDP status broadcast
 	StartStatusBroadcast();
 	
 	//  start board or file simulator data
@@ -95,6 +113,9 @@ int main(int argc, char *argv[])
 	{
 		RunFileData();
 	}
+	
+	//  shut down LED lights
+	StopGpioController();
 
 	// user quit, stop threads
 	DataBroadcaster.Cancel();
@@ -165,7 +186,6 @@ void RunFileData()
 }
 
 
-
 //  Handle samples from the data source
 void OnNewSample(BFSample* sample)
 {
@@ -178,21 +198,48 @@ void OnNewSample(BFSample* sample)
 
 
 //  Handle callback from data source when board connection state changed
-//  this includes discovery of new board, 
-//  which will call SetBoard( ) on the data source to kick off the reading thread
+//  this will set the status lights for any board transition
+//  and for new board discovery, call SetBoard( ) on the data source now that the sample rate is known
 //
 void OnBoardConnectionStateChanged(BoardConnectionStates state, int boardId, int sampleRate)
 {
 	switch (state) 
 	{
-	case New:
+	case New:	
 		{
 			BoardId = boardId;
 			DataBroadcaster.SetBoard(boardId, sampleRate);
 		}
 		break;
 		
-	case PowerOff:	//  power On board
+	case Connected:	
+		{
+			ConnectionLightShowReady();
+		}
+		break;
+		
+	case Disconnected: 
+		{
+			ConnectionLightShowConnecting();
+		}
+		break;
+		
+	case StreamOn:
+		{
+			if (DataBroadcaster.HasClients())
+				ConnectionLightShowConnected();
+			else
+				ConnectionLightShowReady();
+		}
+		break;
+		
+	case StreamOff:
+		{
+			ConnectionLightShowPaused();
+		}
+		break;
+		
+	case PowerOff:	//  power Off board
 		{
 		}
 		break;
@@ -201,62 +248,40 @@ void OnBoardConnectionStateChanged(BoardConnectionStates state, int boardId, int
 		{
 		}
 		break;
-		
-	case Connected:	//  board connected
-		{
-
-		}
-		break;
-		
-	case Disconnected: //  board disconnected	
-		{
-
-		}
-		break;
 	}
 }
 
 
-//  Start the status broadcast on all available interfaces
+// Handle callback from LSL broadcaster regarding client connections
 //
-void StartStatusBroadcast()
+void OnLslConnectionStateChanged(bool state)
 {
-	struct ifaddrs * ifap;
-	if (getifaddrs(&ifap) == 0)
+	if (state)
 	{
-		struct ifaddrs * p = ifap;
-		while (p)
-		{
-			uint32 ifaAddr  = SockAddrToUint32(p->ifa_addr);
-			uint32 maskAddr = SockAddrToUint32(p->ifa_netmask);
-			uint32 dstAddr  = SockAddrToUint32(p->ifa_dstaddr);
-			if (ifaAddr > 0)
-			{
-				char ifaAddrStr[32]; Inet_NtoA(ifaAddr, ifaAddrStr);
-				char maskAddrStr[32]; Inet_NtoA(maskAddr, maskAddrStr);
-				char dstAddrStr[32]; Inet_NtoA(dstAddr, dstAddrStr);
-				//printf("  Found interface:  name=[%s] desc=[%s] address=[%s] netmask=[%s] broadcastAddr=[%s]\n", p->ifa_name, "unavailable", ifaAddrStr, maskAddrStr, dstAddrStr);
-				BroadcastStatus* newBroadcaster = new BroadcastStatus(p->ifa_name);
-				newBroadcaster->Start();
-				StatusBroadcasters.push_back(newBroadcaster);
-			}
-			p = p->ifa_next;
-		}
-		freeifaddrs(ifap);
+		ConnectionLightShowConnected();
+	}
+	else if (DataSource->GetIsStreamRunning())
+	{
+		ConnectionLightShowReady();
+	}
+	else if (DataSource->GetIsConnected())
+	{
+		ConnectionLightShowPaused();
+	}
+	else
+	{
+		ConnectionLightShowConnecting();
 	}
 }
 
 
-//  Stop status broadcasters
+// Handle callback from file recorder on the state of the recording file
 //
-void StopStatusBroadcast()
+void OnRecordingStateChanged(bool recording)
 {
-	for (auto nextBroadcaster = StatusBroadcasters.begin(); nextBroadcaster != StatusBroadcasters.end(); ++nextBroadcaster)
-	{
-		(*nextBroadcaster)->Cancel();
-		delete *nextBroadcaster;
-	}
+	RecordingLight(recording);
 }
+
 
 
 //  Handle request to start/stop recording
@@ -286,10 +311,10 @@ bool HandleRecordingRequest(UriArgParser& requestParser)
 			switch (format)
 			{
 			case 0:
-				FileWriter = new OpenBCIFileWriter();
+				FileWriter = new OpenBCIFileWriter(OnRecordingStateChanged);
 				break;
 			case 1:
-				FileWriter = new BDFFileWriter();
+				FileWriter = new BDFFileWriter(OnRecordingStateChanged);
 				break;
 				
 			default :
@@ -433,6 +458,7 @@ bool SupportedBoard()
 	default:
 		return false;
 		
+	case BrainhatBoardIds::MENTALIUM:
 	case BrainhatBoardIds::CYTON_BOARD:
 	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 		return true;
@@ -483,9 +509,6 @@ bool ParseArguments(int argc, char *argv[])
 	
 	return true;
 }
-
-
-
 
 
 //  Parse the command line args from the brainflow sample
@@ -645,6 +668,32 @@ bool parse_args(int argc, char *argv[])
 			{
 				i++;
 				InputParams.serial_number = std::string(argv[i]);
+			}
+			else
+			{
+				std::cerr << "missed argument" << std::endl;
+				return false;
+			}
+		}
+		if (std::string(argv[i]) == std::string("--pin-conn"))
+		{
+			if (i + 1 < argc)
+			{
+				i++;
+				PinNumberConnectionStatus = std::stoi(std::string(argv[i]));
+			}
+			else
+			{
+				std::cerr << "missed argument" << std::endl;
+				return false;
+			}
+		}
+		if (std::string(argv[i]) == std::string("--pin-rec"))
+		{
+			if (i + 1 < argc)
+			{
+				i++;
+				PinNumberRecordingStatus = std::stoi(std::string(argv[i]));
 			}
 			else
 			{

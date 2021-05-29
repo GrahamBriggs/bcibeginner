@@ -16,7 +16,7 @@ using namespace std;
 
 //  Constructor
 //
-OpenBCIFileWriter::OpenBCIFileWriter()
+OpenBCIFileWriter::OpenBCIFileWriter(RecordingStateChangedCallbackFn fn) : BrainHatFileWriter(fn)
 {
 	
 }
@@ -37,6 +37,7 @@ void OpenBCIFileWriter::CloseFile()
 {
 	RecordingFile.close();
 	Logging.AddLog("OpenBCIFileWriter", "CloseFile", format("Closed recording file %s.", RecordingFileName.c_str()), LogLevelInfo);
+	RecordingStateChangedCallback(false);
 }
 
 
@@ -47,6 +48,7 @@ string FileBoardDescription(int boardId)
 {
 	switch ((BrainhatBoardIds)boardId)
 	{
+	case BrainhatBoardIds::MENTALIUM:
 	case BrainhatBoardIds::CYTON_BOARD:
 		return "OpenBCI_GUI$BoardCytonSerial";
 	case BrainhatBoardIds::CYTON_DAISY_BOARD:
@@ -66,6 +68,8 @@ bool OpenBCIFileWriter::OpenFile(string fileName, bool tryUsb)
 	string pathToRecFolder = "";
 	if (!CheckRecordingFolder(fileName, tryUsb, pathToRecFolder))
 		return false;
+	
+	RecordingStateChangedCallback(true);
 	
 	SetFilePath(pathToRecFolder, fileName, "txt");
 	
@@ -135,6 +139,14 @@ void OpenBCIFileWriter::WriteHeader(BFSample* firstSample)
 		RecordingFile << "%Number of channels = " << firstSample->GetNumberOfExgChannels() << endl;
 		RecordingFile << "%Sample Rate = " << SampleRate << " Hz" << endl;
 		RecordingFile << "%Board = " << FileBoardDescription(BoardId) << endl;
+		
+		switch ((BrainhatBoardIds)BoardId)
+		{
+		case BrainhatBoardIds::MENTALIUM:
+			RecordingFile << "%ExtraBoardId = " << BoardId << endl;
+			break;
+		}
+		
 		RecordingFile << "%Logger = brainHat" << endl;
 		//  data header
 		RecordingFile << "Sample Index";

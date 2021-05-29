@@ -10,7 +10,7 @@
 class BDFFileWriter : public BrainHatFileWriter
 {
 public:
-	BDFFileWriter();
+	BDFFileWriter(RecordingStateChangedCallbackFn fn);
 	virtual ~BDFFileWriter();
 	
 	

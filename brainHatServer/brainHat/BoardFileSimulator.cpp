@@ -26,6 +26,9 @@ BoardFileSimulator::BoardFileSimulator(ConnectionChangedCallbackFn connectionCha
 {
 	ConnectionChangedCallback = connectionChangedFn;
 	NewSampleCallback = newSampleFn;
+	
+	IsConnected = true;
+	StreamRunning = true;
 }
 
 

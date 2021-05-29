@@ -50,7 +50,7 @@ namespace BrainflowInterfaces
 
             switch ( (BrainhatBoardIds)boardId )
             {
-                case BrainhatBoardIds.CONTEC_KT88:
+                case BrainhatBoardIds.MENTALIUM:
                 case BrainhatBoardIds.CYTON_BOARD: //  Cyton
                     if (index == 0)
                         return 255;
@@ -78,7 +78,7 @@ namespace BrainflowInterfaces
 
             switch ((BrainhatBoardIds)boardId)
             {
-                case BrainhatBoardIds.CONTEC_KT88:
+                case BrainhatBoardIds.MENTALIUM:
                 case BrainhatBoardIds.CYTON_BOARD: //  Cyton
                     if (index == 255)
                         return 0;
@@ -104,7 +104,7 @@ namespace BrainflowInterfaces
         {
             switch ( (BrainhatBoardIds)boardId )
             {
-                case BrainhatBoardIds.CONTEC_KT88:
+                case BrainhatBoardIds.MENTALIUM:
                 case BrainhatBoardIds.CYTON_BOARD: 
                     //  The default behavior is 0-255 sample index in increments of 1
                     return ((1.0 / sampleRate) * value.SampleIndexDifference(lastSampleIndex));

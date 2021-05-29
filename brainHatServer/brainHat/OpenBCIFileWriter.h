@@ -14,7 +14,7 @@
 class OpenBCIFileWriter : public BrainHatFileWriter
 {
 public:
-	OpenBCIFileWriter();
+	OpenBCIFileWriter(RecordingStateChangedCallbackFn fn);
 	virtual ~OpenBCIFileWriter();
 	
 	

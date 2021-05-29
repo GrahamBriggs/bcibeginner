@@ -85,6 +85,7 @@
     <ClInclude Include="brainHat.h" />
     <ClInclude Include="CytonBoardSettings.h" />
     <ClInclude Include="FileExtensions.h" />
+    <ClInclude Include="GpioControl.h" />
     <ClInclude Include="OpenBCIFileWriter.h" />
     <ClInclude Include="json.hpp" />
     <ClInclude Include="Logger.h" />
@@ -94,8 +95,10 @@
     <ClInclude Include="Parser.h" />
     <ClInclude Include="BroadcastData.h" />
     <ClInclude Include="BoardDataReader.h" />
+    <ClInclude Include="PinController.h" />
     <ClInclude Include="SampleIndexCounter.h" />
     <ClInclude Include="SerialPort.h" />
+    <ClInclude Include="SimpleTimer.h" />
     <ClInclude Include="StringExtensions.h" />
     <ClInclude Include="TCPServerThread.h" />
     <ClInclude Include="TerminalDisplay.h" />
@@ -117,12 +120,14 @@
     <ClCompile Include="BoardFileSimulator.cpp" />
     <ClCompile Include="brainHat.cpp" />
     <ClCompile Include="CytonBoardSettings.cpp" />
+    <ClCompile Include="GpioControl.cpp" />
     <ClCompile Include="OpenBCIFileWriter.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="NetworkExtensions.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="BroadcastData.cpp" />
     <ClCompile Include="BoardDataReader.cpp" />
+    <ClCompile Include="PinController.cpp" />
     <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="TCPServerThread.cpp" />
     <ClCompile Include="TerminalDisplay.cpp" />

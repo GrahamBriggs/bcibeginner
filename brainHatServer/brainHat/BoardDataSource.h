@@ -19,6 +19,8 @@ enum BoardConnectionStates
 	PowerOff,
 	Connected,
 	Disconnected,
+	StreamOn,
+	StreamOff,
 };
 
 //  Sensor connection state changed event
@@ -42,6 +44,8 @@ public:
 	
 	void RegisterConnectionChangedDelegate(ConnectionChangedDelegateFn connectionChangedDel);
 	
+	bool GetIsConnected() { return IsConnected;}
+		
 	bool Enabled() { return BoardOn;}
 	void EnableBoard(bool enable);
 	
@@ -49,7 +53,7 @@ public:
 	int GetSampleRate() { return SampleRate; }
 	
 	virtual int GetSrb1(int board) { return -1;	}
-	virtual bool GetIsStreamRunning() { return true;}
+	virtual bool GetIsStreamRunning() { return StreamRunning;}
 	
 	virtual bool RequestSetSrb1(int board, bool enable) { return false;}
 	virtual bool RequestEnableStreaming(bool enable) { return false;}
@@ -73,6 +77,9 @@ protected:
 	int AnalogChannelCount;
 	//
 	bool BoardOn;
+	bool IsConnected;
+	bool StreamRunning;
+
 	
 	
 	//  inspecting data mechanisms

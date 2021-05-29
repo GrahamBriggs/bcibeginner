@@ -11,9 +11,10 @@
 
 using namespace std;
 
-BrainHatFileWriter::BrainHatFileWriter()
+BrainHatFileWriter::BrainHatFileWriter(RecordingStateChangedCallbackFn fn)
 {
 	Recording = false;
+	RecordingStateChangedCallback = fn;
 }
 
 BrainHatFileWriter::~BrainHatFileWriter()

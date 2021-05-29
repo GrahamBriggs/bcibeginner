@@ -128,12 +128,11 @@ namespace BrainflowDataProcessing
         {
             switch ((BrainhatBoardIds)BoardId)
             {
+                case BrainhatBoardIds.MENTALIUM:
                 case BrainhatBoardIds.CYTON_BOARD:
                     return "OpenBCI_GUI$BoardCytonSerial";
                 case BrainhatBoardIds.CYTON_DAISY_BOARD:
                     return "OpenBCI_GUI$BoardCytonSerialDaisy";
-                case BrainhatBoardIds.CONTEC_KT88:
-                    return "Contec_KT88";
                 default:
                     return "Unknown?";
             }
@@ -157,14 +156,8 @@ namespace BrainflowDataProcessing
                 {
                     Log?.Invoke(this, new LogEventArgs(this, "RunFileWriter", $"Started recording file {FileName}.", LogLevel.INFO));
 
-                    //  write header
-                    file.WriteLine("%OpenBCI Raw EEG Data");
-                    file.WriteLine($"%Number of channels = {BrainhatBoardShim.GetNumberOfExgChannels(BoardId)}");
-                    file.WriteLine($"%Sample Rate = {SampleRate} Hz");
-                    file.WriteLine($"%Board = {FileBoardDescription()}");
-                    file.WriteLine("%Logger = brainHat");
+                    WriteFileHeader(file);
                     bool writeHeader = false;
-
 
                     try
                     {
@@ -187,7 +180,7 @@ namespace BrainflowDataProcessing
 
                                     if (!writeHeader)
                                     {
-                                        WriteHeaderToFile(file, nextReading);
+                                        WriteSampleHeaderOnFirstSample(file, nextReading);
                                         writeHeader = true;
                                     }
 
@@ -222,9 +215,31 @@ namespace BrainflowDataProcessing
 
 
         /// <summary>
-        /// Write header to file based on the first sample recorded
+        /// Write the file header 
         /// </summary>
-        void WriteHeaderToFile(StreamWriter file, IBFSample nextReading)
+        void WriteFileHeader(StreamWriter file)
+        {
+            //  write header
+            file.WriteLine("%OpenBCI Raw EEG Data");
+            file.WriteLine($"%Number of channels = {BrainhatBoardShim.GetNumberOfExgChannels(BoardId)}");
+            file.WriteLine($"%Sample Rate = {SampleRate} Hz");
+            file.WriteLine($"%Board = {FileBoardDescription()}");
+
+            switch ((BrainhatBoardIds)BoardId)
+            {
+                case BrainhatBoardIds.MENTALIUM:
+                    file.WriteLine($"%ExtraBoardId = {BoardId}");
+                    break;
+            }
+
+            file.WriteLine("%Logger = brainHat");
+        }
+
+
+        /// <summary>
+        /// Write sample header to file based on the first sample recorded
+        /// </summary>
+        void WriteSampleHeaderOnFirstSample(StreamWriter file, IBFSample nextReading)
         {
             string header = "Sample Index";
 

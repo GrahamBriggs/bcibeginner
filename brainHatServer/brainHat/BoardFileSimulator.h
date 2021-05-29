@@ -14,7 +14,6 @@
 
 //  File Simulator Thread
 //  Will play back an OpenBCI_GUI format .txt file (adjusting time stamps so the data appears current)
-//  TODO - this is hard coded for Cyton8
 //
 class BoardFileSimulator : public BoardDataSource
 {

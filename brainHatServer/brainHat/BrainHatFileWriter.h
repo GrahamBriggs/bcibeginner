@@ -8,14 +8,17 @@
 
 #define RECORDINGFOLDER ("/home/pi/EEG")
 
+
+
 bool CheckRecordingFolder(std::string sessionName, bool tryUsb, std::string& pathToRecFolder);
 
+typedef void(*RecordingStateChangedCallbackFn)(bool);
 
 class BrainHatFileWriter : public Thread
 {
 	
 public:
-	BrainHatFileWriter();
+	BrainHatFileWriter(RecordingStateChangedCallbackFn fn);
 	virtual ~BrainHatFileWriter();
 	
 	virtual bool StartRecording(std::string fileName, bool tryUsb, int boardId, int sampleRate);
@@ -55,5 +58,7 @@ protected:
 	std::queue<BFSample*> SamplesQueue;
 	
 	ChronoTimer ElapsedTime;
+	
+	RecordingStateChangedCallbackFn RecordingStateChangedCallback;
 	
 };
