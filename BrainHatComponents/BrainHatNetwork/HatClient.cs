@@ -191,25 +191,23 @@ namespace BrainHatNetwork
         CancellationTokenSource RunTaskCancelTokenSource;
         Task ReadDataPortTask;
 
-        //  read disgnostics
-        List<Tuple<long, long, long>> PullSampleTimes = new List<Tuple<long, long, long>>();
-        List<long> PullSampleCount = new List<long>();
 
+      
         string LocalIpAddress;
+
+        const int ReadingDelay = 20;    //  read the LSL inlet at 50 Hz
 
         /// <summary>
         /// Run function for reading data on LSL multicast data port
         /// </summary>
         async Task RunReadDataPortAsync(CancellationToken cancelToken)
         {
-            var sw = new System.Diagnostics.Stopwatch();
-            var sampleReportingTime = new System.Diagnostics.Stopwatch();
-            sampleReportingTime.Start();
-
             StreamInlet inlet = null;
             try
             {
-                inlet = new StreamInlet(StreamInfo);
+                int maxChunkLen = (int)((SampleRate * 1.5) / ReadingDelay);
+                inlet = new StreamInlet(StreamInfo,360, maxChunkLen);
+                
                 cancelToken.Register(() => inlet.close_stream());
                 inlet.open_stream();
 
@@ -218,25 +216,13 @@ namespace BrainHatNetwork
                 double[,] buffer = new double[512, SampleSize];
                 double[] timestamps = new double[512];
 
-                sw.Restart();
-
                 //  spin until canceled
                 while (!cancelToken.IsCancellationRequested)
                 {
-                    var timeBetweenReads = sw.ElapsedMilliseconds;
-
                     try
                     {
-                        sw.Restart();
                         int num = inlet.pull_chunk(buffer, timestamps);
-
-                        var pullTime = sw.ElapsedMilliseconds;
-                        PullSampleCount.Add(num);
-
                         ProcessChunk(buffer, num);
-
-                        var processTime = sw.ElapsedMilliseconds;
-                        PullSampleTimes.Add(new Tuple<long, long, long>(pullTime, processTime, timeBetweenReads));
                     }
                     catch (ObjectDisposedException)
                     { }
@@ -244,17 +230,8 @@ namespace BrainHatNetwork
                     {
                         Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadDataPortAsync", ex, LogLevel.WARN));
                     }
-                    sw.Restart();
 
-                    await Task.Delay(1);
-
-                    if (sampleReportingTime.ElapsedMilliseconds > 5000)
-                    {
-                        //Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadDataPortAsync", $"LSL Sample: Pulled {PullSampleCount.Sum()} samples in 5 s {(int)(PullSampleCount.Sum()/sampleReportingTime.Elapsed.TotalSeconds)} sps . Per chunk: median = {PullSampleCount.Median()} max = {PullSampleCount.Max()} min = {PullSampleCount.Min()}.  Time per chunk median = { PullSampleTimes.Select(x => x.Item1).Median()} ms max = {PullSampleTimes.Select(x => x.Item1).Max()} ms. Total time median = {PullSampleTimes.Select(x => x.Item2).Median()} ms max =  {PullSampleTimes.Select(x => x.Item2).Max()} ms.  Time per chunk median = { PullSampleTimes.Select(x => x.Item1).Median()} ms max = {PullSampleTimes.Select(x => x.Item1).Max()} ms. Time Between median = {PullSampleTimes.Select(x => x.Item3).Median()} ms max =  {PullSampleTimes.Select(x => x.Item3).Max()} ms.  ", LogLevel.TRACE));
-                        sampleReportingTime.Restart();
-                        PullSampleTimes.Clear();
-                        PullSampleCount.Clear();
-                    }
+                    await Task.Delay(20);
                 }
             }
             catch (OperationCanceledException)

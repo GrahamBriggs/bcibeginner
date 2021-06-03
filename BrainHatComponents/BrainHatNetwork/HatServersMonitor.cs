@@ -239,15 +239,15 @@ namespace BrainHatNetwork
             // join multicast group on all available network interfaces
             NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
 
-            foreach (NetworkInterface networkInterface in networkInterfaces)
+            foreach (NetworkInterface nextInterface in networkInterfaces)
             {
-                if ((!networkInterface.Supports(NetworkInterfaceComponent.IPv4)) ||
-                    (networkInterface.OperationalStatus != OperationalStatus.Up))
+                if ((!nextInterface.Supports(NetworkInterfaceComponent.IPv4)) ||
+                    (nextInterface.OperationalStatus != OperationalStatus.Up))
                 {
                     continue;
                 }
 
-                IPInterfaceProperties adapterProperties = networkInterface.GetIPProperties();
+                IPInterfaceProperties adapterProperties = nextInterface.GetIPProperties();
                 UnicastIPAddressInformationCollection unicastIPAddresses = adapterProperties.UnicastAddresses;
                 IPAddress ipAddress = null;
 
@@ -267,6 +267,7 @@ namespace BrainHatNetwork
                     continue;
                 }
 
+                Log?.Invoke(this, new LogEventArgs(this, "StartUdpMulticastReaders", $"Starting UDP multicast client for {nextInterface.Name} at {ipAddress}.", LogLevel.ERROR));
                 MulticastReaders.Add(RunUdpMulticastReaderAsync(cancelToken, ipAddress));
             }
         }
@@ -291,7 +292,6 @@ namespace BrainHatNetwork
 
                     //  join the multicast group
                     udpClient.JoinMulticastGroup(IPAddress.Parse(BrainHatNetworkAddresses.MulticastGroupAddress), interfaceAddress);
-                    
 
                     //  spin until canceled
                     while (!cancelToken.IsCancellationRequested)
