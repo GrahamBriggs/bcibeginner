@@ -3,9 +3,7 @@
 #include <string>
 #include <condition_variable>
 #include <queue>
-
-
-#include "UdpMulticastServerThread.h"
+#include "Thread.h"
 #include "TerminalDisplay.h"
 
 typedef enum
@@ -60,7 +58,7 @@ public:
 
 //  Logger class
 //  Takes care of writing logs and program output to the terminal
-class Logger : public UdpMulticastServerThread
+class Logger : public Thread
 {
 public:
 	Logger();
@@ -79,11 +77,7 @@ public:
 	bool IsDisplayOutputEnabled();
 	
 	void ToggleAppLogLevel(LogLevel level);
-	
-	void EnableRemoteLogging(bool enable) { RemoteLoggingEnabled = enable; }
-	
-	//  thread overrides
-	
+		
 	virtual void Start();
 	
 	virtual void Cancel();
@@ -94,7 +88,6 @@ protected:
 	
 	std::string HostName;
 	
-	bool RemoteLoggingEnabled;
 	
 	//  queue lock
 	std::mutex QueueMutex;

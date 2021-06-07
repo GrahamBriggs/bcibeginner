@@ -45,6 +45,7 @@ bool OnServerRequest(string request);
 //  Program Components
 Logger Logging;
 BroadcastData DataBroadcaster(OnLslConnectionStateChanged);
+BroadcastStatus StatusBroadcaster;
 CommandServer ComServer(OnServerRequest);
 
 //  Command line arguments
@@ -101,9 +102,6 @@ int main(int argc, char *argv[])
 	//  start the tcpip command server
 	ComServer.Start();
 	
-	//  start the UDP status broadcast
-	StartStatusBroadcast();
-	
 	//  start board or file simulator data
 	if(LiveData())
 	{
@@ -119,7 +117,7 @@ int main(int argc, char *argv[])
 
 	// user quit, stop threads
 	DataBroadcaster.Cancel();
-	StopStatusBroadcast();
+	StatusBroadcaster.Cancel();
 	ComServer.Cancel();
 	Logging.Cancel();
 	
@@ -209,6 +207,7 @@ void OnBoardConnectionStateChanged(BoardConnectionStates state, int boardId, int
 		{
 			BoardId = boardId;
 			DataBroadcaster.SetBoard(boardId, sampleRate);
+			StatusBroadcaster.StartBroadcast(boardId, sampleRate);
 		}
 		break;
 		

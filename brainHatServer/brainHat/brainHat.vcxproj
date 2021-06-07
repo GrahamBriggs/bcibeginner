@@ -104,7 +104,6 @@
     <ClInclude Include="TerminalDisplay.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="TimeExtensions.h" />
-    <ClInclude Include="UdpMulticastServerThread.h" />
     <ClInclude Include="UriParser.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
@@ -133,7 +132,6 @@
     <ClCompile Include="TerminalDisplay.cpp" />
     <ClCompile Include="Thread.cpp" />
     <ClCompile Include="TimeExtensions.cpp" />
-    <ClCompile Include="UdpMulticastServerThread.cpp" />
     <None Include="Makefile" />
     <None Include="debug.mak" />
     <None Include="release.mak" />

@@ -10,8 +10,6 @@ namespace BrainHatNetwork
         string Wlan0Address { get; }
         string Wlan0Mode { get; }
         string IpAddress { get; }
-        int DataPort { get; }
-        int LogPort { get; }
     }
 
 
@@ -63,8 +61,6 @@ namespace BrainHatNetwork
         }
 
         public string Wlan0Mode { get; set; }
-        public int DataPort { get; set; }
-        public int LogPort { get; set; }
 
         public int BoardId { get; set; }
         public int SampleRate { get; set; }

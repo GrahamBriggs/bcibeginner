@@ -11,8 +11,6 @@ public:
 	std::string Eth0Address;
 	std::string Wlan0Address;
 	std::string Wlan0Mode;
-	int DataPort;
-	int LogPort;
 	//
 	int BoardId;
 	int SampleRate;
@@ -36,8 +34,6 @@ public:
 		Eth0Address = "";
 		Wlan0Address = "";
 		Wlan0Mode = "";
-		DataPort = 0;
-		LogPort = 0;
 		BoardId = (int)BrainhatBoardIds::UNDEFINED;
 		SampleRate = 0;
 		CytonSRB1 = -1;
@@ -61,8 +57,6 @@ public:
 		j["Eth0Address"] = Eth0Address;
 		j["Wlan0Address"] = Wlan0Address;
 		j["Wlan0Mode"] = Wlan0Mode;
-		j["DataPort"] = DataPort;
-		j["LogPort"] = LogPort;
 		j["BoardId"] = BoardId;
 		j["SampleRate"] = SampleRate;
 		j["CytonSRB1"] = CytonSRB1;

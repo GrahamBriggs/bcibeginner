@@ -42,9 +42,6 @@
     <ClCompile Include="Thread.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
-    <ClCompile Include="UdpMulticastServerThread.cpp">
-      <Filter>Source files</Filter>
-    </ClCompile>
     <ClCompile Include="Logger.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
@@ -117,9 +114,6 @@
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="TimeExtensions.h">
-      <Filter>Header files</Filter>
-    </ClInclude>
-    <ClInclude Include="UdpMulticastServerThread.h">
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="Logger.h">

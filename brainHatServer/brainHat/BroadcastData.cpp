@@ -75,9 +75,6 @@ void BroadcastData::SetupLslForBoard()
 	
 	lsl::stream_info info(getSampleName(BoardId), "BFSample", SampleSize, SampleRate, lsl::cf_double64, HostName);
 	
-	auto response = lsl_library_info();
-	cout << response;
-
 	// add some description fields
 	info.desc().append_child_value("manufacturer", getManufacturerName(BoardId));
 	info.desc().append_child_value("boardId", format("%d", BoardId));

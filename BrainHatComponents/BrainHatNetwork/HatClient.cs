@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using static LSL.liblsl;
 using System.Net.NetworkInformation;
+using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace BrainHatNetwork
 {
@@ -21,54 +23,53 @@ namespace BrainHatNetwork
         //  Events
         public event LogEventDelegate Log;
 
+        public event HatConnectionUpdateDelegate HatConnectionChanged;
+        public event HatConnectionStatusUpdateDelegate HatConnectionStatusUpdate;
+
         public event BFSampleEventDelegate RawDataReceived;
 
         //  Properties
-        public string HostName { get; set; }
+        public string HostName { get; protected set; }
 
-        public string Eth0Address { get; set; }
+        public string Eth0Address { get; protected set; }
 
-        public string Wlan0Address { get; set; }
+        public string Wlan0Address { get; protected set; }
 
-        public string Wlan0Mode { get; set; }
+        public string Wlan0Mode { get; protected set; }
 
-        public int DataPort { get; set; }
+        public int BoardId { get; protected set; }
 
-        public int LogPort { get; set; }
-
-        public int BoardId { get; set; }
-
-        public int SampleRate { get; set; }
+        public int SampleRate { get; protected set; }
 
         public int NumberOfChannels => BrainhatBoardShim.GetNumberOfExgChannels(BoardId);
 
-        public SrbSet CytonSRB1 { get; set; }
+        public SrbSet CytonSRB1 { get; protected set; }
 
-        public SrbSet DaisySRB1 { get; set; }
+        public SrbSet DaisySRB1 { get; protected set; }
 
-        public bool IsStreaming { get; set; }
+        public bool IsStreaming { get; protected set; }
 
-        public bool RecordingDataBrainHat { get; set; }
+        public bool RecordingDataBrainHat { get; protected set; }
 
-        public bool RecordingDataBoard { get; set; }
+        public bool RecordingDataBoard { get; protected set; }
 
-        public string RecordingFileNameBrainHat { get; set; }
+        public string RecordingFileNameBrainHat { get; protected set; }
 
-        public string RecordingFileNameBoard { get; set; }
+        public string RecordingFileNameBoard { get; protected set; }
 
-        public double RecordingDurationBrainHat { get; set; }
+        public double RecordingDurationBrainHat { get; protected set; }
 
-        public double RecordingDurationBoard { get; set; }
+        public double RecordingDurationBoard { get; protected set; }
 
-        public DateTimeOffset TimeStamp { get; set; }
+        public DateTimeOffset TimeStamp { get; protected set; }
 
-        public bool ReceivingRaw => (RunTaskCancelTokenSource != null && TimeSinceLastSample.ElapsedMilliseconds < 5000);
+        public bool ReceivingRaw => (ReadDataTaskCancelTokenSource != null && TimeSinceLastSample.ElapsedMilliseconds < 5000);
 
         public double SecondsSinceLastSample => TimeSinceLastSample.Elapsed.TotalSeconds;
 
         public double RawLatency => RawDataOffsetTime;
 
-        public TimeSpan OffsetTime { get; set; }
+        public TimeSpan OffsetTime { get; protected set; }
 
         public string IpAddress
         {
@@ -82,10 +83,54 @@ namespace BrainHatNetwork
 
                 //  override the address to use loopback when we are on the same machine
                 //  this allows operation of the server/viewer on same machine when not connected to network
-                if (address.CompareTo(LocalIpAddress) == 0 || address.Substring(0, 7).CompareTo("169.254") == 0)
+                if (address.Length > 0 && (address.CompareTo(LocalIpAddress) == 0 || address.Substring(0, 7).CompareTo("169.254") == 0))
                     address = "127.0.0.1";
 
                 return address;
+            }
+        }
+
+
+        /// <summary>
+        /// Start the hat client
+        /// </summary>
+        public async Task StartHatClientAsync()
+        {
+            TimeStamp = DateTimeOffset.UtcNow;
+
+            await StopHatClientAsync();
+
+            try
+            {
+                LocalIpAddress = NetworkUtilities.GetLocalIPAddress();
+            }
+            catch (Exception e)
+            {
+                Log?.Invoke(this, new LogEventArgs(this, "StartHatClientAsync", $"Unable to get local IP address.{e}", LogLevel.ERROR));
+            }
+
+            ReadStatusTaskCancelTokenSource = new CancellationTokenSource();
+            ReadStatusPortTask = RunReadStatusPortAsync(ReadStatusTaskCancelTokenSource.Token);
+            Log?.Invoke(this, new LogEventArgs(HostName, this, "StartHatClient", $"Started HatServer for {HostName}.", LogLevel.INFO));
+        }
+
+
+        /// <summary>
+        /// Stop the hat client
+        /// </summary>
+        public async Task StopHatClientAsync()
+        {
+            await StopReadingFromLslAsync();
+
+            if (ReadStatusTaskCancelTokenSource != null)
+            {
+                ReadStatusTaskCancelTokenSource.Cancel();
+                await ReadStatusPortTask;
+
+                ReadStatusTaskCancelTokenSource = null;
+                ReadStatusPortTask = null;
+
+                Log?.Invoke(this, new LogEventArgs(HostName, this, "StopHatClient", $"Stopped HatServer for {HostName}.", LogLevel.INFO));
             }
         }
 
@@ -97,8 +142,8 @@ namespace BrainHatNetwork
         {
             await StopReadingFromLslAsync();
 
-            RunTaskCancelTokenSource = new CancellationTokenSource();
-            ReadDataPortTask = RunReadDataPortAsync(RunTaskCancelTokenSource.Token);
+            ReadDataTaskCancelTokenSource = new CancellationTokenSource();
+            ReadDataPortTask = RunReadDataPortAsync(ReadDataTaskCancelTokenSource.Token);
             CountRecordsTimer.Start();
             TimeSinceLastSample.Start();
 
@@ -106,18 +151,19 @@ namespace BrainHatNetwork
         }
 
 
+
+
         /// <summary>
         ///  Stop reading from the LSL data stream
         /// </summary>
         public async Task StopReadingFromLslAsync()
         {
-            if (RunTaskCancelTokenSource != null)
+            if (ReadDataTaskCancelTokenSource != null)
             {
-                RunTaskCancelTokenSource.Cancel();
-                if (ReadDataPortTask != null)
-                    await ReadDataPortTask;
+                ReadDataTaskCancelTokenSource.Cancel();
+                await ReadDataPortTask;
 
-                RunTaskCancelTokenSource = null;
+                ReadDataTaskCancelTokenSource = null;
                 ReadDataPortTask = null;
 
                 Log?.Invoke(this, new LogEventArgs(HostName, this, "StopMonitorAsync", $"Stopped HatServer for {HostName}.", LogLevel.INFO));
@@ -125,47 +171,21 @@ namespace BrainHatNetwork
         }
 
 
-        /// <summary>
-        /// Update the connection information
-        /// Force restart if ports have changed
-        /// </summary>
-        public async Task UpdateConnectionAsync(IBrainHatServerConnection connection)
-        {
-            Eth0Address = connection.Eth0Address;
-            Wlan0Address = connection.Wlan0Address;
-
-            if (DataPort != connection.DataPort || LogPort != connection.LogPort)
-            {
-                Log?.Invoke(this, new LogEventArgs(this, "RunUdpMulticastReader", $"Host connection changed, restarting server monitor.", LogLevel.WARN));
-
-                await StopReadingFromLslAsync();
-
-                DataPort = connection.DataPort;
-                LogPort = connection.LogPort;
-
-                await StartReadingFromLslAsync();
-            }
-        }
-
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public HatClient(BrainHatServerStatus connection, StreamInfo streamInfo, string localIpAddress)
+        public HatClient(string hostName, StreamInfo statusStream, StreamInfo dataStream)
         {
-            HostName = connection.HostName;
-            DataPort = connection.DataPort;
-            LogPort = connection.LogPort;
-            Eth0Address = connection.Eth0Address;
-            Wlan0Address = connection.Wlan0Address;
-            LocalIpAddress = localIpAddress;
+            HostName = hostName;
 
-            BoardId = connection.BoardId;
-            SampleRate = connection.SampleRate;
+            Eth0Address = "";
+            Wlan0Address = "";
 
-            StreamInfo = streamInfo;
+            DataStream = dataStream;
+            StatusStream = statusStream;
 
-            int.TryParse(XDocument.Parse(streamInfo.as_xml()).Element("info")?.Element("channel_count").Value, out var sampleSize);
+            int.TryParse(XDocument.Parse(dataStream.as_xml()).Element("info")?.Element("channel_count").Value, out var sampleSize);
             SampleSize = sampleSize;
 
             CountRecordsTimer = new System.Diagnostics.Stopwatch();
@@ -174,28 +194,166 @@ namespace BrainHatNetwork
 
             TimeStamp = DateTimeOffset.UtcNow;
 
-            RunTaskCancelTokenSource = null;
+            ReadDataTaskCancelTokenSource = null;
 
             NetworkChange.NetworkAddressChanged += NetworkChange_NetworkAddressChanged;
         }
+        
+        StreamInfo StatusStream;
+        StreamInfo DataStream;
+        public int SampleSize { get; private set; }
 
+        string LocalIpAddress;
+
+        bool SyncedTime;
+
+        CancellationTokenSource ReadDataTaskCancelTokenSource;
+        Task ReadDataPortTask;       
+        CancellationTokenSource ReadStatusTaskCancelTokenSource;
+        Task ReadStatusPortTask;
+
+        Stopwatch ReportNetworkTimeInterval = new Stopwatch();
+        const int ReadingDelay = 20;    //  read the LSL inlet at 50 Hz
+
+
+        /// <summary>
+        /// Update local IP address any time network address changes
+        /// </summary>
         void NetworkChange_NetworkAddressChanged(object sender, EventArgs e)
         {
             LocalIpAddress = NetworkUtilities.GetLocalIPAddress();
         }
 
-        StreamInfo StreamInfo;
-        public int SampleSize { get; private set; }
+        /// <summary>
+        /// Read from the LSL stream for server status
+        /// </summary>
+        async Task RunReadStatusPortAsync(CancellationToken cancelToken)
+        {
+            ReportNetworkTimeInterval.Restart();
 
-        //  Read data port task
-        CancellationTokenSource RunTaskCancelTokenSource;
-        Task ReadDataPortTask;
+            StreamInlet inlet = null;
+            try
+            {
+                inlet = new StreamInlet(StatusStream);
+                cancelToken.Register(() => inlet.close_stream());
+                inlet.open_stream();
+                SyncedTime = false;
+                SetBoardProperties(inlet);
+
+                Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadStatusPortAsync", $"Create LSL stream for status on host {HostName}.", LogLevel.DEBUG));
+                HatConnectionChanged?.Invoke(this, new HatConnectionEventArgs(HatConnectionState.Discovered, HostName, "", BoardId, SampleRate));
+
+                string[] sample = new string[1];
+                //  spin until canceled
+                while (!cancelToken.IsCancellationRequested)
+                {
+                    await Task.Delay(ReadingDelay);
+                    try
+                    {
+                        inlet.pull_sample(sample);
+                        await ParseServerStatus(sample[0]);
+                    }
+                    catch (ObjectDisposedException)
+                    { }
+                    catch (Exception ex)
+                    {
+                        Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadStatusPortAsync", ex, LogLevel.WARN));
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            { }
+            catch (Exception e)
+            {
+                Log?.Invoke(this, new LogEventArgs(this, "RunReadStatusPortAsync", e, LogLevel.FATAL));
+            }
+            finally
+            {
+                if (inlet != null)
+                    inlet.close_stream();
+            }
+        }
+
+        void SetBoardProperties(StreamInlet inlet)
+        {
+            var info = inlet.info();
+
+            BoardId = int.Parse(info.desc().child_value("boardId"));
+            SampleRate = int.Parse(info.desc().child_value("sampleRate"));
+        }
 
 
-      
-        string LocalIpAddress;
+        /// <summary>
+        /// Parse the server status string
+        /// </summary>
+        async Task ParseServerStatus(string sample)
+        {
+            var connectionStatus = JsonConvert.DeserializeObject<BrainHatServerStatus>(sample);
 
-        const int ReadingDelay = 20;    //  read the LSL inlet at 50 Hz
+            //  update connection status with local properties
+            connectionStatus.HostName = HostName;
+            connectionStatus.OffsetTime = DateTimeOffset.UtcNow - connectionStatus.TimeStamp;
+            connectionStatus.ReceivingRaw = ReceivingRaw;
+            connectionStatus.RawLatency = RawLatency;
+
+            //  update local properties with connection status
+            TimeStamp = DateTimeOffset.UtcNow;
+            OffsetTime = connectionStatus.OffsetTime;
+            CytonSRB1 = connectionStatus.CytonSRB1;
+            DaisySRB1 = connectionStatus.DaisySRB1;
+            IsStreaming = connectionStatus.IsStreaming;
+            Eth0Address = connectionStatus.Eth0Address;
+            Wlan0Address = connectionStatus.Wlan0Address;
+
+            if ( ! SyncedTime )
+            {
+                SyncedTime = true;
+                await SyncServerTime(connectionStatus);
+            }
+
+            HatConnectionStatusUpdate?.Invoke(this, new BrainHatStatusEventArgs(connectionStatus));
+
+            if (ReportNetworkTimeInterval.ElapsedMilliseconds > 30000)
+            {
+                ReportNetworkTimeInterval.Restart();
+                Log?.Invoke(this, new LogEventArgs(connectionStatus.HostName, this, "ParseServerStatus", $"Network status for {connectionStatus.HostName}: Offset time {connectionStatus.OffsetTime.TotalSeconds:F4} s.", LogLevel.TRACE));
+            }
+        }
+
+
+        /// <summary>
+        /// Check server time offset, 
+        /// and sync it with client time if it is more than 5 seconds out
+        /// </summary>
+        async Task SyncServerTime(BrainHatServerStatus connectionStatus)
+        {
+            //  sync time on the server if it is more than 5 seconds off
+            if (connectionStatus.OffsetTime.TotalSeconds > 5)
+            {
+                Log?.Invoke(this, new LogEventArgs(this, "CreateNewHatClient", "Server time is more than 5 seconds behind system time, setting server time.", LogLevel.INFO));
+
+                var sw = new Stopwatch();
+                sw.Start();
+
+                var response = await Tcpip.GetTcpResponseAsync(connectionStatus.IpAddress, BrainHatNetworkAddresses.ServerPort, "ping");
+                if (response.Contains("ACK"))
+                {
+                    sw.Stop();
+
+                    response = await Tcpip.GetTcpResponseAsync(connectionStatus.IpAddress, BrainHatNetworkAddresses.ServerPort, $"settime?time={DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + (sw.Elapsed.Milliseconds / 2)}");
+
+                    if (response == null || !response.Contains("ACK"))
+                    {
+                        Log?.Invoke(this, new LogEventArgs(this, "CreateNewHatClient", "Failed to set server time.", LogLevel.ERROR));
+                    }
+                }
+                else
+                {
+                    Log?.Invoke(this, new LogEventArgs(this, "CreateNewHatClient", "Failed to get server ping.", LogLevel.ERROR));
+                }
+            }
+        }
+
 
         /// <summary>
         /// Run function for reading data on LSL multicast data port
@@ -206,12 +364,12 @@ namespace BrainHatNetwork
             try
             {
                 int maxChunkLen = (int)((SampleRate * 1.5) / ReadingDelay);
-                inlet = new StreamInlet(StreamInfo,360, maxChunkLen);
+                inlet = new StreamInlet(DataStream,360, maxChunkLen);
                 
                 cancelToken.Register(() => inlet.close_stream());
                 inlet.open_stream();
 
-                Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadDataPortAsync", $"Create LSL stream: {inlet.info().as_xml()}.", LogLevel.DEBUG));
+                Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadDataPortAsync", $"Create LSL data stream for host {HostName}.", LogLevel.DEBUG));
 
                 double[,] buffer = new double[512, SampleSize];
                 double[] timestamps = new double[512];
@@ -219,6 +377,8 @@ namespace BrainHatNetwork
                 //  spin until canceled
                 while (!cancelToken.IsCancellationRequested)
                 {
+                    await Task.Delay(ReadingDelay);
+
                     try
                     {
                         int num = inlet.pull_chunk(buffer, timestamps);
@@ -230,15 +390,13 @@ namespace BrainHatNetwork
                     {
                         Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadDataPortAsync", ex, LogLevel.WARN));
                     }
-
-                    await Task.Delay(20);
                 }
             }
             catch (OperationCanceledException)
             { }
             catch (Exception e)
             {
-                Log?.Invoke(this, new LogEventArgs(this, "RunUdpMulticastReader", e, LogLevel.FATAL));
+                Log?.Invoke(this, new LogEventArgs(this, "RunReadDataPortAsync", e, LogLevel.FATAL));
             }
             finally
             {

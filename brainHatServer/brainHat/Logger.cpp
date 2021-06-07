@@ -87,7 +87,6 @@ Logger::Logger()
 	
 	LogLastLevelDisplayed = LogLevelAll;
 	LogDisplayLevel = LogLevelTrace;
-	RemoteLoggingEnabled = true;
 	
 	Notified = false;
 }
@@ -210,14 +209,7 @@ void Logger::Start()
 {
 	HostName = GetHostName();
 	
-	PortNumber = OpenServerSocket(MULTICAST_LOGPORT, MULTICAST_GROUPADDRESS);
-	
-	if (PortNumber < 0)
-	{
-		return;
-	}
-	
-	UdpMulticastServerThread::Start();
+	Thread::Start();
 }
 
 
@@ -291,13 +283,6 @@ void Logger::RunFunction()
 				os << setfill(' ') << "   "  << left << setw(7) << LogLevelString(log->Level) << " " << left << setw(25) << log->Sender << "  " << setw(25) << log->Function << "  " <<  log->Data;			
 
 				Display.PrintLine(os.str());
-				
-				if (RemoteLoggingEnabled)
-				{
-					log->HostName = HostName;
-					auto logText = log->SerializeAsJson().substr(0,480);
-					WriteMulticastString(format("log?hostname=%s&log=%s\n", HostName.c_str(), logText.c_str()));
-				}
 				
 				delete(*nextItem);
 			}

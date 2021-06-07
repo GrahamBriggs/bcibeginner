@@ -1,25 +1,29 @@
 #pragma once
 #include <queue>
-#include "UdpMulticastServerThread.h"
 #include "TimeExtensions.h"
+#include "Thread.h"
 
-void StartStatusBroadcast();
-void StopStatusBroadcast();
 
 //  UDP multicast thread for status broadcast
 //
-class BroadcastStatus : public UdpMulticastServerThread
+class BroadcastStatus : public Thread
 {
 public:
-	BroadcastStatus(std::string interface = "");
+	BroadcastStatus();
 	virtual ~BroadcastStatus();
-	
-	virtual void Start();
+
+	void StartBroadcast(int boardId, int sampleRate);
 	
 	virtual void RunFunction();
 	
 		
 protected:
+	
+	int BoardId;
+	int SampleRate;
+	void SetupLslForStatus();
+	
+	lsl::stream_outlet* LSLOutlet;
 	
 	std::string Interface;
 	
