@@ -39,7 +39,7 @@ namespace brainHatSharpGUI
 
 
         Logging Logger;
-        IBoardDataReader BrainflowBoard;
+        BoardDataReader BrainflowBoard;
         StatusBroadcastServer BroadcastStatus;
         LSLDataBroadcast LslBroadcast;
         TcpipCommandServer CommandServer;
@@ -47,6 +47,8 @@ namespace brainHatSharpGUI
         BrainHatFileWriter FileWriter;
         ConfigurationWindow ConfigWindow = null;
         LogWindow LoggingWindow = null;
+
+        bool SelectBoard = true;
 
         /// <summary>
         /// On Window Loaded
@@ -56,6 +58,18 @@ namespace brainHatSharpGUI
             base.OnLoad(e);
 
             Text = Properties.Resources.AppName;
+
+            var selectBoard = ConfigurationManager.AppSettings.Get("selectBoard");
+            if ( selectBoard != null && selectBoard.Length > 0 )
+            {
+                bool.TryParse(selectBoard, out SelectBoard);
+            }
+
+            if (SelectBoard == false)
+            {
+                radioButtonDaisy.Visible = false;
+                radioButtonCyton.Text = ConfigurationManager.AppSettings.Get("boardName");
+            }
 
             SetUiLabels();
 
@@ -117,7 +131,7 @@ namespace brainHatSharpGUI
         /// </summary>
         private async Task StartProgramComponentsAsync()
         {
-            //  create udp multicast broadcaster
+            //  create status broadcaster
             BroadcastStatus = new StatusBroadcastServer();
             BroadcastStatus.Log += OnLog;
 
@@ -131,7 +145,7 @@ namespace brainHatSharpGUI
             MonitorStatus.Log += OnLog;
             MonitorStatus.StatusUpdate += OnStatusUpdate;
 
-            await BroadcastStatus.StartDataBroadcastServerAsync();
+
             await CommandServer.StartCommandServerAsync();
             await MonitorStatus.StartStatusMonitorAsync();
         }
@@ -163,14 +177,15 @@ namespace brainHatSharpGUI
         /// </summary>
         private void SetBoardIdRadioButton()
         {
-            switch (Properties.Settings.Default.BoardId)
+            switch ((BrainhatBoardIds) Properties.Settings.Default.BoardId)
             {
-                case 0:
+                case BrainhatBoardIds.CYTON_BOARD:
+                case BrainhatBoardIds.MENTALIUM:
                 default:
                     radioButtonCyton.Checked = true;
                     break;
 
-                case 2:
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
                     radioButtonDaisy.Checked = true;
                     break;
             }
@@ -202,6 +217,8 @@ namespace brainHatSharpGUI
         /// </summary>
         private void EnableConnectionButtons(bool enable)
         {
+            
+
             radioButtonCyton.Enabled = enable;
             radioButtonDaisy.Enabled = enable;
             comboBoxComPort.Enabled = enable;
@@ -252,9 +269,13 @@ namespace brainHatSharpGUI
         private void SaveUiInputToProperties()
         {
             if (radioButtonCyton.Checked)
-                Properties.Settings.Default.BoardId = 0;
+            {
+                Properties.Settings.Default.BoardId = SelectBoard ? (int)BrainhatBoardIds.CYTON_BOARD : (int)BrainhatBoardIds.MENTALIUM;
+            }
             else if (radioButtonDaisy.Checked)
-                Properties.Settings.Default.BoardId = 2;
+            {
+                Properties.Settings.Default.BoardId = (int)BrainhatBoardIds.CYTON_DAISY_BOARD;
+            }
 
             Properties.Settings.Default.ComPort = (string)comboBoxComPort.SelectedItem;
 
@@ -333,9 +354,8 @@ namespace brainHatSharpGUI
             DataLatencyTimer = new System.Diagnostics.Stopwatch();
             DataLatencyTimer.Start();
 
-            //  TODO - what kind of board
-            //BrainflowBoard = new BoardDataReader();
-            BrainflowBoard = new ContecDataReader();
+
+            BrainflowBoard = new BoardDataReader();
             BrainflowBoard.ConnectToBoard += OnConnectToBoard;
             BrainflowBoard.Log += OnLog;
 
@@ -355,6 +375,7 @@ namespace brainHatSharpGUI
             {
                 await LslBroadcast.StopLslBroadcastAsync();
                 LslBroadcast.Log -= OnLog;
+                await BroadcastStatus.StopDataBroadcastServerAsync();
             }
 
             await BrainflowBoard.StopBoardDataReaderAsync();
@@ -376,6 +397,7 @@ namespace brainHatSharpGUI
                 LslBroadcast = new LSLDataBroadcast();
                 LslBroadcast.Log += OnLog;
                 await LslBroadcast.StartLslBroadcastAsyc(e.BoardId, e.SampleRate);
+                await BroadcastStatus.StartDataBroadcastServerAsync(e.BoardId, e.SampleRate);
 
                 BrainflowBoard.BoardReadData += OnBrainflowBoardReadData;
 
@@ -422,7 +444,7 @@ namespace brainHatSharpGUI
 
                     UpdateStatusUi(e.Status);
 
-                    BroadcastStatus.QueueStringToBroadcast($"networkstatus?hostname={e.Status.HostName}&status={JsonConvert.SerializeObject(e.Status)}\n");
+                    BroadcastStatus.QueueStringToBroadcast(JsonConvert.SerializeObject(e.Status));
                 }
             }
             catch (Exception ex)
@@ -476,7 +498,7 @@ namespace brainHatSharpGUI
                         srbStatus = $"{Properties.Resources.SRB1} {Properties.Resources.Connected}";
                         break;
                 }
-                if (status.BoardId == 2)
+                if ((BrainhatBoardIds)status.BoardId == BrainhatBoardIds.CYTON_DAISY_BOARD)
                 {
                     switch (status.DaisySRB1)
                     {
@@ -519,8 +541,7 @@ namespace brainHatSharpGUI
 
             if (BrainflowBoard != null && ConfigWindow == null)
             {
-                //  TODO
-                ConfigWindow = new ConfigurationWindow(null/*BrainflowBoard*/);
+                ConfigWindow = new ConfigurationWindow(BrainflowBoard);
                 ConfigWindow.Log += OnLog;
                 ConfigWindow.FormClosed += ConfigurationWindowFormClosed;
                 ConfigWindow.Show();

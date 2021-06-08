@@ -76,9 +76,9 @@ namespace brainHatSharpGUI
             this.comboBoxComPort.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxComPort.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.comboBoxComPort.FormattingEnabled = true;
-            this.comboBoxComPort.Location = new System.Drawing.Point(272, 27);
+            this.comboBoxComPort.Location = new System.Drawing.Point(306, 27);
             this.comboBoxComPort.Name = "comboBoxComPort";
-            this.comboBoxComPort.Size = new System.Drawing.Size(215, 28);
+            this.comboBoxComPort.Size = new System.Drawing.Size(181, 28);
             this.comboBoxComPort.TabIndex = 1;
             // 
             // groupBoxBoard
@@ -182,9 +182,9 @@ namespace brainHatSharpGUI
             // labelComPort
             // 
             this.labelComPort.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelComPort.Location = new System.Drawing.Point(136, 32);
+            this.labelComPort.Location = new System.Drawing.Point(182, 32);
             this.labelComPort.Name = "labelComPort";
-            this.labelComPort.Size = new System.Drawing.Size(130, 20);
+            this.labelComPort.Size = new System.Drawing.Size(114, 20);
             this.labelComPort.TabIndex = 4;
             this.labelComPort.Text = "Puerto COM";
             this.labelComPort.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -223,7 +223,7 @@ namespace brainHatSharpGUI
             this.groupBoxRunStatus.Controls.Add(this.labelSrbStatus);
             this.groupBoxRunStatus.Controls.Add(this.labelRunStatus);
             this.groupBoxRunStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.groupBoxRunStatus.Location = new System.Drawing.Point(12, 11);
+            this.groupBoxRunStatus.Location = new System.Drawing.Point(13, 11);
             this.groupBoxRunStatus.Name = "groupBoxRunStatus";
             this.groupBoxRunStatus.Size = new System.Drawing.Size(493, 252);
             this.groupBoxRunStatus.TabIndex = 7;

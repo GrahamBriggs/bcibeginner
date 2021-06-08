@@ -17,13 +17,13 @@ namespace BrainflowDataProcessingTests
         [TestMethod]
         public async Task ReadCsvDataFile()
         {
-            IEnumerable<BFCyton8Sample> records;
+            IEnumerable<BFSampleImplementation> records;
 
             using (var reader = new StreamReader("./TestFiles/blinkWink10_082530.csv"))
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Configuration.HasHeaderRecord = false;
-                records = csv.GetRecords<BFCyton8Sample>().ToList();
+                records = csv.GetRecords<BFSampleImplementation>().ToList();
             }
 
             BrainflowDataProcessor processor = new BrainflowDataProcessor("", 0, 250);

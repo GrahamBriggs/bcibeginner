@@ -37,7 +37,7 @@ namespace BrainflowDataProcessingTests
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Configuration.HasHeaderRecord = false;
-                var data = csv.GetRecords<BFCyton8Sample>().ToList();
+                var data = csv.GetRecords<BFSampleImplementation>().ToList();
 
                 await processor.StartDataProcessorAsync();
 
@@ -88,7 +88,7 @@ namespace BrainflowDataProcessingTests
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Configuration.HasHeaderRecord = false;
-                var records = csv.GetRecords<BFCyton8Sample>().ToList(); ;
+                var records = csv.GetRecords<BFSampleImplementation>().ToList(); ;
 
                 await processor.StartDataProcessorAsync();
 
@@ -136,7 +136,7 @@ namespace BrainflowDataProcessingTests
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Configuration.HasHeaderRecord = false;
-                var records = csv.GetRecords<BFCyton8Sample>().ToList();
+                var records = csv.GetRecords<BFSampleImplementation>().ToList();
 
                 await processor.StartDataProcessorAsync();
 

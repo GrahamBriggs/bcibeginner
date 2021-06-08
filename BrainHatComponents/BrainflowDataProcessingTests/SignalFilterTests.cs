@@ -27,7 +27,7 @@ namespace BrainflowDataProcessingTests
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Configuration.HasHeaderRecord = false;
-                var records = csv.GetRecords<BFCyton8Sample>().ToList();
+                var records = csv.GetRecords<BFSampleImplementation>().ToList();
 
                 //  get data up to the first end of the first blink sequence, 15 seconds into the data file
                 var startTime = records.First().TimeStamp;
@@ -59,7 +59,7 @@ namespace BrainflowDataProcessingTests
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Configuration.HasHeaderRecord = false;
-                var records = csv.GetRecords<BFCyton8Sample>().ToList();
+                var records = csv.GetRecords<BFSampleImplementation>().ToList();
 
                 //  get data up to the first end of the first blink sequence, 15 seconds into the data file
                 var startTime = records.First().TimeStamp;
@@ -91,7 +91,7 @@ namespace BrainflowDataProcessingTests
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Configuration.HasHeaderRecord = false;
-                var records = csv.GetRecords<BFCyton8Sample>().ToList();
+                var records = csv.GetRecords<BFSampleImplementation>().ToList();
 
                 //  get data up to the first end of the first blink sequence, 15 seconds into the data file
                 var startTime = records.First().TimeStamp;
@@ -123,7 +123,7 @@ namespace BrainflowDataProcessingTests
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Configuration.HasHeaderRecord = false;
-                var records = csv.GetRecords<BFCyton8Sample>().ToList();
+                var records = csv.GetRecords<BFSampleImplementation>().ToList();
 
                 //  get data up to the first end of the first blink sequence, 15 seconds into the data file
                 var startTime = records.First().TimeStamp;
@@ -155,7 +155,7 @@ namespace BrainflowDataProcessingTests
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Configuration.HasHeaderRecord = false;
-                var records = csv.GetRecords<BFCyton8Sample>().ToList();
+                var records = csv.GetRecords<BFSampleImplementation>().ToList();
 
                 //  get data up to the first end of the first blink sequence, 15 seconds into the data file
                 var startTime = records.First().TimeStamp;
@@ -186,7 +186,7 @@ namespace BrainflowDataProcessingTests
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Configuration.HasHeaderRecord = false;
-                var records = csv.GetRecords<BFCyton8Sample>().ToList();
+                var records = csv.GetRecords<BFSampleImplementation>().ToList();
 
                 //  get data up to the first end of the first blink sequence, 15 seconds into the data file
                 var startTime = records.First().TimeStamp;
@@ -217,7 +217,7 @@ namespace BrainflowDataProcessingTests
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Configuration.HasHeaderRecord = false;
-                var records = csv.GetRecords<BFCyton8Sample>().ToList();
+                var records = csv.GetRecords<BFSampleImplementation>().ToList();
 
                 //  get data up to the first end of the first blink sequence, 15 seconds into the data file
                 var startTime = records.First().TimeStamp;
@@ -248,7 +248,7 @@ namespace BrainflowDataProcessingTests
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Configuration.HasHeaderRecord = false;
-                var records = csv.GetRecords<BFCyton8Sample>().ToList();
+                var records = csv.GetRecords<BFSampleImplementation>().ToList();
 
                 //  get data up to the first end of the first blink sequence, 15 seconds into the data file
                 var startTime = records.First().TimeStamp;
@@ -285,7 +285,7 @@ namespace BrainflowDataProcessingTests
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Configuration.HasHeaderRecord = false;
-                var records = csv.GetRecords<BFCyton8Sample>().ToList();
+                var records = csv.GetRecords<BFSampleImplementation>().ToList();
 
                 //  get data up to the first end of the first blink sequence, 15 seconds into the data file
                 var startTime = records.First().TimeStamp;

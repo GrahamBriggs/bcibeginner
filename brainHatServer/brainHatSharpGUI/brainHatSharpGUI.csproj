@@ -70,7 +70,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BoardDataReaderInterface.cs" />
-    <Compile Include="ContecDataReader.cs" />
     <Compile Include="BoardDataReader.cs" />
     <Compile Include="ImpedanceSettings.cs">
       <SubType>Form</SubType>
@@ -175,6 +174,10 @@
     <ProjectReference Include="..\..\BrainHatComponents\BrainHatNetwork\BrainHatNetwork.csproj">
       <Project>{f8824343-ec45-4476-ba97-0010bddef9f1}</Project>
       <Name>BrainHatNetwork</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BrainHatComponents\liblsl-Csharp\liblsl.csproj">
+      <Project>{82bef4b5-5f28-499b-b3d5-cc802c8519a2}</Project>
+      <Name>liblsl</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\BrainHatComponents\LoggingInterfaces\LoggingInterfaces.csproj">
       <Project>{eae81bba-a0c2-4e59-85f6-270e3f6fb6fa}</Project>

@@ -137,6 +137,48 @@ namespace BrainflowInterfaces
             }
         }
 
+        public static int GetSampleRate(int boardId)
+        {
+            int useBoardId = boardId;
+            switch ((BrainhatBoardIds)boardId)
+            {
+                case BrainhatBoardIds.MENTALIUM:
+                    useBoardId = 0;
+                    break;
+            }
+
+            switch ((BrainhatBoardIds)useBoardId)
+            {
+                default:
+                    return 0;
+
+                case BrainhatBoardIds.CYTON_BOARD:
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
+                    return BoardShim.get_sampling_rate(useBoardId);
+            }
+        }
+
+        public static int GetTimestampChannel(int boardId)
+        {
+            int useBoardId = boardId;
+            switch ((BrainhatBoardIds)boardId)
+            {
+                case BrainhatBoardIds.MENTALIUM:
+                    useBoardId = 0;
+                    break;
+            }
+
+            switch ((BrainhatBoardIds)useBoardId)
+            {
+                default:
+                    return 0;
+
+                case BrainhatBoardIds.CYTON_BOARD:
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
+                    return BoardShim.get_timestamp_channel(useBoardId);
+            }
+        }
+
 
 
 

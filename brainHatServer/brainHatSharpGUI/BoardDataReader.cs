@@ -494,9 +494,18 @@ namespace brainHatSharpGUI
                 await ReleaseBoardAsync();
                 RequestToggleStreamingMode = false;
 
-                TheBoard = new BoardShim(BoardId, InputParams);
-                SampleRate = BoardShim.get_sampling_rate(BoardId);
-                TimeStampIndex = BoardShim.get_timestamp_channel(BoardId);
+                var useBoardId = BoardId;
+                switch ( (BrainhatBoardIds)BoardId)
+                {
+                    case BrainhatBoardIds.MENTALIUM:
+                        useBoardId = 0;
+                        break;
+                }
+
+                TheBoard = new BoardShim(useBoardId, InputParams);
+
+                SampleRate = BrainhatBoardShim.GetSampleRate(BoardId);
+                TimeStampIndex = BrainhatBoardShim.GetTimestampChannel(BoardId);
 
                 TheBoard.prepare_session();
                 await Task.Delay(TimeSpan.FromSeconds(1));
@@ -513,7 +522,7 @@ namespace brainHatSharpGUI
                 if ( StartSrb1CytonSet )
                 {
                     await SetSrb1Async(BoardSettings.Boards[0].Channels[0], true);
-                    if (StartSrb1DaisySet && BoardId == 2 && BoardSettings.Boards.Count() > 1)
+                    if (StartSrb1DaisySet && (BrainhatBoardIds)BoardId == BrainhatBoardIds.CYTON_DAISY_BOARD && BoardSettings.Boards.Count() > 1)
                         await SetSrb1Async(BoardSettings.Boards[1].Channels[0], true);
 
                     BoardSettings = new CytonBoardsImplementation();
@@ -747,19 +756,8 @@ namespace brainHatSharpGUI
 
                     for (int i = 0; i < rawData.GetLength(1); i++)
                     {
-                        IBFSample nextSample = null;
-                        switch (BoardId)
-                        {
-                            case 0:
-                                nextSample = new BFCyton8Sample(rawData, i);
-                                break;
-                            case 2:
-                                nextSample = new BFCyton16Sample(rawData, i);
-                                break;
-                            default:
-                                //  TODO ganglion
-                                break;
-                        }
+                        IBFSample nextSample = new BFSampleImplementation(BoardId);
+                        nextSample.InitializeFromSample(rawData.GetColumn(i));
 
                         nextSample.TimeStamp = oldestReadingTime + ((i + 1) * period);
                         data.Add(nextSample);
@@ -844,14 +842,15 @@ namespace brainHatSharpGUI
             var difference = sample.SampleIndex.SampleIndexDifference(LastSampleIndex);
             LastSampleIndex = (int)sample.SampleIndex;
 
-            switch (BoardId)
+            switch ((BrainhatBoardIds)BoardId)
             {
-                case 0:
+                case BrainhatBoardIds.CYTON_BOARD:
+                case BrainhatBoardIds.MENTALIUM:
                     if (difference > 1)
                         CountMissingIndex++;
                     break;
 
-                case 2:
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
                     if (difference > 2)
                         CountMissingIndex++;
                     break;

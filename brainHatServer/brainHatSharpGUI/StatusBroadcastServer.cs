@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static LSL.liblsl;
 
 namespace brainHatSharpGUI
 {
@@ -22,9 +23,12 @@ namespace brainHatSharpGUI
         /// <summary>
         /// Start data broadcast server
         /// </summary>
-        public async Task StartDataBroadcastServerAsync()
+        public async Task StartDataBroadcastServerAsync(int boardId, int sampleRate)
         {
             await StopDataBroadcastServerAsync();
+
+            BoardId = boardId;
+            SampleRate = sampleRate;
 
             CancelTokenSource = new CancellationTokenSource();
             RunTask = RunDataBroadcastServerAsync(CancelTokenSource.Token);
@@ -70,10 +74,14 @@ namespace brainHatSharpGUI
 
         public StatusBroadcastServer()
         {
+            
+
             NotifyDataToBroadcast = new SemaphoreSlim(0);
             StringsToBroadcast = new ConcurrentQueue<string>();
         }
 
+        int BoardId;
+        int SampleRate;
 
         //  Thread run objects
         CancellationTokenSource CancelTokenSource;
@@ -81,6 +89,7 @@ namespace brainHatSharpGUI
         protected SemaphoreSlim NotifyDataToBroadcast { get; set; }
         ConcurrentQueue<string> StringsToBroadcast { get; set; }
 
+        
 
         /// <summary>
         /// Run function
@@ -89,16 +98,16 @@ namespace brainHatSharpGUI
         {
             try
             {
-                //  create UDP client
-                using (var udpServer = new UdpClient())
-                {
-                    cancelToken.Register(() => { try { udpServer.Close(); } catch { } });
+                var info = new StreamInfo("bhStatus", "bhStatus", 1, IRREGULAR_RATE, channel_format_t.cf_string, NetworkUtilities.GetHostName());
 
+                info.desc().append_child_value("boardId", BoardId.ToString());
+                info.desc().append_child_value("sampleRate", SampleRate.ToString());
+
+                //  create UDP client
+                using (var outlet = new StreamOutlet(info))
+                {
                     try
                     {
-                        IPEndPoint localpt = new IPEndPoint(IPAddress.Any, BrainHatNetworkAddresses.StatusPort);
-                        udpServer.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-
                         while (!cancelToken.IsCancellationRequested)
                         {
                             await NotifyDataToBroadcast.WaitAsync(cancelToken);
@@ -108,8 +117,7 @@ namespace brainHatSharpGUI
                                 try
                                 {
                                     StringsToBroadcast.TryDequeue(out var broadcastString);
-                                    var sendBytes = Encoding.UTF8.GetBytes(broadcastString);
-                                    await udpServer.SendAsync(sendBytes, sendBytes.Length, BrainHatNetworkAddresses.MulticastGroupAddress, BrainHatNetworkAddresses.StatusPort);
+                                    outlet.push_sample(new string[]  { broadcastString});
                                 }
                                 catch (Exception ex)
                                 {

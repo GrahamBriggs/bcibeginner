@@ -317,10 +317,12 @@ namespace BrainHatNetwork
 
             Log?.Invoke(this, new LogEventArgs(this, "CreateNewHatClient", $"Discovered new brainHat server {hostName}.", LogLevel.INFO));
             var hatClient = new HatClient(hostName, streamInfo, DiscoveredLslStreams[hostName]);
+            DiscoveredServers.TryAdd(hostName, hatClient);
+
             RegisterHatClientEvents(hatClient, true);
             await hatClient.StartHatClientAsync();
 
-            DiscoveredServers.TryAdd(hostName, hatClient);
+            
         }
 
         private void RegisterHatClientEvents(HatClient hatClient, bool register)

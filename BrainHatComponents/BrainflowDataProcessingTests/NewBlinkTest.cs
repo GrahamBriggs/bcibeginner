@@ -40,7 +40,7 @@ namespace BrainflowDataProcessingTests
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Configuration.HasHeaderRecord = false;
-                var records = csv.GetRecords<BFCyton8Sample>();
+                var records = csv.GetRecords<BFSampleImplementation>();
 
                 //  get data up to the first end of the first blink sequence, 15 seconds into the data file
                 TestTimeStart = records.First().TimeStamp;

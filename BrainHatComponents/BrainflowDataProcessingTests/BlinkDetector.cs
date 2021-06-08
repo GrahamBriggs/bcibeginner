@@ -20,7 +20,7 @@ namespace BrainflowDataProcessingTests
             BlinkDetector detector = new BlinkDetector();
             detector.DetectedBlink += Detector_DetectedBlink;
 
-            BFCyton8Sample data = new BFCyton8Sample()
+            BFSampleImplementation data = new BFSampleImplementation(0)
             {
                 TimeStamp = 1.00100,
             };
@@ -32,7 +32,7 @@ namespace BrainflowDataProcessingTests
             Assert.AreEqual(0, LeftCount);
             Assert.AreEqual(0, RightCount);
 
-            data = new BFCyton8Sample()
+            data = new BFSampleImplementation(0)
             {
                 TimeStamp = 1.25,
             };

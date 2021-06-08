@@ -100,12 +100,12 @@ namespace brainHatSharpGUI
 
 
         //  Run function task
-        protected CancellationTokenSource RunFunctionCancelTokenSource { get; set; }
-        protected Task RunFunctionTask { get; set; }
+        CancellationTokenSource RunFunctionCancelTokenSource { get; set; }
+        Task RunFunctionTask { get; set; }
 
         //  Queue
-        protected SemaphoreSlim NotifyAddedLog { get; set; }
-        protected ConcurrentQueue<LogEventArgs> LogsQueue { get; set; }
+        SemaphoreSlim NotifyAddedLog { get; set; }
+        ConcurrentQueue<LogEventArgs> LogsQueue { get; set; }
 
         //  Buffer
         public ConcurrentQueue<LogEventArgs> LogBuffer { get; protected set; }
@@ -114,7 +114,7 @@ namespace brainHatSharpGUI
         /// <summary>
         /// Handler for component logging
         /// </summary>
-        private void OnLog(object sender, LogEventArgs e)
+        void OnLog(object sender, LogEventArgs e)
         {
             AddLog(e);
         }
@@ -123,7 +123,7 @@ namespace brainHatSharpGUI
         /// <summary>
         /// Handler for remote log monitor logging
         /// </summary>
-        private void OnRemoteLogReceived(object sender, RemoteLogEventArgs e)
+        void OnRemoteLogReceived(object sender, RemoteLogEventArgs e)
         {
             AddLog(e);
         }
@@ -132,33 +132,24 @@ namespace brainHatSharpGUI
         /// <summary>
         /// Logging queue processing run function
         /// </summary>
-        private async Task RunLogging(CancellationToken cancelToken)
+        async Task RunLogging(CancellationToken cancelToken)
         {
             try
             {
-                using (var udpServer = new UdpClient())
+                try
                 {
-                    cancelToken.Register(() => { try { udpServer.Close(); } catch { } });
-
-                    IPEndPoint localpt = new IPEndPoint(IPAddress.Any, BrainHatNetworkAddresses.LogPort);
-                    udpServer.Client.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-                    //udpServer.Client.Bind(localpt);
-
-                    try
+                    while (!cancelToken.IsCancellationRequested)
                     {
-                        while (!cancelToken.IsCancellationRequested)
-                        {
-                            await NotifyAddedLog.WaitAsync(cancelToken);
+                        await NotifyAddedLog.WaitAsync(cancelToken);
 
-                            await ProcessLogs(udpServer);
-                        }
+                        ProcessLogs();
                     }
-                    catch (OperationCanceledException)
-                    { }
-                    catch (Exception e)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Exception in logging: {e}.");
-                    }
+                }
+                catch (OperationCanceledException)
+                { }
+                catch (Exception e)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Exception in logging: {e}.");
                 }
             }
             catch (Exception e)
@@ -172,7 +163,7 @@ namespace brainHatSharpGUI
         /// <summary>
         /// Process the logging queue
         /// </summary>
-        private async Task ProcessLogs(UdpClient udpClient)
+        void ProcessLogs()
         {
             try
             {
@@ -199,7 +190,6 @@ namespace brainHatSharpGUI
                         var test = new RemoteLogEventArgs(nextLog);
                         var test2 = test.Sender.ToString();
                         var sendBytes = Encoding.UTF8.GetBytes($"log?sender={NetworkUtilities.GetHostName()}&log={JsonConvert.SerializeObject(new RemoteLogEventArgs(nextLog))}\n");
-                        await udpClient.SendAsync(sendBytes, sendBytes.Length, BrainHatNetworkAddresses.MulticastGroupAddress, BrainHatNetworkAddresses.LogPort);
                     }
 
                     LogBuffer.Enqueue(nextLog);
@@ -220,7 +210,7 @@ namespace brainHatSharpGUI
         /// will return a collection of logs with this log as first item
         /// and if the data is an excetion, will generate additional logs for the inner exceptions
         /// </summary>
-        private IEnumerable<LogEventArgs> GenerateLogsForLogEvent(LogEventArgs log)
+        IEnumerable<LogEventArgs> GenerateLogsForLogEvent(LogEventArgs log)
         {
             //  put this log in a list
             List<LogEventArgs> logsList = new List<LogEventArgs>() { log };
@@ -247,12 +237,12 @@ namespace brainHatSharpGUI
         /// <summary>
         /// Logging using Log4 framework to generate log files
         /// </summary>
-        private static readonly log4net.ILog logSystem = log4net.LogManager.GetLogger("SystemLogger");
+        static readonly log4net.ILog logSystem = log4net.LogManager.GetLogger("SystemLogger");
 
         /// <summary>
         /// Log to the Log4 Framework
         /// </summary>
-        private void LogToLog4(IEnumerable<LogEventArgs> logs)
+        void LogToLog4(IEnumerable<LogEventArgs> logs)
         {
             if (LogToFile)
             {

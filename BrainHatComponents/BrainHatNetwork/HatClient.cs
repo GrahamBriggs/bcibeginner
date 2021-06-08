@@ -307,7 +307,6 @@ namespace BrainHatNetwork
 
             if ( ! SyncedTime )
             {
-                SyncedTime = true;
                 await SyncServerTime(connectionStatus);
             }
 
@@ -328,7 +327,7 @@ namespace BrainHatNetwork
         async Task SyncServerTime(BrainHatServerStatus connectionStatus)
         {
             //  sync time on the server if it is more than 5 seconds off
-            if (connectionStatus.OffsetTime.TotalSeconds > 5)
+            if (connectionStatus.OffsetTime.TotalSeconds > 5 && connectionStatus.IpAddress.Length > 0)
             {
                 Log?.Invoke(this, new LogEventArgs(this, "CreateNewHatClient", "Server time is more than 5 seconds behind system time, setting server time.", LogLevel.INFO));
 
@@ -345,6 +344,10 @@ namespace BrainHatNetwork
                     if (response == null || !response.Contains("ACK"))
                     {
                         Log?.Invoke(this, new LogEventArgs(this, "CreateNewHatClient", "Failed to set server time.", LogLevel.ERROR));
+                    }
+                    else
+                    {
+                        SyncedTime = true;
                     }
                 }
                 else

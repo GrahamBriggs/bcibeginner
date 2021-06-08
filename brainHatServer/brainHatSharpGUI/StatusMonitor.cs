@@ -79,7 +79,6 @@ namespace brainHatSharpGUI
                         HostName = hostName,
                         Eth0Address = eth0,
                         Wlan0Address = wlan0,
-                        LogPort = BrainHatNetworkAddresses.LogPort,
                         TimeStamp = DateTimeOffset.UtcNow,
                     };
 

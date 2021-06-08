@@ -29,7 +29,7 @@ namespace BrainflowDataProcessingTests
             using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csv.Configuration.HasHeaderRecord = false;
-                var records = csv.GetRecords<BFCyton8Sample>().ToList();
+                var records = csv.GetRecords<BFSampleImplementation>().ToList();
 
                 var testTimeStart = records.First().TimeStamp;
                 foreach (var nextRecord in records)

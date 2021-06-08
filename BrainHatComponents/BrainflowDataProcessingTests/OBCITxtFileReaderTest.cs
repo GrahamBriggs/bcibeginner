@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BrainflowDataProcessing;
+using System.Threading.Tasks;
 
 namespace BrainflowDataProcessingTests
 {
@@ -7,10 +8,10 @@ namespace BrainflowDataProcessingTests
     public class OBCITxtFileReaderTest
     {
         [TestMethod]
-        public void ReadObciGuiTxtFileCyton()
+        public async Task ReadObciGuiTxtFileCyton()
         {
             OBCIGuiFormatFileReader reader = new OBCIGuiFormatFileReader();
-            reader.ReadFile("./TestFiles/ObciGuiTxtFileCyton.txt");
+            await reader.ReadFileAsync("./TestFiles/ObciGuiTxtFileCyton.txt");
 
             Assert.AreEqual(0, reader.BoardId);
             Assert.AreEqual(250, reader.SampleRate);
@@ -18,10 +19,10 @@ namespace BrainflowDataProcessingTests
         }
 
         [TestMethod]
-        public void ReadObciGuiTxtFileDaisy()
+        public async Task ReadObciGuiTxtFileDaisy()
         {
             OBCIGuiFormatFileReader reader = new OBCIGuiFormatFileReader();
-            reader.ReadFile("./TestFiles/ObciGuiTxtFileDaisy.txt");
+            await reader.ReadFileAsync("./TestFiles/ObciGuiTxtFileDaisy.txt");
 
             Assert.AreEqual(2, reader.BoardId);
             Assert.AreEqual(125, reader.SampleRate);
