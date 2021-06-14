@@ -72,6 +72,7 @@
     <Compile Include="Events.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="BDFFormatFileReader.cs" />
+    <Compile Include="Montages.cs" />
     <Compile Include="OBCIGuiFormatFileReader.cs" />
     <Compile Include="OBCIGuiFormatFileWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

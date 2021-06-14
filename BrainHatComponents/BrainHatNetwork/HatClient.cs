@@ -326,8 +326,8 @@ namespace BrainHatNetwork
         /// </summary>
         async Task SyncServerTime(BrainHatServerStatus connectionStatus)
         {
-            //  sync time on the server if it is more than 5 seconds off
-            if (connectionStatus.OffsetTime.TotalSeconds > 5 && connectionStatus.IpAddress.Length > 0)
+            //  sync time on the server if it is more than 2 seconds off
+            if (connectionStatus.OffsetTime.TotalSeconds > 2 && connectionStatus.IpAddress.Length > 0)
             {
                 Log?.Invoke(this, new LogEventArgs(this, "CreateNewHatClient", "Server time is more than 5 seconds behind system time, setting server time.", LogLevel.INFO));
 

@@ -34,6 +34,8 @@ namespace BrainflowDataProcessing
         public int NumberOfChannels { get; private set; }
         public int SampleRate { get; private set; }
 
+        public string Source { get; private set; }
+
         public async Task<bool> LoadDataFileAsync(string fileName)
         {
             try
@@ -45,6 +47,7 @@ namespace BrainflowDataProcessing
                     NumberOfChannels = reader.NumberOfChannels;
                     SampleRate = reader.SampleRate;
                     UnfilteredData = new List<IBFSample>(reader.Samples);
+                    Source = fileName;
                     return true;
                 }
             }

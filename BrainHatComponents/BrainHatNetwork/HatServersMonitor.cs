@@ -217,8 +217,7 @@ namespace BrainHatNetwork
                     if (!DiscoveredLslStreams.ContainsKey(hostName))
                     {
                         DiscoveredLslStreams.TryAdd(hostName, nextStreamInfo);
-                        Log?.Invoke(this, new LogEventArgs(this, "RunLslScannerAsync", $"Discovered new LSL on host {hostName}.", LogLevel.INFO));
-                        Log?.Invoke(this, new LogEventArgs(this, "RunLslScannerAsync", $"LSL Stream Info. {nextStreamInfo.as_xml()}", LogLevel.DEBUG));
+                        Log?.Invoke(this, new LogEventArgs(this, "RunLslScannerAsync", $"Discovered new LSL on host {hostName}.\n{nextStreamInfo.as_xml()}", LogLevel.INFO));
                     }
                 }
             }
@@ -315,7 +314,7 @@ namespace BrainHatNetwork
                 return;
             }
 
-            Log?.Invoke(this, new LogEventArgs(this, "CreateNewHatClient", $"Discovered new brainHat server {hostName}.", LogLevel.INFO));
+            Log?.Invoke(this, new LogEventArgs(this, "CreateNewHatClient", $"Discovered new brainHat server {hostName}.\n{streamInfo.as_xml()}", LogLevel.INFO));
             var hatClient = new HatClient(hostName, streamInfo, DiscoveredLslStreams[hostName]);
             DiscoveredServers.TryAdd(hostName, hatClient);
 

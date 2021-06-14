@@ -85,6 +85,18 @@ namespace BrainflowDataProcessing
             return Filters.GetFilterNames();
         }
 
+        public static void LoadMontages()
+        {
+            Montages.LoadMontages();
+        }
+
+        public static IEnumerable<string> GetMontageNames()
+        {
+            return Montages.GetMontageNames();
+        }
+
+
+
         public async Task<SignalFiltering> StartSignalFilteringAsync()
         {
             var filterName = ActiveFilters.FirstOrDefault().Key;
@@ -361,6 +373,7 @@ namespace BrainflowDataProcessing
         Dictionary<string, SignalFiltering> ActiveFilters;
 
         public static SignalFilters Filters = new SignalFilters();
+        public static SignalMontages Montages = new SignalMontages();
 
         //  Performance testing and monitoring
         ConcurrentQueue<double> ProcessingTimesQueue;
