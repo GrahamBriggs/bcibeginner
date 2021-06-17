@@ -76,7 +76,7 @@
     <Compile Include="OBCIGuiFormatFileReader.cs" />
     <Compile Include="OBCIGuiFormatFileWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SignalFiltering.cs" />
+    <Compile Include="RealTimeSignalProcessing.cs" />
     <Compile Include="SignalFilters.cs" />
   </ItemGroup>
   <ItemGroup>

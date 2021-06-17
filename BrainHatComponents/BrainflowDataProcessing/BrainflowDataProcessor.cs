@@ -54,7 +54,7 @@ namespace BrainflowDataProcessing
 
             if (CancelTokenSource != null)
             {
-                await StopSignalFilteringAsync();
+                await StopRealTimeSignalProcessingAsync();
                 await BandPowers.StopMonitorAsync();
 
                 CancelTokenSource.Cancel();
@@ -85,9 +85,9 @@ namespace BrainflowDataProcessing
             return Filters.GetFilterNames();
         }
 
-        public static void LoadMontages()
+        public static void LoadMontages(string defaultMontageName)
         {
-            Montages.LoadMontages();
+            Montages.LoadMontages(defaultMontageName);
         }
 
         public static IEnumerable<string> GetMontageNames()
@@ -97,20 +97,27 @@ namespace BrainflowDataProcessing
 
 
 
-        public async Task<SignalFiltering> StartSignalFilteringAsync()
-        {
-            var filterName = ActiveFilters.FirstOrDefault().Key;
-            if (filterName != null)
-                return await StartSignalFilteringAsync(filterName);
+        //public async Task<SignalFiltering> StartSignalFilteringAsync()
+        //{
+        //    var filterName = ActiveFilters.FirstOrDefault().Key;
+        //    if (filterName != null)
+        //        return await StartSignalFilteringAsync(filterName);
 
-            return null;
-        }
+        //    return null;
+        //}
 
         /// <summary>
         /// Start the signal filtering task
         /// </summary>
-        public async Task<SignalFiltering> StartSignalFilteringAsync(string filterName)
+        public async Task<RealTimeSignalProcessing> StartRealTimeSignalProcessingAsync(SignalFilter filter, ISignalMontage montage)
         {
+            var useMontage = montage;
+            if (useMontage == null)
+                useMontage = Montages.GetDefaultMontage();
+
+            var montageName = useMontage.Name;
+            var filterName = filter == null ? "XXXDEFAULTXXX" : filter.Name;
+
             if (CancelTokenSource == null)
             {
                 Log?.Invoke(this, new LogEventArgs(Name, this, "StartSignalFiltering", $"You must start the processor first.", LogLevel.ERROR));
@@ -118,35 +125,32 @@ namespace BrainflowDataProcessing
             }
 
 
-            if (ActiveFilters.ContainsKey(filterName))
+            if (ActiveFilters.ContainsKey(RealTimeSignalProcessing.KeyName(filterName, montageName)))
             {
-                return ActiveFilters[filterName];
+                return ActiveFilters[RealTimeSignalProcessing.KeyName(filterName, montageName)];
             }
 
 
-            if (Filters.GetFilter(filterName) != null)
+
+            var newFilter = new RealTimeSignalProcessing(BoardId, SampleRate, filter, useMontage)
             {
-                var newFilter = new SignalFiltering(Name, BoardId, SampleRate, Filters.GetFilter(filterName))
-                {
-                    FilterBufferLength = 30,
-                };
+                FilterBufferLength = 30,
+            };
 
-                newFilter.GetRawChunk = GetRawChunk;
-                newFilter.Log += OnComponentLog;
+            newFilter.GetRawChunk = GetRawChunk;
+            newFilter.Log += OnComponentLog;
 
-                ActiveFilters.Add(filterName, newFilter);
-                await newFilter.StartSignalFilteringAsync();
-                return newFilter;
-            }
+            ActiveFilters.Add(RealTimeSignalProcessing.KeyName(filterName, montageName), newFilter);
+            await newFilter.StartSignalFilteringAsync();
+            return newFilter;
 
-            return null;
         }
 
 
         /// <summary>
         /// Stop all signal filtering tasks
         /// </summary>
-        public async Task StopSignalFilteringAsync()
+        public async Task StopRealTimeSignalProcessingAsync()
         {
             foreach (var nextFilter in ActiveFilters)
             {
@@ -325,7 +329,7 @@ namespace BrainflowDataProcessing
             RealTimeBufferLengthSeconds = 5 * 60;
 
 
-            ActiveFilters = new Dictionary<string, SignalFiltering>();
+            ActiveFilters = new Dictionary<string, RealTimeSignalProcessing>();
 
             //  default periods for periodic loops
             PeriodMsUpdateData = 200;       //  5Hz for update data message
@@ -370,7 +374,7 @@ namespace BrainflowDataProcessing
         BandPowerMonitor BandPowers;
 
         //  Signal filtering
-        Dictionary<string, SignalFiltering> ActiveFilters;
+        Dictionary<string, RealTimeSignalProcessing> ActiveFilters;
 
         public static SignalFilters Filters = new SignalFilters();
         public static SignalMontages Montages = new SignalMontages();

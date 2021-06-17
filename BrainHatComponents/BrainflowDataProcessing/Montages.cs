@@ -7,21 +7,23 @@ using System.Threading.Tasks;
 
 namespace BrainflowDataProcessing
 {
-    public interface IMontage
+    public interface ISignalMontage
     {
         string Name { get; }
 
         IBFSample[] ApplyMontage(IBFSample[] samples, SignalFilter filter, int boardId, int numberOfChannels, int sampleRate);
 
         string GetChannelName(int channel);
+
+        int GetNumberOfMontageChannels(int boardId);
     }
 
 
-    public class Montage : IMontage
+    public class SignalMontage : ISignalMontage
     {
-        public Montage()
+        public SignalMontage(string name)
         {
-            Name = "Defacto";
+            Name = name;
          
         }
 
@@ -39,13 +41,70 @@ namespace BrainflowDataProcessing
         {
             return $"EXG{channel}";
         }
+
+       public virtual int GetNumberOfMontageChannels(int boardId)
+        {
+            switch ((BrainhatBoardIds)boardId)
+            {
+                case BrainhatBoardIds.MENTALIUM:
+                case BrainhatBoardIds.CYTON_BOARD:
+                    return 8;
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
+                    return 16;
+                default:
+                    return 0;
+            }
+        }
     }
 
 
-    public class BipolarMontage : Montage
+    public class MonopolarMontage : SignalMontage
+    {
+        public MonopolarMontage(string name) : base(name)
+        {
+            Name = "Monopolar";
+        }
+
+        public override string GetChannelName(int channel)
+        {
+            switch (channel)
+            {
+                case 0:
+                case 8:
+                    return "F3-C3";
+                case 1:
+                case 9:
+                    return "C3-T3";
+                case 2:
+                case 10:
+                    return "T3-O1";
+                case 3:
+                case 11:
+                    return "F4-C4";
+                case 4:
+                case 12:
+                    return "C4-T4";
+                case 5:
+                case 13:
+                    return "T4-O2";
+                case 6:
+                case 14:
+                    return "F3-F4";
+                case 7:
+                case 15:
+                    return "O1-O2";
+            }
+            return "";
+        }
+
+
+
+    }
+
+    public class BipolarMontage : SignalMontage
     {
         public BipolarMontage() :
-            base()
+            base("")
         {
             Name = "Bipolar";
         }
@@ -55,25 +114,47 @@ namespace BrainflowDataProcessing
             switch(channel)
             {
                 case 0:
+                case 8:
                     return "F3-C3";
                 case 1:
+                case 9:
                     return "C3-T3";
                 case 2:
+                case 10:
                     return "T3-O1";
                 case 3:
+                case 11:
                     return "F4-C4";
                 case 4:
+                case 12:
                     return "C4-T4";
                 case 5:
+                case 13:
                     return "T4-O2";
                 case 6:
+                case 14:
                     return "F3-F4";
                 case 7:
+                case 15:
                     return "O1-O2";
             }
             return "";
         }
 
+
+        public override int GetNumberOfMontageChannels(int boardId)
+        {
+            switch ((BrainhatBoardIds)boardId)
+            {
+                case BrainhatBoardIds.MENTALIUM:
+                case BrainhatBoardIds.CYTON_BOARD:
+                    return 8;
+                case BrainhatBoardIds.CYTON_DAISY_BOARD:
+                    return 16;
+                default:
+                    return 0;
+            }
+        }
 
         public override IBFSample[] ApplyMontage(IBFSample[] samples, SignalFilter filter, int boardId, int numberOfChannels, int sampleRate)
         {
@@ -83,16 +164,20 @@ namespace BrainflowDataProcessing
             {
                 var newSample = new BFSampleImplementation(nextSample);
 
-                newSample.SetExgDataForChannel(0, nextSample.GetExgDataForChannel(1) - nextSample.GetExgDataForChannel(0));
-                newSample.SetExgDataForChannel(1, nextSample.GetExgDataForChannel(2) - nextSample.GetExgDataForChannel(1));
-                newSample.SetExgDataForChannel(2, nextSample.GetExgDataForChannel(3) - nextSample.GetExgDataForChannel(2));
-                //
-                newSample.SetExgDataForChannel(3, nextSample.GetExgDataForChannel(5) - nextSample.GetExgDataForChannel(4));
-                newSample.SetExgDataForChannel(4, nextSample.GetExgDataForChannel(6) - nextSample.GetExgDataForChannel(5));
-                newSample.SetExgDataForChannel(5, nextSample.GetExgDataForChannel(7) - nextSample.GetExgDataForChannel(6));
-                // 
-                newSample.SetExgDataForChannel(6, nextSample.GetExgDataForChannel(0) - nextSample.GetExgDataForChannel(4));
-                newSample.SetExgDataForChannel(7, nextSample.GetExgDataForChannel(7) - nextSample.GetExgDataForChannel(3));
+                int boardIndex = numberOfChannels / 8;
+                for (int i = 0; i < boardIndex; i++)
+                {
+                    newSample.SetExgDataForChannel(0+i, nextSample.GetExgDataForChannel(1+i) - nextSample.GetExgDataForChannel(0+i));
+                    newSample.SetExgDataForChannel(1+i, nextSample.GetExgDataForChannel(2+i) - nextSample.GetExgDataForChannel(1+i));
+                    newSample.SetExgDataForChannel(2+i, nextSample.GetExgDataForChannel(3+i) - nextSample.GetExgDataForChannel(2+i));
+                    //
+                    newSample.SetExgDataForChannel(3+i, nextSample.GetExgDataForChannel(5+i) - nextSample.GetExgDataForChannel(4+i));
+                    newSample.SetExgDataForChannel(4+i, nextSample.GetExgDataForChannel(6+i) - nextSample.GetExgDataForChannel(5+i));
+                    newSample.SetExgDataForChannel(5+i, nextSample.GetExgDataForChannel(7+i) - nextSample.GetExgDataForChannel(6+i));
+                    // 
+                    newSample.SetExgDataForChannel(6+i, nextSample.GetExgDataForChannel(4+i) - nextSample.GetExgDataForChannel(0+i));
+                    newSample.SetExgDataForChannel(7+i, nextSample.GetExgDataForChannel(7+i) - nextSample.GetExgDataForChannel(3+i));
+                }
 
                 montagedSignal.Add(newSample);
             }
@@ -107,19 +192,21 @@ namespace BrainflowDataProcessing
     }
 
 
+
     public class SignalMontages
     {
-        public void LoadMontages()
+        public void LoadMontages(string defaultMontageName)
         {
-            Montages = new Dictionary<string, Montage>();
+            Montages = new Dictionary<string, SignalMontage>();
 
-            var defaultMontage = new Montage();
+            var defaultMontage = new SignalMontage(defaultMontageName);
             Montages.Add(defaultMontage.Name, defaultMontage);
 
             var bipolar = new BipolarMontage();
             Montages.Add(bipolar.Name, bipolar);
 
-            
+            var monopolar = new MonopolarMontage("");
+            Montages.Add(monopolar.Name, monopolar);
         }
 
         public IEnumerable<string> GetMontageNames()
@@ -127,7 +214,7 @@ namespace BrainflowDataProcessing
             return Montages.Keys.ToArray();
         }
 
-        public IMontage GetDefaultMontage()
+        public ISignalMontage GetDefaultMontage()
         {
             if (Montages.Count > 0)
                 return Montages.First().Value;
@@ -135,7 +222,7 @@ namespace BrainflowDataProcessing
         }
 
 
-        public IMontage GetMontage(string name)
+        public ISignalMontage GetMontage(string name)
         {
             if (Montages.ContainsKey(name))
                 return Montages[name];
@@ -144,6 +231,6 @@ namespace BrainflowDataProcessing
         }
 
         //  The filter collection
-        static Dictionary<string, Montage> Montages;
+        static Dictionary<string, SignalMontage> Montages;
     }
 }

@@ -11,8 +11,13 @@ using System.Threading.Tasks;
 
 namespace BrainflowDataProcessing
 {
-    public class SignalFiltering
+    public class RealTimeSignalProcessing
     {
+        public static string KeyName(string filterName, string montageName)
+        {
+            return $"{montageName}$$$$${filterName}";
+        }
+
         //  Events
         public event LogEventDelegate Log;
 
@@ -109,14 +114,16 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Constructor
         /// </summary>
-        public SignalFiltering(string name, int boardId, int sampleRate, SignalFilter filter)
+        public RealTimeSignalProcessing(int boardId, int sampleRate, SignalFilter filter, ISignalMontage montage)
         {
             BoardId = boardId;
             NumberOfChannels = BrainhatBoardShim.GetNumberOfExgChannels(BoardId);
             SampleRate = sampleRate;
-            Name = name;
-
+            
             Filter = filter;
+            Montage = montage;
+
+            Name = KeyName((Filter == null ? "" : Filter.Name), Montage.Name);
 
             PeriodMilliseconds = 33;
 
@@ -135,6 +142,7 @@ namespace BrainflowDataProcessing
         public string Name { get; private set; }
         public string FilterName => Filter.Name;
 
+        ISignalMontage Montage;
         SignalFilter Filter;
 
         //  Filtered Data Collection
@@ -213,7 +221,7 @@ namespace BrainflowDataProcessing
 
                 var rawSamples = GetRawChunk(3);
 
-                var filteredSamples = FilterBrainflowSample.FilterChunk(Filter, rawSamples, BoardId, NumberOfChannels, SampleRate);
+                var filteredSamples = Montage.ApplyMontage(rawSamples, Filter, BoardId, NumberOfChannels, SampleRate);
 
                 var oldestSample = FilteredData.LastOrDefault()?.TimeStamp ?? filteredSamples[0].TimeStamp;
                 FilteredData.AddRange(filteredSamples.Where(x => x.TimeStamp > oldestSample));
