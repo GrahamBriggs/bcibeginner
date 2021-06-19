@@ -102,6 +102,27 @@ namespace BrainflowInterfaces
             AnalogChannels = new double[0];
         }
 
+        public BFSampleImplementation(int numExg, int numAcel, int numOther, int numAnalog)
+        {
+            ExgChannels = new double[numExg];
+            AcelChannels = new double[numAcel];
+            OtherChannels = new double[numOther];
+            AnalogChannels = new double[numAnalog];
+        }
+
+        public BFSampleImplementation(IBFSample sample, int numExg, int numAcel, int numOther, int numAnalog)
+        {
+            ExgChannels = new double[numExg];
+            AcelChannels = new double[numAcel];
+            OtherChannels = new double[numOther];
+            AnalogChannels = new double[numAnalog];
+
+            SampleIndex = sample.SampleIndex;
+            TimeStamp = sample.TimeStamp;
+
+        }
+
+
         public BFSampleImplementation(IBFSample copy)
         {
             SampleIndex = copy.SampleIndex;

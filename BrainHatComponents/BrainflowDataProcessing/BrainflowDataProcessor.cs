@@ -85,9 +85,9 @@ namespace BrainflowDataProcessing
             return Filters.GetFilterNames();
         }
 
-        public static void LoadMontages(string defaultMontageName)
+        public static void LoadMontages(string montagesFilePath)
         {
-            Montages.LoadMontages(defaultMontageName);
+            Montages.LoadMontages(montagesFilePath);
         }
 
         public static IEnumerable<string> GetMontageNames()
