@@ -41,9 +41,9 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Start async task to run data processing
         /// </summary>
-        public async Task StartSignalFilteringAsync()
+        public async Task StartRealTimeProcessingAsync()
         {
-            await StopSignalFilteringAsync();
+            await StopRealTimeProcessingAsyncAsync();
 
             FilteredData.RemoveAll();
 
@@ -58,7 +58,7 @@ namespace BrainflowDataProcessing
         /// <summary>
         /// Stop the data processor async task
         /// </summary>
-        public async Task StopSignalFilteringAsync()
+        public async Task StopRealTimeProcessingAsyncAsync()
         {
             if (CancelTokenSource != null)
             {

@@ -222,7 +222,7 @@ namespace BrainflowDataProcessing
 
         public static ISignalMontage MakeDefaultMontage(int channels)
         {
-            var signalMontage = new SignalMontage("Default");
+            var signalMontage = new SignalMontage($"Default{channels}");
             for(int i = 0; i < channels; i++)
             {
                 var derivation = new SignalDerivation($"EXG {i}",null);

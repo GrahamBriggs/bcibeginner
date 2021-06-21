@@ -141,7 +141,7 @@ namespace BrainflowDataProcessing
             newFilter.Log += OnComponentLog;
 
             ActiveFilters.Add(RealTimeSignalProcessing.KeyName(filterName, montageName), newFilter);
-            await newFilter.StartSignalFilteringAsync();
+            await newFilter.StartRealTimeProcessingAsync();
             return newFilter;
 
         }
@@ -154,7 +154,7 @@ namespace BrainflowDataProcessing
         {
             foreach (var nextFilter in ActiveFilters)
             {
-                await nextFilter.Value.StopSignalFilteringAsync();
+                await nextFilter.Value.StopRealTimeProcessingAsyncAsync();
                 nextFilter.Value.Log -= OnComponentLog;
                 nextFilter.Value.GetRawChunk -= GetRawChunk;
             }
@@ -169,7 +169,7 @@ namespace BrainflowDataProcessing
         {
             if (ActiveFilters.ContainsKey(filterName))
             {
-                await ActiveFilters[filterName].StopSignalFilteringAsync();
+                await ActiveFilters[filterName].StopRealTimeProcessingAsyncAsync();
                 ActiveFilters[filterName].Log -= OnComponentLog;
                 ActiveFilters[filterName].GetRawChunk -= GetRawChunk;
             }

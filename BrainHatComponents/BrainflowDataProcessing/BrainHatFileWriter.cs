@@ -22,6 +22,8 @@ namespace BrainflowDataProcessing
 
         public string FileName => FileWriter != null ? Path.GetFileName(FileWriter.FileName) : "";
 
+        public string FilePath => FileWriter != null ? FileWriter.FileName : "";
+
 
         public async Task StartWritingToFileAsync(string path, string fileNameRoot, int boardId, int sampleRate, FileWriterType format)
         {
