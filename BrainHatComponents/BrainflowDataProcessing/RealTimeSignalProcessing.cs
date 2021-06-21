@@ -191,6 +191,8 @@ namespace BrainflowDataProcessing
 
                     if (swReport.ElapsedMilliseconds >= 5000)
                     {
+                        System.Diagnostics.Debug.WriteLine("Signal filtering");
+
                         if (ProcessingTimes.Count > 0)
                         {
                             Log?.Invoke(this, new LogEventArgs(Name, this, "RunSignalFilteringAsync", $"{Name} signal filtering {(ProcessingTimes.Count / swReport.Elapsed.TotalSeconds):F0} times per second: med {ProcessingTimes.Median():F4} s | max {ProcessingTimes.Max():F4} s.", LogLevel.TRACE));
