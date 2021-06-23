@@ -303,6 +303,15 @@ bool HandleRecordingRequest(UriArgParser& requestParser)
 			
 			auto formatType = requestParser.GetArg("format");
 			
+			FileHeaderInfo info;
+			info.SubjectName = requestParser.GetArg("name");
+			info.SubjectCode = requestParser.GetArg("code");
+			info.SubjectBirthday = requestParser.GetArg("birthday");
+			info.SubjectAdditional = requestParser.GetArg("additional");
+			info.SubjectGender = requestParser.GetArg("gender");
+			info.AdminCode = requestParser.GetArg("admin");
+			info.Technician = requestParser.GetArg("tech");
+			
 			int format = 1;
 			if (formatType.compare("txt") == 0)
 				format = 0;
@@ -321,7 +330,7 @@ bool HandleRecordingRequest(UriArgParser& requestParser)
 			}
 			
 			
-			FileWriter->StartRecording(fileName, RecordToUsb, BoardId, DataSource->GetSampleRate());
+			FileWriter->StartRecording(fileName, RecordToUsb, BoardId, DataSource->GetSampleRate(), info);
 		}
 		else if (enable == "false")
 		{

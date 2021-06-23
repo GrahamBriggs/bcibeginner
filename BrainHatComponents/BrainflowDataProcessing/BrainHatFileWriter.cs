@@ -25,7 +25,7 @@ namespace BrainflowDataProcessing
         public string FilePath => FileWriter != null ? FileWriter.FileName : "";
 
 
-        public async Task StartWritingToFileAsync(string path, string fileNameRoot, int boardId, int sampleRate, FileWriterType format)
+        public async Task StartWritingToFileAsync(string path, string fileNameRoot, int boardId, int sampleRate, FileWriterType format, FileHeaderInfo info)
         {
             switch (format)
             {
@@ -45,7 +45,7 @@ namespace BrainflowDataProcessing
                     break;
             }
 
-            await FileWriter.StartWritingToFileAsync(path, fileNameRoot);
+            await FileWriter.StartWritingToFileAsync(path, fileNameRoot, info);
         }
 
         void OnLog(object sender, LogEventArgs e)

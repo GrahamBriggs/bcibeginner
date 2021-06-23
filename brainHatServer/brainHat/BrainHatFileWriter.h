@@ -8,7 +8,53 @@
 
 #define RECORDINGFOLDER ("/home/pi/EEG")
 
-
+struct FileHeaderInfo
+{
+public:
+	std::string SessionName;
+	std::string SubjectName;
+	std::string SubjectCode;
+	std::string SubjectBirthday;
+	std::string SubjectAdditional;
+	std::string SubjectGender;
+	std::string AdminCode;
+	std::string Technician;
+	std::string Device;
+	
+	int GetGender()
+	{
+		if (SubjectGender == "0")
+			return 0;
+		return 1;
+	}
+	
+	int GetBirthdayYear()
+	{
+		if (SubjectBirthday.length() > 3)
+		{
+			int year = std::stoi(SubjectBirthday.substr(0, 4));
+			return year;
+		}
+		return 0;
+	}
+	
+	int GetBirthdayMonth()
+	{
+		if (SubjectBirthday.length() > 5)
+			return std::stoi(SubjectBirthday.substr(4, 2));
+		return 0;
+	}
+	
+	int GetBirthdayDay()
+	{
+		if (SubjectBirthday.length() > 7)
+			return std::stoi(SubjectBirthday.substr(6, 2));
+		return 0;
+	}
+	
+	
+	
+};
 
 bool CheckRecordingFolder(std::string sessionName, bool tryUsb, std::string& pathToRecFolder);
 
@@ -21,7 +67,7 @@ public:
 	BrainHatFileWriter(RecordingStateChangedCallbackFn fn);
 	virtual ~BrainHatFileWriter();
 	
-	virtual bool StartRecording(std::string fileName, bool tryUsb, int boardId, int sampleRate);
+	virtual bool StartRecording(std::string fileName, bool tryUsb, int boardId, int sampleRate, FileHeaderInfo info);
 	
 	virtual void Cancel();
 	virtual void RunFunction();
@@ -40,6 +86,7 @@ protected:
 	
 	int BoardId;
 	int SampleRate;
+	FileHeaderInfo HeaderInfo;
 	
 	virtual void WriteDataToFile() = 0;
 	

@@ -222,13 +222,13 @@ void BDFFileWriter::WriteHeader(BFSample* firstSample)
 		//
 		edfSetStartDatetime(FileHandle, t->tm_year+1900, t->tm_mon+1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
 		edfSetSubsecondStarttime(FileHandle, millis * 10000);
-		edfSetPatientName(FileHandle, "");
-		edfSetPatientCode(FileHandle, "");
-		edfSetPatientYChromosome(FileHandle, 1);
-		
-		edfSetPatientAdditional(FileHandle, "");
-		edfSetAdminCode(FileHandle, "");
-		edfSetTechnician(FileHandle, "");
+		edfSetPatientName(FileHandle, HeaderInfo.SubjectName.c_str());
+		edfSetPatientCode(FileHandle, HeaderInfo.SubjectCode.c_str());
+		edfSetPatientYChromosome(FileHandle, HeaderInfo.GetGender());
+		edfSetPatientBirthdate(FileHandle, HeaderInfo.GetBirthdayYear(), HeaderInfo.GetBirthdayMonth(), HeaderInfo.GetBirthdayDay());
+		edfSetPatientAdditional(FileHandle, HeaderInfo.SubjectAdditional.c_str());
+		edfSetAdminCode(FileHandle, HeaderInfo.AdminCode.c_str());
+		edfSetTechnician(FileHandle, HeaderInfo.Technician.c_str());
 		edfSetEquipment(FileHandle, getEquipmentName(BoardId).c_str());
 		edfSetRecordingAdditional(FileHandle, getSampleNameShort(BoardId).c_str());
 

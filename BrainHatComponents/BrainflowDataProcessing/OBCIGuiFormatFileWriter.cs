@@ -22,6 +22,7 @@ namespace BrainflowDataProcessing
 
         public bool IsLogging => FileWriterCancelTokenSource != null;
 
+        public FileHeaderInfo Info;
 
         /// <summary>
         /// Start the file writer
@@ -38,6 +39,16 @@ namespace BrainflowDataProcessing
 
             FileWriterCancelTokenSource = new CancellationTokenSource();
             FileWritingTask = RunFileWriter(FileWriterCancelTokenSource.Token);
+        }
+
+
+        /// <summary>
+        /// Start the file writer with patient info for the header
+        /// </summary>
+        public async Task StartWritingToFileAsync(string path, string fileNameRoot, FileHeaderInfo info)
+        {
+            Info = info;
+            await StartWritingToFileAsync(path, fileNameRoot);
         }
 
         public string FileName { get; private set; }
@@ -318,5 +329,7 @@ namespace BrainflowDataProcessing
 
             file.WriteLine(writeLine);
         }
+
+        
     }
 }

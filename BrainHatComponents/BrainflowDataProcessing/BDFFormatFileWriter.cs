@@ -29,6 +29,7 @@ namespace BrainflowDataProcessing
 
         public double FileDuration => FileTimer.Elapsed.TotalSeconds;
 
+        public FileHeaderInfo Info { get; protected set; }
 
         /// <summary>
         /// Start the file writer
@@ -43,6 +44,16 @@ namespace BrainflowDataProcessing
 
             FileWriterCancelTokenSource = new CancellationTokenSource();
             FileWritingTask = RunFileWriter(FileWriterCancelTokenSource.Token);
+        }
+
+
+        /// <summary>
+        /// Start the file writer
+        /// </summary>
+        public async Task StartWritingToFileAsync(string path, string fileNameRoot, FileHeaderInfo info)
+        {
+            Info = info;
+            await StartWritingToFileAsync(path, fileNameRoot);
         }
 
 
@@ -357,20 +368,19 @@ namespace BrainflowDataProcessing
             edfSetPhysicalDimension(FileHandle, signalCount, "seconds");
             FirstTimeStamp = firstSample.TimeStamp;
 
-
-
             //  File Header Properties
             //
+            Info.ValidateForBdf();
             edfSetStartDatetime(FileHandle, firstSample.ObservationTime.Year, firstSample.ObservationTime.Month, firstSample.ObservationTime.Day, firstSample.ObservationTime.Hour, firstSample.ObservationTime.Minute, firstSample.ObservationTime.Second);
             edfSetSubsecondStarttime(FileHandle, firstSample.ObservationTime.Millisecond * 10_000);
-            edfSetPatientName(FileHandle, "");
-            edfSetPatientCode(FileHandle, "");
-            edfSetPatientYChromosome(FileHandle, 1);
-            edfSetPatientBirthdate(FileHandle, 2021, 03, 07);
-            edfSetPatientAdditional(FileHandle, "");
-            edfSetAdminCode(FileHandle, "");
-            edfSetTechnician(FileHandle, "");
-            edfSetEquipment(FileHandle, BoardId.GetEquipmentName());
+            edfSetPatientName(FileHandle, Info.SubjectName);
+            edfSetPatientCode(FileHandle, Info.SubjectCode);
+            edfSetPatientYChromosome(FileHandle, (int)Info.SubjectGender);
+            edfSetPatientBirthdate(FileHandle, Info.SubjectBirthday.Year, Info.SubjectBirthday.Month, Info.SubjectBirthday.Day);
+            edfSetPatientAdditional(FileHandle, Info.SubjectAdditional);
+            edfSetAdminCode(FileHandle, Info.AdminCode);
+            edfSetTechnician(FileHandle, Info.Technician);
+            edfSetEquipment(FileHandle, Info.Device);
             edfSetRecordingAdditional(FileHandle, BoardId.GetSampleNameShort());
 
             //  we are ready to write data
@@ -378,6 +388,6 @@ namespace BrainflowDataProcessing
             WroteHeader = true;
         }
 
-
+      
     }
 }

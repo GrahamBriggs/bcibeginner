@@ -25,8 +25,10 @@ BrainHatFileWriter::~BrainHatFileWriter()
 
 // Start recording, opens the file and kicks off a thread to write to the file
 //
-bool BrainHatFileWriter::StartRecording(string fileName, bool tryUsb, int boardId, int sampleRate)
+bool BrainHatFileWriter::StartRecording(string fileName, bool tryUsb, int boardId, int sampleRate, FileHeaderInfo info)
 {	
+	HeaderInfo = info;
+	
 	if (OpenFile(fileName, tryUsb))
 	{
 		BoardId = boardId;
