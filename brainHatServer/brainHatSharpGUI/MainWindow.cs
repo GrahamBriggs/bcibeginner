@@ -671,7 +671,7 @@ namespace brainHatSharpGUI
 
                     var recordingDir = ConfigurationManager.AppSettings.Get("defaultDir");
                     var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), recordingDir);
-                    await FileWriter.StartWritingToFileAsync(path, fileName, BrainflowBoard.BoardId, BrainflowBoard.SampleRate, format);
+                    await FileWriter.StartWritingToFileAsync(path, fileName, BrainflowBoard.BoardId, BrainflowBoard.SampleRate, format, new FileHeaderInfo() { SessionName = fileName });
 
                     return $"ACK?response=File {Path.GetFileName(FileWriter.FileName)} started.";
                 }

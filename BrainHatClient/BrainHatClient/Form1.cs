@@ -77,11 +77,12 @@ namespace BrainHatClient
         {
             BrainflowDataProcessor.LoadFiltersFile("./Config/DefaultFilterConfig.xml");
 
+            var filter = BrainflowDataProcessor.Filters.GetFilter("Default");
             await Task.Run(async () =>
            {
                await DataProcessor.StartDataProcessorAsync();
                await DataProcessor.StartBandPowerMonitorAsync();
-               await DataProcessor.StartSignalFilteringAsync("bandpass1");
+               await DataProcessor.StartRealTimeSignalProcessingAsync(filter, SignalMontages.MakeDefaultMontage(ConnectedServer.NumberOfChannels));
                await AlphaDetector.StartDetectorAsync();
                await ConnectedServer.StartReadingFromLslAsync();
            });
@@ -463,7 +464,7 @@ namespace BrainHatClient
             {
                 var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "brainHatRecordings");
                 var format = radioButtonTXT.Checked ? FileWriterType.OpenBciTxt : FileWriterType.Bdf;
-                await FileWriter.StartWritingToFileAsync(path, textBoxRecordingName.Text, ConnectedServer.BoardId, ConnectedServer.SampleRate,format );
+                await FileWriter.StartWritingToFileAsync(path, textBoxRecordingName.Text, ConnectedServer.BoardId, ConnectedServer.SampleRate,format, new FileHeaderInfo() { SessionName = textBoxRecordingName.Text });
                 DataProcessor.NewSample += FileWriter.AddData;
 
                 buttonStartRecording.Text = "Stop Recording";
