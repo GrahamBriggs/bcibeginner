@@ -244,6 +244,13 @@ namespace BrainflowDataProcessing
             }
 
             file.WriteLine("%Logger = brainHat");
+            file.WriteLine($"%SubjectName = {Info.SubjectName}");
+            file.WriteLine($"%SubjectCode = {Info.SubjectCode}");
+            file.WriteLine($"%SubjectAdditional = {Info.SubjectAdditional}");
+            file.WriteLine($"%SubjectGender = {(Info.SubjectGender == 0 ? "XX" : "XY")}");
+            file.WriteLine($"%SubjectBirthday = {Info.SubjectBirthday.ToString("yyyy-MM-dd")}");
+            file.WriteLine($"%AdminCode = {Info.AdminCode}");
+            file.WriteLine($"%Technician = {Info.Technician}");
         }
 
 

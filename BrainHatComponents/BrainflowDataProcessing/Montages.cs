@@ -204,13 +204,6 @@ namespace BrainflowDataProcessing
             return Montages.Keys.ToArray();
         }
 
-        public ISignalMontage GetDefaultMontage()
-        {
-            if (Montages.Count > 0)
-                return Montages.First().Value;
-            return null; 
-        }
-
 
         public ISignalMontage GetMontage(string name)
         {

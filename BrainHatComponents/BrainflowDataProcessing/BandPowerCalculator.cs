@@ -59,9 +59,7 @@ namespace BrainflowDataProcessing
                 if (data.Count() <= nfft)
                     return results;
 
-                double[] detrend = DataFilter.detrend(data.GetExgDataForChannel(channel), (int)DetrendOperations.LINEAR);
-
-                Tuple<double[], double[]> psd = DataFilter.get_psd_welch(detrend, nfft, nfft / 2, sampleRate, (int)WindowFunctions.HANNING);
+                Tuple<double[], double[]> psd = DataFilter.get_psd_welch(data.GetExgDataForChannel(channel), nfft, nfft / 2, sampleRate, (int)WindowFunctions.HANNING);
 
                 foreach (var nextRange in freqRanges)
                 {

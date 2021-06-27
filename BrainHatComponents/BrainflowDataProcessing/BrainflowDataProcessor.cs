@@ -113,7 +113,7 @@ namespace BrainflowDataProcessing
         {
             var useMontage = montage;
             if (useMontage == null)
-                useMontage = Montages.GetDefaultMontage();
+                useMontage = SignalMontages.MakeDefaultMontage(NumberOfChannels);
 
             var montageName = useMontage.Name;
             var filterName = filter == null ? "XXXDEFAULTXXX" : filter.Name;
