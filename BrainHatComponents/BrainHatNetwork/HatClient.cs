@@ -10,6 +10,7 @@ using static LSL.liblsl;
 using System.Net.NetworkInformation;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Linq;
 
 namespace BrainHatNetwork
 {
@@ -243,15 +244,19 @@ namespace BrainHatNetwork
                 Log?.Invoke(this, new LogEventArgs(HostName, this, "RunReadStatusPortAsync", $"Create LSL stream for status on host {HostName}.", LogLevel.DEBUG));
                 HatConnectionChanged?.Invoke(this, new HatConnectionEventArgs(HatConnectionState.Discovered, HostName, "", BoardId, SampleRate));
 
-                string[] sample = new string[1];
+                string[,] samples = new string[32,1];
+                double[] timestamps = new double[32];
                 //  spin until canceled
                 while (!cancelToken.IsCancellationRequested)
                 {
                     await Task.Delay(ReadingDelay);
                     try
                     {
-                        inlet.pull_sample(sample);
-                        await ParseServerStatus(sample[0]);
+                        var sampleCount = inlet.pull_chunk(samples,timestamps);
+                        if (sampleCount > 0)
+                        {
+                            await ParseServerStatus(samples[sampleCount-1,0]);
+                        }
                     }
                     catch (ObjectDisposedException)
                     { }

@@ -400,6 +400,7 @@ bool HandleSetStreamRequest(UriArgParser& requestParser)
 //
 bool HandleSetTimeRequest(UriArgParser& requestParser)
 {
+	bool result = false;
 	auto timeString = requestParser.GetArg("time");
 	if (timeString.length() > 0)
 	{
@@ -408,7 +409,7 @@ bool HandleSetTimeRequest(UriArgParser& requestParser)
 		
 		Logging.AddLog("main", "HandleSetTimeRequest", format("Setting system time. %lld", unixTimeMillis), LogLevelDebug);
 		
-		auto result = SetSystemTime(unixTimeMillis);
+		result = SetSystemTime(unixTimeMillis);
 		if (result)
 		{
 			Logging.AddLog("main", "HandleSetTimeRequest", format("Set system time. %lld", unixTimeMillis), LogLevelInfo);
@@ -419,7 +420,7 @@ bool HandleSetTimeRequest(UriArgParser& requestParser)
 		}
 	}
 	
-	return false;
+	return result;
 }
 	
 
