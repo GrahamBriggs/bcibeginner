@@ -90,6 +90,7 @@ void BroadcastStatus::StartBroadcast(int boardId, int sampleRate)
 {
 	BoardId = boardId;
 	SampleRate = sampleRate;
+	HostName = GetHostName();
 	
 	SetupLslForStatus();
 	CheckIpConfigTimer.Start();

@@ -149,7 +149,7 @@
     <LaunchGDBSettings xsi:type="GDBLaunchParametersNewInstance">
       <DebuggedProgram>$(TargetPath)</DebuggedProgram>
       <GDBServerPort>2000</GDBServerPort>
-      <ProgramArguments>--demo-file /home/pi/Source/bcibeginner/SampleFiles/SeekingAlpha.txt</ProgramArguments>
+      <ProgramArguments>--board-id 2</ProgramArguments>
       <ArgumentEscapingMode>Auto</ArgumentEscapingMode>
     </LaunchGDBSettings>
     <GenerateCtrlBreakInsteadOfCtrlC>false</GenerateCtrlBreakInsteadOfCtrlC>

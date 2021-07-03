@@ -215,6 +215,7 @@ namespace BrainHatNetwork
 
         Stopwatch ReportNetworkTimeInterval = new Stopwatch();
         const int ReadingDelay = 20;    //  read the LSL inlet at 50 Hz
+        const int StatusReadingDelay = 1000;
 
 
         /// <summary>
@@ -249,11 +250,11 @@ namespace BrainHatNetwork
                 //  spin until canceled
                 while (!cancelToken.IsCancellationRequested)
                 {
-                    await Task.Delay(ReadingDelay);
+                    await Task.Delay(StatusReadingDelay);
                     try
                     {
                         var sampleCount = inlet.pull_chunk(samples,timestamps);
-                        if (sampleCount > 0)
+                        if (sampleCount > 0 && (samples[sampleCount - 1, 0].Length > 0))
                         {
                             await ParseServerStatus(samples[sampleCount-1,0]);
                         }
