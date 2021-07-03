@@ -22,7 +22,7 @@ namespace BrainflowDataProcessing
     public class FileHeaderInfo
     {
         const int NumberSubjectCharsAvailable = 62;
-        const int NumberTechnicianCharsAvailable = 38;
+        const int NumberTechnicianCharsAvailable = 35;
 
 
         public FileHeaderInfo()
@@ -59,8 +59,8 @@ namespace BrainflowDataProcessing
 
         public void ValidateForBdf()
         {
-            // 72 bytes are available for:	patientname     patientcode     birthdate   patient_additional
-            // 42 bytes are available for:	admincode       technician      equipment   recording_additional
+            // 72 bytes are available for:	patientname     patientcode     birthdate   patient_additional + 3 commas
+            // 42 bytes are available for:	admincode       technician      equipment   recording_additional + 3 commas
             // Birthdate takes 10 bytes.
             // Recording additional is reserved 4 bytes
 

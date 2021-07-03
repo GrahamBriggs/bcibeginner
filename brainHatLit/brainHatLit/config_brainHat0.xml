@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Config>
+  <HostName>brainHat3</HostName>
+  <Pins>
+    <PinLeftRising>40</PinLeftRising>;
+    <PinLeftFalling>38</PinLeftFalling>
+    <PinLeftBlink>36</PinLeftBlink>
+
+    <PinRightRising>7</PinRightRising>
+    <PinRightFalling>11</PinRightFalling>
+    <PinRightBlink>13</PinRightBlink>
+
+    <PinLightStringA5>29</PinLightStringA5>
+    <PinLightStringA4>31</PinLightStringA4>
+    <PinLightStringA3>32</PinLightStringA3>
+    <PinLightStringA2>33</PinLightStringA2>
+    <PinLightStringA1>35</PinLightStringA1>
+
+    <PinLightStringB5>26</PinLightStringB5>
+    <PinLightStringB4>23</PinLightStringB4>
+    <PinLightStringB3>24</PinLightStringB3>
+    <PinLightStringB2>21</PinLightStringB2>
+    <PinLightStringB1>19</PinLightStringB1>
+
+    <PinHapticMotor>16</PinHapticMotor>
+  </Pins>
+</Config>

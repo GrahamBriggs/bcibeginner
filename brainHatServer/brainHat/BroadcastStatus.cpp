@@ -102,7 +102,7 @@ void BroadcastStatus::StartBroadcast(int boardId, int sampleRate)
 
 void BroadcastStatus::SetupLslForStatus()
 {
-	lsl::stream_info info("bhStatus", "bhStatus", 1, lsl::IRREGULAR_RATE, lsl::cf_string, HostName.c_str());
+	lsl::stream_info info("bhStatus", "bhStatus", 1, lsl::IRREGULAR_RATE, lsl::cf_string, HostName);
 
 	info.desc().append_child_value("boardId", format("%d", BoardId));
 	info.desc().append_child_value("sampleRate", format("%d", SampleRate));
