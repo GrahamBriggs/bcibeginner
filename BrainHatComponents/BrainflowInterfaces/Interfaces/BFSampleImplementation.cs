@@ -13,7 +13,7 @@ namespace BrainflowInterfaces
 
         public int SampleSize => (2 + NumberExgChannels + NumberAccelChannels + NumberOtherChannels + NumberAnalogChannels);
 
-        public DateTime ObservationTime => DateTimeOffset.FromUnixTimeMilliseconds((long)(TimeStamp * 1000.0)).ToLocalTime().DateTime;
+        public DateTime ObservationTime => TimeStamp.UnixDoubleSecondsToDateTimeOffset().ToLocalTime().DateTime;
 
         public int NumberExgChannels => ExgChannels.Length;
 

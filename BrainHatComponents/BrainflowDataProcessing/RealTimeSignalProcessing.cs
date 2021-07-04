@@ -167,6 +167,8 @@ namespace BrainflowDataProcessing
                 swDetect.Start();
                 swReport.Start();
                 swClean.Start();
+
+                SignalFilterError = false;
                 while (!cancelToken.IsCancellationRequested)
                 {
                     await Task.Delay(1);
@@ -230,6 +232,7 @@ namespace BrainflowDataProcessing
 
                 sw.Stop();
                 ProcessingTimes.Enqueue(sw.Elapsed.TotalSeconds);
+                SignalFilterError = false;
             }
             catch (ArgumentException ae)
             {
@@ -237,10 +240,15 @@ namespace BrainflowDataProcessing
             }
             catch (Exception e)
             {
-                Log?.Invoke(this, new LogEventArgs(Name, this, "FilterSignal", e, LogLevel.ERROR));
+                if (!SignalFilterError)
+                {
+                    Log?.Invoke(this, new LogEventArgs(Name, this, "FilterSignal", e, LogLevel.ERROR));
+                    SignalFilterError = true;
+                }
             }
         }
 
+        bool SignalFilterError = false;
 
         #endregion
     }

@@ -1,4 +1,5 @@
-﻿using LoggingInterfaces;
+﻿using BrainflowInterfaces;
+using LoggingInterfaces;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;
@@ -219,6 +220,7 @@ namespace BrainHatNetwork
                         DiscoveredLslStreams.TryAdd(hostName, nextStreamInfo);
                         Log?.Invoke(this, new LogEventArgs(this, "RunLslScannerAsync", $"Discovered new LSL on host {hostName}.\n{nextStreamInfo.as_xml()}", LogLevel.INFO));
                     }
+                   
                 }
             }
         }
