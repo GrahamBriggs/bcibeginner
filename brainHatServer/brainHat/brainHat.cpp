@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 	ConnectionLightShowConnecting();
 		
 	//  init brainflow logging level to off
-	BoardShim::set_log_level(6);
+	//BoardShim::set_log_level(6);
 	
 	//  start logging thread
 	Logging.Start() ;

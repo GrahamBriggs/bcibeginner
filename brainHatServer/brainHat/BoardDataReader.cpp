@@ -502,10 +502,8 @@ void BoardDataReader::RunFunction()
 			{
 				ReadTimer.Reset();
 					
-				chunk = Board->get_board_data(&sampleCount);
-				ProcessData(chunk, sampleCount);
-		
-				DeleteChunk(chunk, DataRows);
+				auto chunk = Board->get_board_data();
+				ProcessData(chunk);
 			}
 		
 			usleep(1*USLEEP_MILI);	
@@ -523,19 +521,19 @@ void BoardDataReader::RunFunction()
 // Process a chunk of data read from the board
 // send to broadcast thread and logging if enabled
 //
-void BoardDataReader::ProcessData(double **chunk, int sampleCount)
-{
+void BoardDataReader::ProcessData(BrainFlowArray<double,2>& chunk)
+{	
 	//  'improve' the time stamp to be more accurate
 	double period, oldestSampleTime;
-	CalculateReadingTimeThisChunk(chunk, sampleCount, period, oldestSampleTime);
+	CalculateReadingTimeThisChunk(chunk, period, oldestSampleTime);
 	
 	//  count the epochs where we have no data, will trigger a reconnect eventually		
-	if(sampleCount == 0)
+	if(chunk.get_size(1) == 0)
 		InvalidSampleCounter++;
 	else
 		InvalidSampleCounter = 0;
 	
-	for (int i = 0; i < sampleCount; i++)
+	for (int i = 0; i < chunk.get_size(1); i++)
 	{
 		BFSample* sample = ParseRawData(chunk, i);
 	
@@ -554,7 +552,7 @@ void BoardDataReader::ProcessData(double **chunk, int sampleCount)
 
 //  Parse the raw data and create a sample type for this board
 //
-BFSample* BoardDataReader::ParseRawData(double** chunk, int sampleIndex)
+BFSample* BoardDataReader::ParseRawData(BrainFlowArray<double,2>& chunk, int sampleIndex)
 {
 	auto newSample = new Sample(ExgChannelCount, AccelChannelCount, OtherChannelCount, AnalogChannelCount);
 	newSample->InitializeFromChunk(chunk, sampleIndex);
@@ -565,8 +563,10 @@ BFSample* BoardDataReader::ParseRawData(double** chunk, int sampleIndex)
 //  Calculate the reading time this chunk
 //  used to smooth out the sample times
 //
-void BoardDataReader::CalculateReadingTimeThisChunk(double** chunk, int samples, double& period, double& oldestSampleTime)
+void BoardDataReader::CalculateReadingTimeThisChunk(BrainFlowArray<double,2>& chunk, double& period, double& oldestSampleTime)
 {
+	int samples = chunk.get_size(1);
+	
 	auto timeNow = (chrono::duration_cast< milliseconds >(system_clock::now().time_since_epoch()).count() / 1000.0);	
 		
 	if (LastTimeStampSync > 0)
@@ -591,9 +591,7 @@ void BoardDataReader::DiscardFirstChunk()
 {
 	try
 	{
-		int sampleCount = 0;
-		auto chunk = Board->get_board_data(&sampleCount);
-		DeleteChunk(chunk, DataRows);
+		auto chunk = Board->get_board_data();
 	}
 	catch (const BrainFlowException &err)
 	{

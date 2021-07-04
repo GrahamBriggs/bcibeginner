@@ -95,24 +95,24 @@ public:
 	
 	
 	//  Construct from a brainflow get_board_data chunk
-	void InitializeFromChunk(double** chunk, int sampleIndex)
+	void InitializeFromChunk(BrainFlowArray<double,2>& chunk, int sampleIndex)
 	{
 		int indexCount = 0;
-		SampleIndex = chunk[indexCount++][sampleIndex];
+		SampleIndex = chunk.at(indexCount++,sampleIndex);
 		
 		for(int i = 0; i < ExgChannelCount; i++)
-			ExgData[i] = chunk[indexCount++][sampleIndex];
+			ExgData[i] = chunk.at(indexCount++,sampleIndex);
 		
 		for (int i = 0; i < AccelChannelCount; i++)
-			AccelData[i] = chunk[indexCount++][sampleIndex];
+			AccelData[i] = chunk.at(indexCount++,sampleIndex);
 		
 		for (int i = 0; i < OtherChannelCount; i++)
-			OtherData[i] = chunk[indexCount++][sampleIndex];
+			OtherData[i] = chunk.at(indexCount++,sampleIndex);
 		
 		for (int i = 0; i < AnalogChannelCount; i++)
-			AnalogData[i] = chunk[indexCount++][sampleIndex];
+			AnalogData[i] = chunk.at(indexCount++,sampleIndex);
 
-		TimeStamp = chunk[indexCount][sampleIndex];
+		TimeStamp = chunk.at(indexCount, sampleIndex);
 	}
 	
 	

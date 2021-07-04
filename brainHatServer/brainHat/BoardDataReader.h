@@ -61,9 +61,9 @@ protected:
 	//
 	void EstablishConnectionWithBoard();
 	bool PreparedToReadBoard();
-	void ProcessData(double **data_buf, int sampleCount);
-	BFSample* ParseRawData(double** data, int sample);
-	void CalculateReadingTimeThisChunk(double** chunk, int samples, double& period, double& oldestSampleTime);
+	void ProcessData(BrainFlowArray<double,2>& chunk);
+	BFSample* ParseRawData(BrainFlowArray<double, 2>& chunk, int sample);
+	void CalculateReadingTimeThisChunk(BrainFlowArray<double, 2>& chunk, double& period, double& oldestSampleTime);
 	
 	
 	//  Board hardware settings and configuration commands

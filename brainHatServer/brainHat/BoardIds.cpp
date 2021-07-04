@@ -22,10 +22,8 @@ int getNumberOfExgChannels(int boardId)
 		
 	case BrainhatBoardIds::CYTON_BOARD:
 	case BrainhatBoardIds::CYTON_DAISY_BOARD:
-		int numChannels;
-		auto res = BoardShim::get_exg_channels(useBoardId, &numChannels);
-		delete res;
-		return numChannels;
+		auto res = BoardShim::get_exg_channels(useBoardId);
+		return res.size();
 	}
 }
 
@@ -48,10 +46,8 @@ int getNumberOfAccelChannels(int boardId)
 		return 0;
 	case BrainhatBoardIds::CYTON_BOARD:
 	case BrainhatBoardIds::CYTON_DAISY_BOARD:
-		int accelChannels;
-		auto res = BoardShim::get_accel_channels(useBoardId, &accelChannels);
-		delete res;
-		return accelChannels;
+		auto res = BoardShim::get_accel_channels(useBoardId);
+		return res.size();
 	}
 }
 
@@ -74,10 +70,8 @@ int getNumberOfOtherChannels(int boardId)
 		return 0;
 	case BrainhatBoardIds::CYTON_BOARD:
 	case BrainhatBoardIds::CYTON_DAISY_BOARD:
-		int otherChannels;
-		auto res = BoardShim::get_other_channels(useBoardId, &otherChannels);
-		delete res;
-		return otherChannels;
+		auto res = BoardShim::get_other_channels(useBoardId);
+		return res.size();
 	}
 }
 
@@ -100,10 +94,8 @@ int getNumberOfAnalogChannels(int boardId)
 		return 0;
 	case BrainhatBoardIds::CYTON_BOARD:
 	case BrainhatBoardIds::CYTON_DAISY_BOARD:
-		int analogChannels;
-		auto res = BoardShim::get_analog_channels(useBoardId, &analogChannels);
-		delete res;
-		return analogChannels;
+		auto res = BoardShim::get_analog_channels(useBoardId);
+		return res.size();
 	}
 }
 
