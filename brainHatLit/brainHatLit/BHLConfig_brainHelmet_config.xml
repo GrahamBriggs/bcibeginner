@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Config>
+  <HostName>brainHelmet</HostName>
+  <Pins>
+    <PinLeftRising>37</PinLeftRising>;
+    <PinLeftFalling>38</PinLeftFalling>
+    <PinLeftBlink>36</PinLeftBlink>
+
+    <PinRightRising>0</PinRightRising>
+    <PinRightFalling>0</PinRightFalling>
+    <PinRightBlink>0</PinRightBlink>
+
+    <PinLightStringA5>35</PinLightStringA5>
+    <PinLightStringA4>32</PinLightStringA4>
+    <PinLightStringA3>31</PinLightStringA3>
+    <PinLightStringA2>29</PinLightStringA2>
+    <PinLightStringA1>33</PinLightStringA1>
+
+    <PinLightStringB5>23</PinLightStringB5>
+    <PinLightStringB4>21</PinLightStringB4>
+    <PinLightStringB3>24</PinLightStringB3>
+    <PinLightStringB2>22</PinLightStringB2>
+    <PinLightStringB1>26</PinLightStringB1>
+
+    <PinHapticMotor>12</PinHapticMotor>
+  </Pins>
+</Config>
