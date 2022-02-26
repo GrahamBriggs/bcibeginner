@@ -500,6 +500,7 @@ bool SupportedBoard()
 		return false;
 		
 	case BrainhatBoardIds::MENTALIUM:
+	case BrainhatBoardIds::TT_CYTON:	// Tien-Thong : added this case here for 8 channel cyton clone
 	case BrainhatBoardIds::CYTON_BOARD:
 	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 		return true;

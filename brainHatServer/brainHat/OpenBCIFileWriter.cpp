@@ -49,6 +49,7 @@ string FileBoardDescription(int boardId)
 	switch ((BrainhatBoardIds)boardId)
 	{
 	case BrainhatBoardIds::MENTALIUM:
+	case BrainhatBoardIds::TT_CYTON:	// Tien-Thong : added this case here for 8 channel cyton clone
 	case BrainhatBoardIds::CYTON_BOARD:
 		return "OpenBCI_GUI$BoardCytonSerial";
 	case BrainhatBoardIds::CYTON_DAISY_BOARD:
@@ -143,6 +144,7 @@ void OpenBCIFileWriter::WriteHeader(BFSample* firstSample)
 		switch ((BrainhatBoardIds)BoardId)
 		{
 		case BrainhatBoardIds::MENTALIUM:
+		case BrainhatBoardIds::TT_CYTON:	// Tien-Thong : added this case here for 8 channel cyton clone
 			RecordingFile << "%ExtraBoardId = " << BoardId << endl;
 			break;
 		}

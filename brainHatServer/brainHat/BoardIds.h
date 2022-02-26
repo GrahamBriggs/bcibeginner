@@ -10,6 +10,7 @@
 enum class BrainhatBoardIds : int
 {
 	UNDEFINED = -99,
+	TT_CYTON = -52,		// Tien-Thong : Added a 'custom' board here
 	MENTALIUM = -51,
 	CUSTOMBOARDS = -50,
 	//

@@ -118,6 +118,7 @@ int BoardDataReader::GetSrb1(int board)
 	{
 	case BrainhatBoardIds::CYTON_BOARD:
 	case BrainhatBoardIds::MENTALIUM:
+	case BrainhatBoardIds::TT_CYTON:	// Tien-Thong : added this case here for 8 channel cyton clone
 		if (board == 0)
 			return BoardSettings.Boards[0]->Srb1Set;
 		break;
@@ -210,6 +211,7 @@ int BoardDataReader::InitializeBoard()
 		default:
 			break;
 		case BrainhatBoardIds::MENTALIUM:
+		case BrainhatBoardIds::TT_CYTON:	// Tien-Thong : added this case here for 8 channel cyton clone
 			boardId = 0;
 		}
 			

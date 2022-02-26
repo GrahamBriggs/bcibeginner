@@ -11,6 +11,7 @@ int getNumberOfExgChannels(int boardId)
 	switch ((BrainhatBoardIds)boardId)  
 	{
 	case BrainhatBoardIds::MENTALIUM:
+	case BrainhatBoardIds::TT_CYTON:	// Tien-Thong : added this case here for 8 channel cyton clone
 		useBoardId = 0;
 		break;
 	}
@@ -36,6 +37,7 @@ int getNumberOfAccelChannels(int boardId)
 	switch ((BrainhatBoardIds)boardId)  
 	{
 	case BrainhatBoardIds::MENTALIUM:
+	case BrainhatBoardIds::TT_CYTON:  // Tien-Thong : added this case here for 8 channel cyton clone
 		useBoardId = 0;
 		break;
 	}
@@ -60,6 +62,7 @@ int getNumberOfOtherChannels(int boardId)
 	switch ((BrainhatBoardIds)boardId)  
 	{
 	case BrainhatBoardIds::MENTALIUM:
+	case BrainhatBoardIds::TT_CYTON:  // Tien-Thong : added this case here for 8 channel cyton clone
 		useBoardId = 0;
 		break;
 	}
@@ -84,6 +87,7 @@ int getNumberOfAnalogChannels(int boardId)
 	switch ((BrainhatBoardIds)boardId)  
 	{
 	case BrainhatBoardIds::MENTALIUM:
+	case BrainhatBoardIds::TT_CYTON: // Tien-Thong : added this case here for 8 channel cyton clone
 		useBoardId = 0;
 		break;
 	}
@@ -106,6 +110,7 @@ int getNumberOfRows(int boardId)
 	switch ((BrainhatBoardIds)boardId)  
 	{
 	case BrainhatBoardIds::MENTALIUM:
+	case BrainhatBoardIds::TT_CYTON:	// Tien-Thong : added this case here for 8 channel cyton clone
 		useBoardId = 0;
 		break;
 	}
@@ -135,8 +140,12 @@ int getSamplingRate(int boardId)
 	{
 	default:
 		return 0;
-	case BrainhatBoardIds::CYTON_BOARD:
-	case BrainhatBoardIds::CYTON_DAISY_BOARD:
+		
+	case BrainhatBoardIds::TT_CYTON:
+		return 250; // Tien-Thong : change this line of code to use different sampling rate
+		
+	case BrainhatBoardIds::CYTON_BOARD :
+	case BrainhatBoardIds::CYTON_DAISY_BOARD :
 		return BoardShim::get_sampling_rate(useBoardId);
 	}
 }
@@ -151,7 +160,8 @@ bool IsCytonFamily(int boardId)
 	case BrainhatBoardIds::CYTON_BOARD:
 	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 	case BrainhatBoardIds::MENTALIUM:
-		return true;
+	case BrainhatBoardIds::TT_CYTON:	// Tien-Thong : added this case here for 8 channel cyton clone	
+			return true;
 	default:
 		return false;
 	}
@@ -172,7 +182,12 @@ string getSampleName(int boardId)
 		return "Ganglion_BFSample";
 	case BrainhatBoardIds::MENTALIUM:
 		return "MENTALIUM8";
-	default:
+	
+	// Tien-Thong : added this case here, you can change this to have your data stream named as you like
+	case BrainhatBoardIds::TT_CYTON:	
+		return "TTCyton";	
+		
+	default :
 		return "BFSample";
 	}
 }
@@ -192,6 +207,12 @@ string getSampleNameShort(int boardId)
 		return "GAN4";
 	case BrainhatBoardIds::MENTALIUM:
 		return "MT08";
+		
+	// Tien-Thong : added this case here, use a four character unique identifier (this is for EDF file recording by brainHat viewer client application)
+	case BrainhatBoardIds::TT_CYTON:	
+		return "TT08";
+		
+		
 	default:
 		return "BF";
 	}
@@ -213,6 +234,11 @@ string getEquipmentName(int boardId)
 		return "Ganglion";
 	case BrainhatBoardIds::MENTALIUM:
 		return "MENTALIUM";
+		
+	// Tien-Thong : added this case here, you may call your board whatever you like
+	case BrainhatBoardIds::TT_CYTON:	
+		return "Name of your board here";
+		
 	default:
 		return "";
 	}
@@ -231,6 +257,10 @@ string getManufacturerName(int boardId)
 	case BrainhatBoardIds::CYTON_DAISY_BOARD:
 	case BrainhatBoardIds::GANGLION_BOARD:
 		return "OpenBCI";
+		
+	// Tien-Thong : added this case here, you may identify the board manufacturer whatever you like
+	case BrainhatBoardIds::TT_CYTON:	
+		return "Tien-Thong";
 		
 	default:
 		return "Unknown";
