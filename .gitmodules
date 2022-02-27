@@ -3,10 +3,10 @@
 	url = https://github.com/GrahamBriggs/brainflow.git
 [submodule "BrainHatComponents/brainflow"]
 	path = BrainHatComponents/brainflow
-	url = https://github.com/GrahamBriggs/brainflow.git
+url=git@github.com:GrahamBriggs/brainflow.git
 [submodule "BrainHatComponents/liblsl-Csharp"]
 	path = BrainHatComponents/liblsl-Csharp
-	url = https://github.com/GrahamBriggs/liblsl-Csharp.git
+url=git@github.com:GrahamBriggs/liblsl-Csharp.git
 [submodule "BrainHatComponents/EDFlib"]
 	path = BrainHatComponents/EDFlib
-url=https://github.com/GrahamBriggs/EDFlib.git
+url=git@github.com:GrahamBriggs/EDFlib.git
