@@ -4,6 +4,7 @@
 
 //  BrainhatBoardIds
 //  wrapper around brainflow board ids to support additional hardware external to brainflow board shim
+//
 
 //  BoardIds
 //  This enum must mirror brainflow_constants for values > -50
